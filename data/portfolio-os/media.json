@@ -1,0 +1,29 @@
+[
+  {
+    "url": "https://xveeysjztxqoihsbckzj.supabase.co/storage/v1/object/sign/media-assets/49bdfdfa-104b-4022-b5c7-b61c95fc9f8b-pdl_logo-removebg-preview.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82ZWIzYTRiZi05Y2U5LTRmZTktOGQ3ZC00NTk1YjYzYTg2OWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtZWRpYS1hc3NldHMvNDliZGZkZmEtMTA0Yi00MDIyLWI1YzctYjYxYzk1ZmM5ZjhiLXBkbF9sb2dvLXJlbW92ZWJnLXByZXZpZXcucG5nIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NTA0OTQwMCwiZXhwIjoxODE2NTg1NDAwfQ.jqGjE2lXuC6y6AP90sIrOGjBxhZgvmyq7GlLpL1IXVY",
+    "alt": "pdl_logo-removebg-preview",
+    "kind": "image",
+    "width": 288,
+    "height": 288,
+    "tags": [],
+    "thumbnailUrl": "https://xveeysjztxqoihsbckzj.supabase.co/storage/v1/object/sign/media-assets/a6aba4a7-4d98-4416-9959-729a363c437e.orig.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82ZWIzYTRiZi05Y2U5LTRmZTktOGQ3ZC00NTk1YjYzYTg2OWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtZWRpYS1hc3NldHMvYTZhYmE0YTctNGQ5OC00NDE2LTk5NTktNzI5YTM2M2M0MzdlLm9yaWcud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODUwNDk0NTIsImV4cCI6MTgxNjU4NTQ1Mn0.yLU5Y_e8jw0I5OAr45EmQo4yX1di_5ZzLrteMBDjhqM",
+    "sizeBytes": 23152,
+    "storagePath": "49bdfdfa-104b-4022-b5c7-b61c95fc9f8b-pdl_logo-removebg-preview.png",
+    "mimeType": "image/png",
+    "folder": "favicon",
+    "variants": [
+      {
+        "label": "orig",
+        "url": "https://xveeysjztxqoihsbckzj.supabase.co/storage/v1/object/sign/media-assets/a6aba4a7-4d98-4416-9959-729a363c437e.orig.webp?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82ZWIzYTRiZi05Y2U5LTRmZTktOGQ3ZC00NTk1YjYzYTg2OWEiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJtZWRpYS1hc3NldHMvYTZhYmE0YTctNGQ5OC00NDE2LTk5NTktNzI5YTM2M2M0MzdlLm9yaWcud2VicCIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODUwNDk0NTIsImV4cCI6MTgxNjU4NTQ1Mn0.yLU5Y_e8jw0I5OAr45EmQo4yX1di_5ZzLrteMBDjhqM",
+        "storagePath": "a6aba4a7-4d98-4416-9959-729a363c437e.orig.webp",
+        "width": 288,
+        "height": 288,
+        "sizeBytes": 4550,
+        "mimeType": "image/webp"
+      }
+    ],
+    "id": "a6aba4a7-4d98-4416-9959-729a363c437e",
+    "createdAt": "2026-07-26T07:03:56.384Z",
+    "updatedAt": "2026-07-26T07:05:05.543Z"
+  }
+]

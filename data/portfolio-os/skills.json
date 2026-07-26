@@ -1,0 +1,68 @@
+[
+  {
+    "id": "skill-1",
+    "name": "Frontend Development",
+    "category": "Development",
+    "level": "intermediate",
+    "years": 2,
+    "iconUrl": null,
+    "order": 1,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  },
+  {
+    "id": "skill-2",
+    "name": "React.js",
+    "category": "Development",
+    "level": "intermediate",
+    "years": 2,
+    "iconUrl": null,
+    "order": 2,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  },
+  {
+    "id": "skill-3",
+    "name": "UI/UX Design",
+    "category": "Design",
+    "level": "intermediate",
+    "years": 2,
+    "iconUrl": null,
+    "order": 3,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  },
+  {
+    "id": "skill-4",
+    "name": "WordPress Support",
+    "category": "Support",
+    "level": "advanced",
+    "years": 2,
+    "iconUrl": null,
+    "order": 4,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  },
+  {
+    "id": "skill-5",
+    "name": "DNS Management",
+    "category": "Infrastructure",
+    "level": "advanced",
+    "years": 2,
+    "iconUrl": null,
+    "order": 5,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  },
+  {
+    "id": "skill-6",
+    "name": "Technical Troubleshooting",
+    "category": "Support",
+    "level": "advanced",
+    "years": 2,
+    "iconUrl": null,
+    "order": 6,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  }
+]

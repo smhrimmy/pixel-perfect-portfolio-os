@@ -1,0 +1,1 @@
+ALTER TABLE public.articles ADD COLUMN IF NOT EXISTS template text NOT NULL DEFAULT 'editorial-longform';

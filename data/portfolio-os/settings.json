@@ -1,0 +1,38 @@
+[
+  {
+    "id": "site",
+    "siteTitle": "Prajwal DL - Portfolio",
+    "siteDescription": "Personal portfolio for Prajwal DL",
+    "ownerName": "PRAJWAL DL",
+    "ownerEmail": "pdlkpt@gmail.com",
+    "location": "MANGALORE, KA",
+    "tagline": "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.",
+    "socials": [
+      {
+        "label": "LinkedIn",
+        "url": "https://linkedin.com/in/prajwal-d-l-118198370/"
+      },
+      {
+        "label": "Website",
+        "url": "https://praxel.space/"
+      },
+      {
+        "label": "Phone",
+        "url": "tel:+918105561638"
+      }
+    ],
+    "primaryColor": "#00ffff",
+    "accentColor": "#0b0b0d",
+    "activeWebsiteTheme": "prajwal-premium",
+    "activeBlogTheme": "editorial-longform",
+    "seo": {
+      "defaultOgImage": null,
+      "twitterHandle": null,
+      "canonicalOrigin": "https://praxel.space"
+    },
+    "featureFlags": {},
+    "resumeUrl": null,
+    "createdAt": "2026-07-26T00:00:00.000Z",
+    "updatedAt": "2026-07-26T00:00:00.000Z"
+  }
+]
