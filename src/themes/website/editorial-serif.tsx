@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function EditorialSerif({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-[#f7f3ec] text-[#1a1613] font-serif [font-family:'Cormorant_Garamond',Georgia,serif]">
@@ -13,6 +13,8 @@ export default function EditorialSerif({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-8 text-sm uppercase tracking-[0.2em] font-sans">
             <a href="#services">Practice</a>
+            <a href="#experience">Chronicle</a>
+            <a href="#skills">Arsenal</a>
             <a href="#work">Case Files</a>
             <a href="#contact">Correspond</a>
           </div>
@@ -97,6 +99,41 @@ export default function EditorialSerif({ content }: ThemeProps) {
                 <div key={w.title}>
                   <h3 className="text-2xl italic">{w.title}</h3>
                   <p className="mt-3 text-[#1a1613]/70 leading-relaxed">{w.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" className="border-t border-[#1a1613]/20">
+          <div className="mx-auto max-w-6xl px-8 py-24">
+            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter IV</div>
+            <h2 className="mt-4 text-5xl italic">The Chronicle</h2>
+            <div className="mt-12 divide-y divide-[#1a1613]/20">
+              {experience.map((exp: any, i: number) => (
+                <article key={exp.id} className="py-8 first:pt-0 grid md:grid-cols-4 gap-8">
+                  <div className="font-sans text-xs uppercase tracking-[0.2em] text-[#a8341f]">
+                    {exp.startDate} – {exp.endDate || "Present"}
+                  </div>
+                  <div className="md:col-span-3">
+                    <h3 className="text-3xl italic">{exp.role}</h3>
+                    <div className="text-sm font-sans uppercase tracking-[0.2em] mt-2 text-[#1a1613]/60">{exp.company}</div>
+                    <p className="mt-4 text-[#1a1613]/70 leading-relaxed max-w-2xl">{exp.summary}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="skills" className="border-t border-[#1a1613]/20">
+          <div className="mx-auto max-w-6xl px-8 py-24">
+            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter V</div>
+            <h2 className="mt-4 text-5xl italic">The Arsenal</h2>
+            <div className="mt-12 flex flex-wrap gap-3">
+              {skills.map((skill: any) => (
+                <div key={skill.id} className="border border-[#1a1613]/30 px-5 py-2 font-sans text-sm uppercase tracking-widest text-[#1a1613]/80 hover:bg-[#1a1613] hover:text-[#f7f3ec] transition-colors cursor-default">
+                  {skill.name}
                 </div>
               ))}
             </div>

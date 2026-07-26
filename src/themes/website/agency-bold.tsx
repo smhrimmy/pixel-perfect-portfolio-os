@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function AgencyBold({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans">
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
@@ -12,6 +12,8 @@ export default function AgencyBold({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-10 text-sm font-medium uppercase tracking-wider">
             <a href="#services" className="hover:text-orange-500">Services</a>
+            <a href="#experience" className="hover:text-orange-500">Experience</a>
+            <a href="#skills" className="hover:text-orange-500">Skills</a>
             <a href="#work" className="hover:text-orange-500">Work</a>
             <a href="#about" className="hover:text-orange-500">About</a>
             <a href="#contact" className="hover:text-orange-500">Contact</a>
@@ -82,6 +84,46 @@ export default function AgencyBold({ content }: ThemeProps) {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        <section id="experience" className="mx-auto max-w-7xl px-8 py-32 border-t border-neutral-200">
+          <div className="grid md:grid-cols-12 gap-8 mb-16">
+            <div className="md:col-span-4">
+              <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">Resume</div>
+              <h2 className="mt-4 text-5xl md:text-6xl font-black tracking-tighter uppercase">Experience</h2>
+            </div>
+            <div className="md:col-span-8 flex items-end">
+              <p className="text-xl text-neutral-600">A track record of pushing boundaries and delivering exceptional results.</p>
+            </div>
+          </div>
+          <div className="border-t border-neutral-900">
+            {experience.map((exp: any) => (
+              <div key={exp.id} className="border-b border-neutral-200 py-10 grid md:grid-cols-12 gap-8 items-start">
+                <div className="md:col-span-3 text-sm font-bold uppercase tracking-widest text-neutral-500">
+                  {exp.startDate} — {exp.endDate || "Present"}
+                </div>
+                <div className="md:col-span-9">
+                  <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight">{exp.role}</h3>
+                  <div className="text-xl font-bold uppercase tracking-wider text-orange-500 mt-2">{exp.company}</div>
+                  <p className="mt-6 text-neutral-600 max-w-3xl">{exp.summary}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="bg-neutral-100">
+          <div className="mx-auto max-w-7xl px-8 py-32">
+            <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">Capabilities</div>
+            <h2 className="mt-4 text-5xl md:text-6xl font-black tracking-tighter uppercase mb-16">Skills</h2>
+            <div className="flex flex-wrap gap-4">
+              {skills.map((skill: any) => (
+                <div key={skill.id} className="border-2 border-neutral-900 bg-white px-6 py-3 font-bold uppercase tracking-widest text-sm hover:bg-neutral-900 hover:text-white transition-colors cursor-default">
+                  {skill.name}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

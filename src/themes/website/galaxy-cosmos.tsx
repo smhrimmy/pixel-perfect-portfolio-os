@@ -120,7 +120,7 @@ const CSS = `
 `;
 
 export default function GalaxyCosmos({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="gc-root">
@@ -141,6 +141,8 @@ export default function GalaxyCosmos({ content }: ThemeProps) {
             </a>
             <div className="hidden md:flex items-center gap-7 text-sm" style={{ color: "var(--gc-muted)" }}>
               <a href="#services" className="hover:text-white transition-colors">Services</a>
+              <a href="#experience" className="hover:text-white transition-colors">Experience</a>
+              <a href="#skills" className="hover:text-white transition-colors">Skills</a>
               <a href="#work" className="hover:text-white transition-colors">Work</a>
               <a href="#results" className="hover:text-white transition-colors">Results</a>
               <a href="#contact" className="hover:text-white transition-colors">Contact</a>
@@ -209,6 +211,41 @@ export default function GalaxyCosmos({ content }: ThemeProps) {
                   </article>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Experience */}
+        <section id="experience" className="py-24 px-6">
+          <div className="mx-auto max-w-6xl">
+            <SectionHeader eyebrow="Experience" lead="My professional" accent="journey" />
+            <div className="mt-12 space-y-5">
+              {experience.map((exp: any) => (
+                <article key={exp.id} className="gc-card p-7 flex flex-col md:flex-row gap-6 justify-between items-start">
+                  <div>
+                    <h3 className="gc-title text-2xl">{exp.role}</h3>
+                    <div className="mt-2 text-[15px] font-semibold" style={{ color: "#7fdcff" }}>{exp.company}</div>
+                    <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--gc-muted)" }}>{exp.summary}</p>
+                  </div>
+                  <div className="shrink-0 rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase" style={{ background: "rgba(255,255,255,.07)", border: "1px solid rgba(255,255,255,.15)" }}>
+                    {exp.startDate} – {exp.endDate || "Present"}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Skills */}
+        <section id="skills" className="py-24 px-6">
+          <div className="mx-auto max-w-6xl">
+            <SectionHeader eyebrow="Skills" lead="Tools I use to" accent="build" />
+            <div className="mt-12 flex flex-wrap gap-3">
+              {skills.map((skill: any) => (
+                <div key={skill.id} className="gc-card px-5 py-2.5 text-sm font-semibold tracking-wide hover:text-white transition-colors cursor-default" style={{ color: "var(--gc-fg)" }}>
+                  {skill.name}
+                </div>
+              ))}
             </div>
           </div>
         </section>

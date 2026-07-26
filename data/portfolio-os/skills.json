@@ -1,68 +1,112 @@
 [
   {
-    "id": "skill-1",
-    "name": "Frontend Development",
-    "category": "Development",
-    "level": "intermediate",
-    "years": 2,
+    "name": "technical troubleshooting",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
     "iconUrl": null,
     "order": 1,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "16ceac02-8508-4ceb-9925-5bc6d24c60d9",
+    "createdAt": "2026-07-26T15:35:30.952Z",
+    "updatedAt": "2026-07-26T15:35:30.952Z"
   },
   {
-    "id": "skill-2",
-    "name": "React.js",
-    "category": "Development",
-    "level": "intermediate",
-    "years": 2,
+    "name": "WordPress Support",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
     "iconUrl": null,
     "order": 2,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "5e5a5143-417e-4500-8d97-a5b3925ed676",
+    "createdAt": "2026-07-26T15:35:30.971Z",
+    "updatedAt": "2026-07-26T15:35:30.971Z"
   },
   {
-    "id": "skill-3",
-    "name": "UI/UX Design",
-    "category": "Design",
-    "level": "intermediate",
-    "years": 2,
+    "name": "DNS Management",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
     "iconUrl": null,
     "order": 3,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "d906fa85-33d5-406b-9ae4-67ee85a55e8a",
+    "createdAt": "2026-07-26T15:35:30.999Z",
+    "updatedAt": "2026-07-26T15:35:30.999Z"
   },
   {
-    "id": "skill-4",
-    "name": "WordPress Support",
-    "category": "Support",
+    "name": "Frontend Development",
+    "category": "General",
     "level": "advanced",
-    "years": 2,
+    "years": 1,
     "iconUrl": null,
     "order": 4,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "569777b1-1c98-46df-ac5e-2f60670bd5db",
+    "createdAt": "2026-07-26T15:35:31.030Z",
+    "updatedAt": "2026-07-26T15:35:31.030Z"
   },
   {
-    "id": "skill-5",
-    "name": "DNS Management",
-    "category": "Infrastructure",
+    "name": "UI/UX Design",
+    "category": "General",
     "level": "advanced",
-    "years": 2,
+    "years": 1,
     "iconUrl": null,
     "order": 5,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "36e5dab7-4d16-456d-87c1-6d0e3c5c154a",
+    "createdAt": "2026-07-26T15:35:31.071Z",
+    "updatedAt": "2026-07-26T15:35:31.071Z"
   },
   {
-    "id": "skill-6",
-    "name": "Technical Troubleshooting",
-    "category": "Support",
+    "name": "Problem-Solving",
+    "category": "General",
     "level": "advanced",
-    "years": 2,
+    "years": 1,
     "iconUrl": null,
     "order": 6,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "57ee2ecd-1b29-4aa7-8fab-2b6aa47ee3c3",
+    "createdAt": "2026-07-26T15:35:31.092Z",
+    "updatedAt": "2026-07-26T15:35:31.092Z"
+  },
+  {
+    "name": "Communication",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
+    "iconUrl": null,
+    "order": 7,
+    "id": "5b24184a-13d6-41c0-a3d4-8a769a7aaa4f",
+    "createdAt": "2026-07-26T15:35:31.120Z",
+    "updatedAt": "2026-07-26T15:35:31.120Z"
+  },
+  {
+    "name": "multitasking",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
+    "iconUrl": null,
+    "order": 8,
+    "id": "8d8bd6d3-e590-4ef4-ba94-3b3f862e3135",
+    "createdAt": "2026-07-26T15:35:31.143Z",
+    "updatedAt": "2026-07-26T15:35:31.143Z"
+  },
+  {
+    "name": "quick learner",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
+    "iconUrl": null,
+    "order": 9,
+    "id": "8b3fa77e-1c93-429d-aa48-fcb468f437c7",
+    "createdAt": "2026-07-26T15:35:31.166Z",
+    "updatedAt": "2026-07-26T15:35:31.166Z"
+  },
+  {
+    "name": "Microsoft Excel",
+    "category": "General",
+    "level": "advanced",
+    "years": 1,
+    "iconUrl": null,
+    "order": 10,
+    "id": "e7047de9-0f97-4a66-97a3-88f79279f868",
+    "createdAt": "2026-07-26T15:35:31.200Z",
+    "updatedAt": "2026-07-26T15:35:31.200Z"
   }
 ]

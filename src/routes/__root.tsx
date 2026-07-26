@@ -126,6 +126,7 @@ function RootShell({ children }: { children: ReactNode }) {
     </html>
   );
 }
+import { GlobalInteractiveTerminal } from "@/components/ui/global-interactive-terminal";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -134,6 +135,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <GlobalInteractiveTerminal />
     </QueryClientProvider>
   );
 }

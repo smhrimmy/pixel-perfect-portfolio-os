@@ -57,6 +57,7 @@ const modules: ModuleCard[] = [
   { title: "Recruiter View", description: "Print-ready profile", href: "/recruiter", icon: UserRound, accent: "from-orange-500/20 to-transparent" },
   { title: "HQ Terminal", description: "Themes, publish & rollback", href: "/studio/hq-terminal", icon: Terminal, accent: "from-yellow-500/20 to-transparent" },
   { title: "Settings", description: "Identity & socials", href: "/studio/settings", icon: Settings, accent: "from-neutral-500/20 to-transparent" },
+  { title: "Universal Editor", description: "Edit hero, services, why me", href: "/studio/content", icon: CheckCircle2, accent: "from-blue-500/20 to-transparent" },
 ];
 
 function StatCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {

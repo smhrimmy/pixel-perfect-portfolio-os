@@ -41,6 +41,39 @@ export default function Holographic({ content }: ThemeProps) {
               </div>
             ))}
           </div>
+
+          {(c.experience && c.experience.length > 0) && (
+            <div className="mt-12 pt-12 border-t border-white/15">
+              <div className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-6">Experience</div>
+              <div className="space-y-4">
+                {c.experience.map((exp: any) => (
+                  <div key={exp.id} className="rounded-2xl border border-white/15 bg-white/[0.03] p-6 hover:border-white/40 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start">
+                    <div>
+                      <h3 className="text-xl font-bold">{exp.role}</h3>
+                      <div className="text-sm mt-1" style={{ color: "#22d3ee" }}>{exp.company}</div>
+                      <p className="mt-3 text-sm text-white/70">{exp.summary}</p>
+                    </div>
+                    <div className="shrink-0 text-xs uppercase tracking-widest text-white/50">
+                      {exp.startDate} - {exp.endDate || "Present"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(c.skills && c.skills.length > 0) && (
+            <div className="mt-12 pt-12 border-t border-white/15">
+              <div className="text-[11px] uppercase tracking-[0.3em] text-white/60 mb-6">Skills</div>
+              <div className="flex flex-wrap gap-2">
+                {c.skills.map((skill: any) => (
+                  <div key={skill.id} className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition-colors cursor-default">
+                    {skill.name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>

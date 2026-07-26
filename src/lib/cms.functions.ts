@@ -56,11 +56,20 @@ export const getLiveSite = createServerFn({ method: "GET" }).handler(async (): P
     throw new Error("Site not initialized");
   }
 
-  const baseContent = contentRes.data.content as unknown as SiteContent;
+  const baseContent = (contentRes.data.content || {}) as any;
 
   return {
     content: {
       ...baseContent,
+      identity: baseContent.identity || { name: "Prajwal DL", brandDot: ".", role: "Developer" },
+      hero: baseContent.hero || { badge: "Available for projects", headingLead: "I build", headingAccent: "premium", headingTail: "websites", sub: "Delivering high-quality digital experiences.", industries: ["Tech"] },
+      services: baseContent.services || [],
+      stats: baseContent.stats || [],
+      projects: baseContent.projects || [],
+      why: baseContent.why || [],
+      contact: baseContent.contact || { badge: "Contact", headingLead: "Let's", headingAccent: "connect", sub: "Reach out to me." },
+      links: baseContent.links || { book: "#", email: "#", twitter: "#", linkedin: "#", github: "#" },
+      seo: baseContent.seo || { title: "Prajwal DL", description: "Portfolio" },
       resumeUrl: settingsData.resumeUrl ?? null,
       experience: experienceData,
       skills: skillsData,

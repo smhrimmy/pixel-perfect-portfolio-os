@@ -20,6 +20,7 @@ import { Route as AuthenticatedStudioIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedStudioAiRouteImport } from './routes/_authenticated/studio.ai'
 import { Route as AuthenticatedStudioAnalyticsRouteImport } from './routes/_authenticated/studio.analytics'
 import { Route as AuthenticatedStudioArticlesRouteImport } from './routes/_authenticated/studio.articles'
+import { Route as AuthenticatedStudioContentRouteImport } from './routes/_authenticated/studio.content'
 import { Route as AuthenticatedStudioDeveloperRouteImport } from './routes/_authenticated/studio.developer'
 import { Route as AuthenticatedStudioExperienceRouteImport } from './routes/_authenticated/studio.experience'
 import { Route as AuthenticatedStudioHqTerminalRouteImport } from './routes/_authenticated/studio.hq-terminal'
@@ -86,6 +87,12 @@ const AuthenticatedStudioArticlesRoute =
     path: '/articles',
     getParentRoute: () => AuthenticatedStudioRoute,
   } as any)
+const AuthenticatedStudioContentRoute =
+  AuthenticatedStudioContentRouteImport.update({
+    id: '/content',
+    path: '/content',
+    getParentRoute: () => AuthenticatedStudioRoute,
+  } as any)
 const AuthenticatedStudioDeveloperRoute =
   AuthenticatedStudioDeveloperRouteImport.update({
     id: '/developer',
@@ -144,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/studio/ai': typeof AuthenticatedStudioAiRoute
   '/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/studio/content': typeof AuthenticatedStudioContentRoute
   '/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
@@ -163,6 +171,7 @@ export interface FileRoutesByTo {
   '/studio/ai': typeof AuthenticatedStudioAiRoute
   '/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/studio/content': typeof AuthenticatedStudioContentRoute
   '/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
@@ -185,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/studio/ai': typeof AuthenticatedStudioAiRoute
   '/_authenticated/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/_authenticated/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/_authenticated/studio/content': typeof AuthenticatedStudioContentRoute
   '/_authenticated/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/_authenticated/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/_authenticated/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/studio/ai'
     | '/studio/analytics'
     | '/studio/articles'
+    | '/studio/content'
     | '/studio/developer'
     | '/studio/experience'
     | '/studio/hq-terminal'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/studio/ai'
     | '/studio/analytics'
     | '/studio/articles'
+    | '/studio/content'
     | '/studio/developer'
     | '/studio/experience'
     | '/studio/hq-terminal'
@@ -247,6 +259,7 @@ export interface FileRouteTypes {
     | '/_authenticated/studio/ai'
     | '/_authenticated/studio/analytics'
     | '/_authenticated/studio/articles'
+    | '/_authenticated/studio/content'
     | '/_authenticated/studio/developer'
     | '/_authenticated/studio/experience'
     | '/_authenticated/studio/hq-terminal'
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudioArticlesRouteImport
       parentRoute: typeof AuthenticatedStudioRoute
     }
+    '/_authenticated/studio/content': {
+      id: '/_authenticated/studio/content'
+      path: '/content'
+      fullPath: '/studio/content'
+      preLoaderRoute: typeof AuthenticatedStudioContentRouteImport
+      parentRoute: typeof AuthenticatedStudioRoute
+    }
     '/_authenticated/studio/developer': {
       id: '/_authenticated/studio/developer'
       path: '/developer'
@@ -408,6 +428,7 @@ interface AuthenticatedStudioRouteChildren {
   AuthenticatedStudioAiRoute: typeof AuthenticatedStudioAiRoute
   AuthenticatedStudioAnalyticsRoute: typeof AuthenticatedStudioAnalyticsRoute
   AuthenticatedStudioArticlesRoute: typeof AuthenticatedStudioArticlesRoute
+  AuthenticatedStudioContentRoute: typeof AuthenticatedStudioContentRoute
   AuthenticatedStudioDeveloperRoute: typeof AuthenticatedStudioDeveloperRoute
   AuthenticatedStudioExperienceRoute: typeof AuthenticatedStudioExperienceRoute
   AuthenticatedStudioHqTerminalRoute: typeof AuthenticatedStudioHqTerminalRoute
@@ -423,6 +444,7 @@ const AuthenticatedStudioRouteChildren: AuthenticatedStudioRouteChildren = {
   AuthenticatedStudioAiRoute: AuthenticatedStudioAiRoute,
   AuthenticatedStudioAnalyticsRoute: AuthenticatedStudioAnalyticsRoute,
   AuthenticatedStudioArticlesRoute: AuthenticatedStudioArticlesRoute,
+  AuthenticatedStudioContentRoute: AuthenticatedStudioContentRoute,
   AuthenticatedStudioDeveloperRoute: AuthenticatedStudioDeveloperRoute,
   AuthenticatedStudioExperienceRoute: AuthenticatedStudioExperienceRoute,
   AuthenticatedStudioHqTerminalRoute: AuthenticatedStudioHqTerminalRoute,

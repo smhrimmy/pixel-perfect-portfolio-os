@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,21 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const { redirect: redirectParam, mode: modeParam } = useSearch({ from: "/auth" });
-  const [mode, setMode] = useState<"signin" | "signup">(modeParam ?? "signin");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (modeParam) setMode(modeParam);
+  }, [modeParam]);
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-6" />;
+  }
 
   const target = redirectParam && redirectParam.startsWith("/") ? redirectParam : "/studio";
 

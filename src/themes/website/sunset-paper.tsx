@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function SunsetPaper({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#fef3ec] via-[#fde4d1] to-[#f9c8b0] text-[#3b1f14] font-sans">
@@ -13,6 +13,8 @@ export default function SunsetPaper({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-8 text-sm text-[#3b1f14]/70">
             <a href="#services" className="hover:text-[#e85d3c]">Services</a>
+            <a href="#experience" className="hover:text-[#e85d3c]">Experience</a>
+            <a href="#skills" className="hover:text-[#e85d3c]">Skills</a>
             <a href="#work" className="hover:text-[#e85d3c]">Work</a>
             <a href="#contact" className="hover:text-[#e85d3c]">Contact</a>
           </div>
@@ -51,6 +53,35 @@ export default function SunsetPaper({ content }: ThemeProps) {
               <div key={s.title} className="rounded-3xl bg-white/60 backdrop-blur-sm border border-white p-6 shadow-sm">
                 <h3 className="text-lg font-medium">{s.title}</h3>
                 <p className="mt-3 text-sm text-[#3b1f14]/70">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="experience" className="py-16">
+          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Experience</div>
+          <div className="mt-8 space-y-4">
+            {experience.map((exp: any) => (
+              <div key={exp.id} className="rounded-3xl bg-white/60 backdrop-blur-sm border border-white p-6 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold">{exp.role}</h3>
+                  <div className="mt-1 text-sm font-medium text-[#e85d3c]">{exp.company}</div>
+                  <p className="mt-3 text-sm text-[#3b1f14]/70 max-w-2xl">{exp.summary}</p>
+                </div>
+                <div className="shrink-0 rounded-full bg-white border border-[#3b1f14]/10 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-[#3b1f14]/60">
+                  {exp.startDate} – {exp.endDate || "Present"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="py-16">
+          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Skills</div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {skills.map((skill: any) => (
+              <div key={skill.id} className="rounded-full bg-white/70 backdrop-blur-sm border border-white px-5 py-2.5 text-sm font-medium shadow-sm hover:bg-white transition-colors cursor-default">
+                {skill.name}
               </div>
             ))}
           </div>

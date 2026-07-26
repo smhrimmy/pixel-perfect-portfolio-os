@@ -2,7 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function Playful3D({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
   return (
     <div className="min-h-screen bg-[#f6c445] text-[#1a1a1a] font-sans overflow-hidden relative">
       {/* Floating blobs */}
@@ -20,6 +20,8 @@ export default function Playful3D({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a href="#services">Services</a>
+            <a href="#experience">Experience</a>
+            <a href="#skills">Skills</a>
             <a href="#work">Playground</a>
             <a href="#contact">Say hi</a>
           </div>
@@ -78,6 +80,45 @@ export default function Playful3D({ content }: ThemeProps) {
               <div key={s.label}>
                 <div className="text-5xl font-black text-[#f6c445]">{s.value}</div>
                 <div className="mt-2 text-xs uppercase tracking-widest text-white/60">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="experience" className="py-16">
+          <div className="text-xs uppercase tracking-[0.3em] font-bold">Resume</div>
+          <div className="mt-8 space-y-6">
+            {experience.map((exp: any, i: number) => (
+              <div
+                key={exp.id}
+                className="rounded-3xl bg-white border-2 border-[#1a1a1a] p-8 shadow-[8px_8px_0_#1a1a1a] hover:-translate-y-1 hover:shadow-[12px_12px_0_#1a1a1a] transition-all flex flex-col md:flex-row gap-6 justify-between items-start"
+                style={{ transform: `rotate(${(i % 2 === 0 ? 1 : -1) * 0.5}deg)` }}
+              >
+                <div>
+                  <h3 className="text-2xl font-black">{exp.role}</h3>
+                  <div className={`mt-2 inline-block px-3 py-1 rounded-full text-white text-sm font-bold ${["bg-[#ff5b5b]", "bg-[#3b7dff]", "bg-[#22c55e]"][i % 3]}`}>
+                    {exp.company}
+                  </div>
+                  <p className="mt-4 text-sm max-w-2xl font-medium">{exp.summary}</p>
+                </div>
+                <div className="shrink-0 rounded-full border-2 border-[#1a1a1a] px-4 py-1.5 text-xs font-bold uppercase shadow-[4px_4px_0_#1a1a1a]">
+                  {exp.startDate} – {exp.endDate || "Present"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="py-16">
+          <div className="text-xs uppercase tracking-[0.3em] font-bold">Skills</div>
+          <div className="mt-8 flex flex-wrap gap-4">
+            {skills.map((skill: any, i: number) => (
+              <div
+                key={skill.id}
+                className="rounded-full bg-white border-2 border-[#1a1a1a] px-5 py-2.5 font-bold shadow-[4px_4px_0_#1a1a1a] hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#1a1a1a] transition-all cursor-default"
+                style={{ transform: `rotate(${(i % 3 - 1) * 2}deg)` }}
+              >
+                {skill.name}
               </div>
             ))}
           </div>

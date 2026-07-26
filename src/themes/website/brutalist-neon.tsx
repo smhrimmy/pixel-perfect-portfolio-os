@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter, Zap } from "lucide-react
 import type { ThemeProps } from "./registry";
 
 export default function BrutalistNeon({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-[#f4f1ea] text-black font-sans">
@@ -13,6 +13,8 @@ export default function BrutalistNeon({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm font-bold uppercase">
             <a href="#services">Services</a>
+            <a href="#experience">Experience</a>
+            <a href="#skills">Skills</a>
             <a href="#work">Work</a>
             <a href="#contact">Contact</a>
           </div>
@@ -65,6 +67,37 @@ export default function BrutalistNeon({ content }: ThemeProps) {
                   <div className="text-xs font-black uppercase">0{i + 1}</div>
                   <h3 className="mt-3 text-2xl font-black uppercase">{s.title}</h3>
                   <p className="mt-3 text-sm font-medium">{s.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" className="border-b-4 border-black bg-[#f4f1ea]">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <h2 className="text-4xl md:text-6xl font-black uppercase">Experience<span className="text-[#ff3b00]">.</span></h2>
+            <div className="mt-12 space-y-8">
+              {experience.map((exp: any, i: number) => (
+                <div key={exp.id} className="border-4 border-black bg-white p-6 shadow-[8px_8px_0_0_#000] relative">
+                  <div className="absolute top-0 right-0 bg-[#c4ff3d] border-b-4 border-l-4 border-black px-4 py-1 font-black uppercase text-sm hidden sm:block">
+                    {exp.startDate} - {exp.endDate || "Present"}
+                  </div>
+                  <h3 className="text-3xl font-black uppercase mt-4 sm:mt-0">{exp.role}</h3>
+                  <div className="text-lg font-bold uppercase mt-1 text-[#ff3b00]">{exp.company}</div>
+                  <p className="mt-4 font-medium">{exp.summary}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="skills" className="border-b-4 border-black bg-[#c4ff3d]">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <h2 className="text-4xl md:text-6xl font-black uppercase">Skills<span className="text-[#ff3b00]">.</span></h2>
+            <div className="mt-12 flex flex-wrap gap-4">
+              {skills.map((skill: any) => (
+                <div key={skill.id} className="border-4 border-black bg-white px-4 py-2 font-black uppercase text-sm shadow-[4px_4px_0_0_#000] hover:bg-black hover:text-[#c4ff3d] transition-colors cursor-default">
+                  {skill.name}
                 </div>
               ))}
             </div>

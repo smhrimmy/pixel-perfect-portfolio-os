@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function MinimalMono({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans">
@@ -13,6 +13,8 @@ export default function MinimalMono({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-8 text-sm text-neutral-600">
             <a href="#services" className="hover:text-neutral-900">Services</a>
+            <a href="#experience" className="hover:text-neutral-900">Experience</a>
+            <a href="#skills" className="hover:text-neutral-900">Skills</a>
             <a href="#work" className="hover:text-neutral-900">Work</a>
             <a href="#results" className="hover:text-neutral-900">Results</a>
             <a href="#contact" className="hover:text-neutral-900">Contact</a>
@@ -46,6 +48,39 @@ export default function MinimalMono({ content }: ThemeProps) {
                   <h3 className="col-span-4 text-lg font-medium">{s.title}</h3>
                   <p className="col-span-6 text-sm text-neutral-600">{s.body}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="experience" className="border-t border-neutral-200">
+          <div className="mx-auto max-w-5xl px-6 py-20">
+            <h2 className="text-xs uppercase tracking-[0.24em] text-neutral-500">Experience</h2>
+            <div className="mt-10 divide-y divide-neutral-200 border-y border-neutral-200">
+              {experience.map((exp: any) => (
+                <div key={exp.id} className="py-8 grid md:grid-cols-4 gap-6">
+                  <div className="text-sm font-medium text-neutral-500 tabular-nums">
+                    {exp.startDate} – {exp.endDate || "Present"}
+                  </div>
+                  <div className="md:col-span-3">
+                    <h3 className="text-xl font-semibold">{exp.role}</h3>
+                    <div className="mt-1 text-sm text-neutral-900">{exp.company}</div>
+                    <p className="mt-4 text-sm text-neutral-600 leading-relaxed max-w-2xl">{exp.summary}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="skills" className="border-t border-neutral-200">
+          <div className="mx-auto max-w-5xl px-6 py-20">
+            <h2 className="text-xs uppercase tracking-[0.24em] text-neutral-500">Skills</h2>
+            <div className="mt-10 flex flex-wrap gap-2">
+              {skills.map((skill: any) => (
+                <span key={skill.id} className="inline-flex items-center rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600 cursor-default">
+                  {skill.name}
+                </span>
               ))}
             </div>
           </div>

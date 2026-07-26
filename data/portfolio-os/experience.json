@@ -1,51 +1,48 @@
 [
   {
-    "id": "exp-1",
     "company": "Unifycx",
     "role": "Web Advisor",
     "type": "full-time",
     "location": "Mangalore, Karnataka",
     "startDate": "2025-06-01",
     "endDate": null,
-    "summary": "Assisted customers with website migrations and technical support.",
+    "summary": "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panel issues.",
     "highlights": [
-      "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panel issues.",
       "Provided technical support for WordPress, CMS platforms, hosting, DNS, email services, and website-related issues in shared hosting environments.",
       "Collaborated with teams, documented support interactions, and resolved customer issues through effective troubleshooting and communication."
     ],
     "tech": [
       "WordPress",
       "DNS",
-      "SSL"
+      "Email Configuration"
     ],
     "order": 1,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "d94426a6-75d5-438e-af7f-686e5e2caaf6",
+    "createdAt": "2026-07-26T15:35:30.876Z",
+    "updatedAt": "2026-07-26T15:35:30.876Z"
   },
   {
-    "id": "exp-2",
     "company": "Freelancer",
     "role": "Freelancer",
     "type": "freelance",
     "location": "MANGALORE",
     "startDate": "2024-12-01",
     "endDate": "2025-06-01",
-    "summary": "Designed and developed custom websites and web applications.",
+    "summary": "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements.",
     "highlights": [
-      "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements.",
       "Delivered responsive, performance-focused, and user-friendly solutions while improving applications through user feedback and continuous enhancements."
     ],
     "tech": [
-      "Frontend",
-      "Backend",
-      "React"
+      "React.js",
+      "Frontend Development",
+      "UI/UX Design"
     ],
     "order": 2,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "409025eb-6eb0-4610-973c-a778ed25ff12",
+    "createdAt": "2026-07-26T15:35:30.892Z",
+    "updatedAt": "2026-07-26T15:35:30.892Z"
   },
   {
-    "id": "exp-3",
     "company": "Glowtouch Technologies",
     "role": "Junior Support Engineer",
     "type": "full-time",
@@ -54,23 +51,23 @@
     "endDate": "2024-12-01",
     "summary": "Provided live chat support for hosting, domain, and website-related issues.",
     "highlights": [
-      "Provided live chat support for hosting, domain, and website-related issues.",
       "Troubleshot WordPress, PHP, MySQL, server, DNS, email, and website migration issues.",
       "Assisted customers with technical configurations and ensured smooth issue resolution.",
       "Documented common issues and collaborated with teams to improve support efficiency and customer satisfaction."
     ],
     "tech": [
+      "WordPress",
       "PHP",
       "MySQL",
-      "WordPress",
-      "DNS"
+      "DNS",
+      "Server Management"
     ],
     "order": 3,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "id": "12561291-8470-4ad7-b405-0110a848a69c",
+    "createdAt": "2026-07-26T15:35:30.908Z",
+    "updatedAt": "2026-07-26T15:35:30.908Z"
   },
   {
-    "id": "exp-4",
     "company": "Vitvara Technologies",
     "role": "Web Developer Intern",
     "type": "internship",
@@ -90,37 +87,8 @@
       "React.js"
     ],
     "order": 4,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
-  },
-  {
-    "id": "edu-1",
-    "company": "KARNATAKA(GOVT) POLYTECHNIC",
-    "role": "Diploma: Full Stack Development",
-    "type": "full-time",
-    "location": "MANGALORE, KARNATAKA",
-    "startDate": "2021-05-01",
-    "endDate": "2024-05-01",
-    "summary": "Completed Diploma in Full Stack Development.",
-    "highlights": [],
-    "tech": [],
-    "order": 5,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
-  },
-  {
-    "id": "edu-2",
-    "company": "Milagres High school, Mangalore",
-    "role": "10th High School",
-    "type": "full-time",
-    "location": "Mangalore",
-    "startDate": "2017-05-01",
-    "endDate": "2018-05-01",
-    "summary": "Completed 10th grade.",
-    "highlights": [],
-    "tech": [],
-    "order": 6,
-    "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T07:45:08.303Z"
+    "id": "c400ec38-b4f9-421f-8a63-83ebca052964",
+    "createdAt": "2026-07-26T15:35:30.933Z",
+    "updatedAt": "2026-07-26T15:35:30.933Z"
   }
 ]

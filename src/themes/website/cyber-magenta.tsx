@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function CyberMagenta({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-[#0a0014] text-[#ffe6ff] font-mono relative overflow-hidden">
@@ -24,6 +24,8 @@ export default function CyberMagenta({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-6 uppercase tracking-widest text-xs">
             <a href="#services" className="hover:text-[#00ffff]">Services</a>
+            <a href="#experience" className="hover:text-[#00ffff]">Experience</a>
+            <a href="#skills" className="hover:text-[#00ffff]">Skills</a>
             <a href="#work" className="hover:text-[#00ffff]">Work</a>
             <a href="#contact" className="hover:text-[#00ffff]">Contact</a>
           </div>
@@ -69,6 +71,34 @@ export default function CyberMagenta({ content }: ThemeProps) {
                 <div className="text-xs text-[#00ffff] uppercase tracking-widest">0{i + 1} //</div>
                 <h3 className="mt-3 text-lg uppercase tracking-wider">{s.title}</h3>
                 <p className="mt-3 text-sm text-[#ffe6ff]/70">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="experience" className="py-16 border-t border-[#ff1493]/20">
+          <div className="text-xs uppercase tracking-[0.3em] text-[#00ffff]">// Experience</div>
+          <div className="mt-8 space-y-6">
+            {experience.map((exp: any) => (
+              <div key={exp.id} className="border-l-2 border-[#ff1493] pl-6 py-2 relative">
+                <div className="absolute -left-1.5 top-2 w-3 h-3 bg-[#ff1493]" style={{ boxShadow: "0 0 10px rgba(255,20,147,0.8)" }} />
+                <div className="text-xs text-[#00ffff] uppercase tracking-widest">
+                  [{exp.startDate} – {exp.endDate || "Present"}]
+                </div>
+                <h3 className="mt-2 text-xl uppercase tracking-wider text-[#ffe6ff]">{exp.role}</h3>
+                <div className="mt-1 text-sm text-[#ff1493] uppercase tracking-widest">{exp.company}</div>
+                <p className="mt-4 text-sm text-[#ffe6ff]/70">{exp.summary}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="py-16 border-t border-[#ff1493]/20">
+          <div className="text-xs uppercase tracking-[0.3em] text-[#00ffff]">// Skills</div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {skills.map((skill: any) => (
+              <div key={skill.id} className="border border-[#00ffff]/50 bg-[#00ffff]/5 px-4 py-2 text-xs uppercase tracking-widest text-[#00ffff] hover:bg-[#00ffff] hover:text-black transition-colors cursor-default">
+                {skill.name}
               </div>
             ))}
           </div>

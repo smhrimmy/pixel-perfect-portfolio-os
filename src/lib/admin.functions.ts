@@ -23,8 +23,21 @@ export const getAdminBundle = createServerFn({ method: "GET" })
     const live = (configs ?? []).find((c) => c.state === "live");
     const draft = (configs ?? []).find((c) => c.state === "draft") ?? live;
     if (!content || !live) throw new Error("CMS not initialized");
+    const baseContent = (content.content || {}) as any;
+
     return {
-      content: content.content as unknown as SiteContent,
+      content: {
+        ...baseContent,
+        identity: baseContent.identity || { name: "Prajwal DL", brandDot: ".", role: "Developer" },
+        hero: baseContent.hero || { badge: "Available for projects", headingLead: "I build", headingAccent: "premium", headingTail: "websites", sub: "Delivering high-quality digital experiences.", industries: ["Tech"] },
+        services: baseContent.services || [],
+        stats: baseContent.stats || [],
+        projects: baseContent.projects || [],
+        why: baseContent.why || [],
+        contact: baseContent.contact || { badge: "Contact", headingLead: "Let's", headingAccent: "connect", sub: "Reach out to me." },
+        links: baseContent.links || { book: "#", email: "#", twitter: "#", linkedin: "#", github: "#" },
+        seo: baseContent.seo || { title: "Prajwal DL", description: "Portfolio" },
+      } as SiteContent,
       draft: {
         website_theme: draft!.website_theme,
         blog_theme: draft!.blog_theme,
@@ -185,4 +198,18 @@ export const listHistory = createServerFn({ method: "GET" })
       .limit(30);
     if (error) throw error;
     return data ?? [];
+  });
+
+export const updateSiteContent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => input as SiteContent)
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("site_content")
+      .update({ content: data as any })
+      .eq("id", "global");
+    if (error) throw error;
+    return { ok: true };
   });

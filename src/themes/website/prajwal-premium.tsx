@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { SupportSimulator } from "@/components/ui/support-simulator";
 import {
   ArrowUpRight,
   ArrowUp,
@@ -34,6 +35,7 @@ import {
   MapPin,
   Award,
   GraduationCap,
+  ServerCog,
   type LucideIcon,
 } from "lucide-react";
 import type { ThemeProps } from "./registry";
@@ -204,10 +206,22 @@ export default function PrajwalPremium({ content }: ThemeProps) {
   const [light, setLight] = useState(false);
   const [uptime, setUptime] = useState(7965);
   const [isTouch, setIsTouch] = useState(false);
+  const [simulatorOpen, setSimulatorOpen] = useState(false);
   const cursorDot = useRef<HTMLDivElement>(null);
   const cursorRing = useRef<HTMLDivElement>(null);
 
   // ---- boot / listeners ----
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("prajwal-light-mode");
+      if (stored === "true") setLight(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("prajwal-light-mode", String(light));
+  }, [light]);
+
   useEffect(() => {
     const t = setTimeout(() => setLoaded(true), 900);
     return () => clearTimeout(t);
@@ -274,12 +288,16 @@ export default function PrajwalPremium({ content }: ThemeProps) {
 
   return (
     <div
-      className={`relative min-h-screen font-sans antialiased text-foreground ${light ? "bg-[oklch(0.98_0.005_85)]" : "bg-[#050510]"} ${isTouch ? "" : "cursor-none"}`}
+      className={`relative min-h-screen font-sans antialiased text-foreground bg-[#050510] ${isTouch ? "" : "cursor-none"}`}
       style={{
         // @ts-expect-error CSS var
         "--accent-cyan": "oklch(0.85 0.14 200)",
       }}
     >
+      {light && (
+        <div className="pointer-events-none fixed inset-0 z-[9998] backdrop-invert backdrop-hue-rotate-180" />
+      )}
+
       {/* Loading screen */}
       {!loaded && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050510]">
@@ -315,8 +333,11 @@ export default function PrajwalPremium({ content }: ThemeProps) {
         <IconBtn label="Command palette (⌘K)" onClick={() => setPaletteOpen(true)}>
           <Command className="h-4 w-4" />
         </IconBtn>
-        <IconBtn label="Terminal (⌘`)" onClick={() => setTerminalOpen(true)}>
+        <IconBtn label="Terminal (⌘`)" onClick={() => window.dispatchEvent(new CustomEvent("open-terminal"))}>
           <TerminalIcon className="h-4 w-4" />
+        </IconBtn>
+        <IconBtn label="Support Simulator" onClick={() => setSimulatorOpen(true)}>
+          <ServerCog className="h-4 w-4 text-purple-400" />
         </IconBtn>
       </aside>
 
@@ -381,6 +402,7 @@ export default function PrajwalPremium({ content }: ThemeProps) {
         </button>
       )}
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} onGoto={(id) => { setPaletteOpen(false); scrollTo(id); }} />}
+      <SupportSimulator isOpen={simulatorOpen} onClose={() => setSimulatorOpen(false)} />
     </div>
   );
 }
@@ -557,9 +579,11 @@ function Skills({ id, cmsSkills }: { id: string; cmsSkills?: any[] }) {
 
 function Work({ id, cmsServices, cmsProjects, cmsExperience }: { id: string; cmsServices: ThemeProps["content"]["services"]; cmsProjects: ThemeProps["content"]["projects"]; cmsExperience?: any[] }) {
   const [filter, setFilter] = useState<ProjectFilter>("All");
+  const sourceProjects = cmsProjects && cmsProjects.length > 0 ? cmsProjects : PORTFOLIO_PROJECTS;
+  
   const projects = useMemo(
-    () => (filter === "All" ? PORTFOLIO_PROJECTS : PORTFOLIO_PROJECTS.filter((p) => p.category === filter)),
-    [filter],
+    () => (filter === "All" ? sourceProjects : sourceProjects.filter((p: any) => p.category === filter || (p.tags && p.tags.includes(filter)))),
+    [filter, sourceProjects],
   );
 
   return (
@@ -940,7 +964,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function IconBtn({ children, onClick, label }: { children: React.ReactNode; onClick: () => void; label: string }) {
   return (
-    <button onClick={onClick} aria-label={label} className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-black/40 text-white/80 backdrop-blur-xl hover:bg-white/10 hover:text-[var(--accent-cyan)]">
+    <button onClick={onClick} aria-label={label} className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-[var(--accent-cyan)] shadow-lg">
       {children}
     </button>
   );

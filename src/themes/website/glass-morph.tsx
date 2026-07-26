@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Twitter, Sparkles } from "lucide-
 import type { ThemeProps } from "./registry";
 
 export default function GlassMorph({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen text-white font-sans relative overflow-hidden bg-slate-950">
@@ -21,6 +21,8 @@ export default function GlassMorph({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
             <a href="#services" className="hover:text-white">Services</a>
+            <a href="#experience" className="hover:text-white">Experience</a>
+            <a href="#skills" className="hover:text-white">Skills</a>
             <a href="#work" className="hover:text-white">Work</a>
             <a href="#contact" className="hover:text-white">Contact</a>
           </div>
@@ -55,6 +57,35 @@ export default function GlassMorph({ content }: ThemeProps) {
               <div key={s.title} className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-6 hover:bg-white/10 transition-colors">
                 <h3 className="text-lg font-medium">{s.title}</h3>
                 <p className="mt-3 text-sm text-white/70">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="experience" className="py-16">
+          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Experience</div>
+          <div className="mt-8 space-y-4">
+            {experience.map((exp: any) => (
+              <div key={exp.id} className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-8 hover:bg-white/10 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold">{exp.role}</h3>
+                  <div className="mt-2 text-cyan-300">{exp.company}</div>
+                  <p className="mt-4 text-sm text-white/70">{exp.summary}</p>
+                </div>
+                <div className="shrink-0 rounded-full backdrop-blur-md bg-white/10 border border-white/20 px-4 py-1.5 text-xs text-white/80">
+                  {exp.startDate} – {exp.endDate || "Present"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="py-16">
+          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Skills</div>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {skills.map((skill: any) => (
+              <div key={skill.id} className="rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 px-5 py-2.5 text-sm hover:bg-white/10 hover:border-cyan-400/50 transition-all cursor-default text-white/90">
+                {skill.name}
               </div>
             ))}
           </div>

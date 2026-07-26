@@ -2,7 +2,7 @@ import { ArrowUpRight, Github, Linkedin, Mail, Terminal } from "lucide-react";
 import type { ThemeProps } from "./registry";
 
 export default function DevShowcase({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-slate-200 font-sans">
       {/* Dot grid bg */}
@@ -17,6 +17,8 @@ export default function DevShowcase({ content }: ThemeProps) {
           </a>
           <div className="hidden md:flex items-center gap-6 text-sm font-mono text-slate-400">
             <a href="#services" className="hover:text-emerald-400">./services</a>
+            <a href="#experience" className="hover:text-emerald-400">./experience</a>
+            <a href="#skills" className="hover:text-emerald-400">./skills</a>
             <a href="#work" className="hover:text-emerald-400">./work</a>
             <a href="#contact" className="hover:text-emerald-400">./contact</a>
           </div>
@@ -65,6 +67,38 @@ export default function DevShowcase({ content }: ThemeProps) {
                 <h3 className="mt-3 text-lg font-semibold text-white">{s.title}</h3>
                 <p className="mt-2 text-sm text-slate-400 leading-relaxed">{s.body}</p>
                 <div className="mt-4 font-mono text-xs text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity">→ learn more</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="experience" className="mx-auto max-w-6xl px-6 py-16">
+          <div className="font-mono text-xs text-emerald-400">// git log --experience</div>
+          <h2 className="mt-2 text-3xl font-bold">Commit History</h2>
+          <div className="mt-8 space-y-4 border-l border-white/10 ml-2 pl-6 relative">
+            {experience.map((exp: any) => (
+              <div key={exp.id} className="relative group">
+                <div className="absolute -left-[31px] top-1 h-3 w-3 rounded-full bg-[#0a0a0f] border border-emerald-400 group-hover:bg-emerald-400 transition-colors" />
+                <div className="rounded-xl border border-white/10 bg-white/[0.02] p-6 hover:border-emerald-500/30 transition-colors">
+                  <div className="font-mono text-xs text-slate-500 mb-2">
+                    <span className="text-emerald-400">commit</span> {exp.startDate} - {exp.endDate || "Present"}
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{exp.role}</h3>
+                  <div className="text-sm font-mono text-cyan-400 mt-1">@ {exp.company}</div>
+                  <p className="mt-4 text-sm text-slate-400 leading-relaxed">{exp.summary}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="skills" className="mx-auto max-w-6xl px-6 py-16">
+          <div className="font-mono text-xs text-emerald-400">// package.json dependencies</div>
+          <h2 className="mt-2 text-3xl font-bold">Tech Stack</h2>
+          <div className="mt-8 flex flex-wrap gap-3">
+            {skills.map((skill: any) => (
+              <div key={skill.id} className="rounded-md border border-white/10 bg-white/[0.02] px-4 py-2 font-mono text-xs text-slate-300 hover:border-emerald-500/50 hover:text-emerald-400 transition-colors cursor-default">
+                "{skill.name}": "latest"
               </div>
             ))}
           </div>

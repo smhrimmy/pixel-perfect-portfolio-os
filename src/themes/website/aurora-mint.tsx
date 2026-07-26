@@ -34,6 +34,39 @@ export default function AuroraMint({ content }: ThemeProps) {
           ))}
         </div>
 
+        {(c.experience && c.experience.length > 0) && (
+          <div className="mt-16 pt-16 border-t border-emerald-300/15">
+            <div className="text-xs uppercase tracking-[0.24em] text-emerald-300/80 mb-6">Experience</div>
+            <div className="space-y-4">
+              {c.experience.map((exp: any) => (
+                <div key={exp.id} className="rounded-2xl border border-emerald-300/15 bg-emerald-950/40 backdrop-blur p-6 flex flex-col md:flex-row gap-6 justify-between items-start">
+                  <div>
+                    <h3 className="text-xl font-bold text-emerald-50">{exp.role}</h3>
+                    <div className="text-sm font-medium text-emerald-300 mt-1">{exp.company}</div>
+                    <p className="mt-3 text-sm text-emerald-100/70">{exp.summary}</p>
+                  </div>
+                  <div className="shrink-0 text-xs uppercase tracking-widest text-emerald-300/60">
+                    {exp.startDate} - {exp.endDate || "Present"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(c.skills && c.skills.length > 0) && (
+          <div className="mt-16 pt-16 border-t border-emerald-300/15">
+            <div className="text-xs uppercase tracking-[0.24em] text-emerald-300/80 mb-6">Skills</div>
+            <div className="flex flex-wrap gap-2">
+              {c.skills.map((skill: any) => (
+                <div key={skill.id} className="rounded-full border border-emerald-300/20 bg-emerald-900/30 px-4 py-2 text-sm text-emerald-100/90 hover:bg-emerald-800/40 transition-colors cursor-default">
+                  {skill.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <footer className="mt-24 text-xs text-emerald-100/50">
           © {new Date().getFullYear()} {c.identity?.name}
         </footer>

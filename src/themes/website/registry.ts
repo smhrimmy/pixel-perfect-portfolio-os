@@ -97,6 +97,11 @@ export const websiteThemes: Record<string, ThemeEntry> = {
     name: "Prajwal Premium 2026",
     component: lazy(() => import("./prajwal-premium")),
   },
+  "macos-desktop": {
+    id: "macos-desktop",
+    name: "macOS Desktop",
+    component: lazy(() => import("./macos-desktop")),
+  },
 };
 
 export function resolveWebsiteTheme(id: string): ThemeEntry {

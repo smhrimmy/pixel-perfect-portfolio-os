@@ -33,7 +33,7 @@ const SERVICE_SPANS = [
 ];
 
 export default function NoirAurora({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links } = content;
+  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
 
   return (
     <div className="min-h-screen bg-background text-foreground grain">
@@ -41,11 +41,13 @@ export default function NoirAurora({ content }: ThemeProps) {
         <div className="mx-auto max-w-6xl mt-4 px-4">
           <nav className="flex items-center justify-between rounded-full border border-border/60 bg-background/50 px-5 py-2.5 backdrop-blur-xl">
             <a href="#top" className="font-display font-bold tracking-tight text-lg">
-              {identity.name.split(" ")[0]}
-              <span className="text-gold-gradient">{identity.brandDot}</span>
+              {identity?.name?.split(" ")[0] || "Portfolio"}
+              <span className="text-gold-gradient">{identity?.brandDot || "."}</span>
             </a>
             <div className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
               <a href="#services" className="hover:text-foreground transition-colors">Services</a>
+              <a href="#experience" className="hover:text-foreground transition-colors">Experience</a>
+              <a href="#skills" className="hover:text-foreground transition-colors">Skills</a>
               <a href="#work" className="hover:text-foreground transition-colors">Work</a>
               <a href="#results" className="hover:text-foreground transition-colors">Results</a>
               <a href="#contact" className="hover:text-foreground transition-colors">Contact</a>
@@ -102,6 +104,43 @@ export default function NoirAurora({ content }: ThemeProps) {
                   </article>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* Experience */}
+        <section id="experience" className="relative py-28 border-y border-border/40 bg-surface/40">
+          <div className="mx-auto max-w-6xl px-6">
+            <SectionHeader eyebrow="Experience" lead="My professional" accent="journey" />
+            <div className="mt-14 space-y-6">
+              {experience.map((exp: any) => (
+                <article key={exp.id} className="glass-card glass-card-hover rounded-3xl p-8 md:p-10 flex flex-col md:flex-row gap-6 justify-between">
+                  <div>
+                    <h3 className="font-display font-bold text-2xl md:text-3xl">{exp.role}</h3>
+                    <div className="mt-2 text-lg text-gold-gradient font-medium">{exp.company}</div>
+                    <p className="mt-4 text-muted-foreground">{exp.summary}</p>
+                  </div>
+                  <div className="shrink-0 flex items-start">
+                    <span className="inline-flex items-center rounded-full border border-border/60 bg-background/50 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-muted-foreground backdrop-blur-md">
+                      {exp.startDate} – {exp.endDate || "Present"}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Skills */}
+        <section id="skills" className="relative py-28">
+          <div className="mx-auto max-w-6xl px-6">
+            <SectionHeader eyebrow="Skills" lead="Tools I use to" accent="build" />
+            <div className="mt-14 flex flex-wrap gap-4">
+              {skills.map((skill: any) => (
+                <div key={skill.id} className="glass-card rounded-full px-6 py-3 flex items-center justify-center font-display font-medium text-sm hover:text-primary transition-colors hover:border-primary/50 cursor-default">
+                  {skill.name}
+                </div>
+              ))}
             </div>
           </div>
         </section>
