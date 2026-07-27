@@ -210,6 +210,7 @@ export default function PrajwalPremium({ data }: ThemeRendererProps) {
   const why = [{title: "Speed", body: "Fast"}];
   const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
   const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
+  const resumeUrl = profile?.resume_url || null;
   
   const experience = (rawExperience || []).map(e => ({ 
     ...e, 
