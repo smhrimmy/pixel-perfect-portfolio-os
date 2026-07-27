@@ -42,7 +42,7 @@ function AiWorkspace() {
           <Sparkles className="h-6 w-6" /> AI Workspace
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Ten prompt-tuned tools powered by Lovable AI.
+          Ten prompt-tuned tools powered by AI.
         </p>
       </header>
 

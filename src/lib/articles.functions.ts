@@ -160,7 +160,7 @@ export const deleteArticle = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/* -------- AI draft (Lovable AI Gateway) -------- */
+/* -------- AI draft (AI Gateway) -------- */
 
 const aiInput = z.object({
   title: z.string().min(1).max(200),
@@ -171,8 +171,8 @@ export const aiDraftArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => aiInput.parse(input))
   .handler(async ({ data }): Promise<{ slug: string; excerpt: string; markdown: string }> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.AI_API_KEY || process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("Missing AI_API_KEY");
 
     const system =
       "You are a senior technical writer. Given a title and optional notes, write a polished blog article in Markdown. Return JSON with keys: slug (lowercase kebab, <=60 chars, safe), excerpt (<=200 chars plain text), markdown (full article, 500-900 words, starts with an H1 matching the title). Include H2 sections, at least one bulleted list, and a short closing paragraph. Do not wrap the JSON in code fences.";

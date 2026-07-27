@@ -1,5 +1,5 @@
 /**
- * AI Workspace — Lovable AI Gateway helpers for content generation tools.
+ * AI Workspace — AI Gateway helpers for content generation tools.
  * MVP: single generate endpoint with a preset "tool" prompt selector.
  */
 import { createServerFn } from "@tanstack/react-start";
@@ -50,8 +50,8 @@ const inputSchema = z.object({
 export const runAiTool = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => inputSchema.parse(i))
   .handler(async ({ data }): Promise<{ output: string }> => {
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
+    const apiKey = process.env.AI_API_KEY || process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("AI_API_KEY not configured");
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
