@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 
 import { useUniversalStore } from "@/store/useUniversalStore";
 import { EntityWorkbench } from "@/components/studio/entity-workbench";
@@ -84,7 +83,7 @@ function ProjectsPage() {
       let newProjects = [...(projects || [])];
       
       if (isNew) {
-        payload.id = uuidv4();
+        payload.id = crypto.randomUUID();
         newProjects.push(payload);
         setSelectedId(payload.id);
       } else {

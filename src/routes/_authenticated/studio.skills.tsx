@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 
 import { useUniversalStore } from "@/store/useUniversalStore";
 import { EntityWorkbench } from "@/components/studio/entity-workbench";
@@ -55,7 +54,7 @@ function SkillsPage() {
       let newSkills = [...(skills || [])];
       
       if (isNew) {
-        values.id = uuidv4();
+        values.id = crypto.randomUUID();
         newSkills.push(values);
         setSelectedId(values.id);
       } else {
