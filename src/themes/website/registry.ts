@@ -102,6 +102,11 @@ export const websiteThemes: Record<string, ThemeEntry> = {
     name: "macOS Desktop",
     component: lazy(() => import("./macos-desktop")),
   },
+  "cinematic-dark": {
+    id: "cinematic-dark",
+    name: "Cinematic Dark",
+    component: lazy(() => import("./cinematic-dark/Theme")),
+  },
 };
 
 export function resolveWebsiteTheme(id: string): ThemeEntry {
