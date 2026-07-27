@@ -194,7 +194,7 @@ const NAV_SECTIONS = [
 // ---------- Root component --------------------------------------------------
 
 export default function PrajwalPremium({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
+  const { profile, projects, skills, experience: rawExperience, socialLinks, articles } = data;
   
   const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
   const hero = { 
@@ -409,7 +409,7 @@ export default function PrajwalPremium({ data }: ThemeRendererProps) {
       <Hero id="home" identity={identity} hero={hero} uptime={uptime} onCta={() => scrollTo("work")} onContact={() => scrollTo("connect")} resumeUrl={resumeUrl} />
       <About id="about" why={why} />
       <Skills id="skills" cmsSkills={skills} />
-      <Work id="work" cmsServices={services} cmsProjects={cmsProjects || legacyProjects} cmsExperience={experience} />
+      <Work id="work" cmsServices={services} cmsProjects={projects} cmsExperience={experience} />
       <Logs id="logs" />
       <Articles cmsArticles={articles} />
       <Connect id="connect" contact={contact} links={links} identity={identity} resumeUrl={resumeUrl} />
