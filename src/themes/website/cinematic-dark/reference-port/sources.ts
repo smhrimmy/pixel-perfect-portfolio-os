@@ -1,7 +1,7 @@
-import avatarModel from "./assets/models/avatar.glb";
-import labModel from "./assets/models/lab.glb";
-import roomModel from "./assets/models/room.glb";
-import contactModel from "./assets/models/contact.glb";
+import avatarModel from "./assets/models/avatar.glb?url";
+import labModel from "./assets/models/lab.glb?url";
+import roomModel from "./assets/models/room.glb?url";
+import contactModel from "./assets/models/contact.glb?url";
 
 import contactTexture from "./assets/textures/contact.webp";
 import contactShadowTexture from "./assets/textures/contact-shadow.webp";

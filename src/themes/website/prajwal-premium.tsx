@@ -560,10 +560,10 @@ function Skills({ id, cmsSkills }: { id: string; cmsSkills?: any[] }) {
 
         <div className="mt-12 space-y-8">
           {visible.map(([cat, items]) => (
-            <div key={cat} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur">
-              <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-white/50">{cat}</h3>
+            <div key={cat as string} className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur">
+              <h3 className="font-mono text-xs uppercase tracking-[0.3em] text-white/50">{cat as string}</h3>
               <div className="mt-4 flex flex-wrap gap-2">
-                {items.map((t) => (
+                {(items as string[]).map((t: string) => (
                   <span key={t} className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white/85 transition hover:border-[var(--accent-cyan)]/50 hover:text-white">
                     {t}
                   </span>

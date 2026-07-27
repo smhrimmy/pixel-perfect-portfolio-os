@@ -9,6 +9,7 @@ import glsl from "vite-plugin-glsl";
 
 export default defineConfig({
   vite: {
+    assetsInclude: ['**/*.glb', '**/*.gltf'],
     plugins: [glsl()],
     define: {
       "process.env.SUPABASE_URL": JSON.stringify(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""),

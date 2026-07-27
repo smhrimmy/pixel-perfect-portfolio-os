@@ -21,8 +21,8 @@ export function IosSpotlight({
     const results = [];
     
     // Commands
-    if ("terminal".includes(q)) results.push({ type: "app", title: "Terminal", id: "terminal", icon: Code });
-    if ("ai assistant".includes(q)) results.push({ type: "app", title: "AI Assistant", id: "ai", icon: Bot });
+    if ("terminal".includes(q)) results.push({ type: "app", title: "Terminal", subtitle: undefined, id: "terminal", icon: Code });
+    if ("ai assistant".includes(q)) results.push({ type: "app", title: "AI Assistant", subtitle: undefined, id: "ai", icon: Bot });
     
     // Content search
     if (content?.projects) {
