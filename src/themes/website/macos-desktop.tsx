@@ -231,9 +231,6 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const [time, setTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   
-  // Responsive state
-  const [isMobile, setIsMobile] = useState(false);
-  
   // iOS Overlays State
   const [isControlCenterOpen, setControlCenterOpen] = useState(false);
   const [isSpotlightOpen, setSpotlightOpen] = useState(false);
@@ -243,7 +240,6 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const [isAppSwitcherOpen, setAppSwitcherOpen] = useState(false);
   
   const triggerAi = () => {
-    // We use the new IosAiSheet instead of the global event for mobile
     setAiSheetOpen(true);
   };
   
@@ -252,15 +248,8 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
   useEffect(() => {
     setMounted(true);
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    
     const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => {
-      clearInterval(timer);
-      window.removeEventListener("resize", checkMobile);
-    };
+    return () => clearInterval(timer);
   }, []);
 
   const openApp = (id: string) => {
@@ -271,7 +260,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         id,
         isOpen: true,
         isMinimized: false,
-        isMaximized: isMobile ? true : (prev[id]?.isMaximized || false),
+        isMaximized: prev[id]?.isMaximized || false, // Mobile uses full screen via CSS anyway
         zIndex: highestZ + 1,
       },
     }));
@@ -327,36 +316,38 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   // iOS 17 inspired wallpaper (blurry colorful mesh)
   const iOSWallpaper = "radial-gradient(circle at top right, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)";
 
-  // If Mobile, render iOS Home Screen
-  if (isMobile) {
-    const handlePanEnd = (e: any, info: any) => {
-      // Swipe down threshold
-      if (info.offset.y > 50 && info.velocity.y > 200) {
-        // If it originated from the right side of the screen
-        if (info.point.x > window.innerWidth - 100) {
-          setControlCenterOpen(true);
-        } else {
-          setSpotlightOpen(true);
-        }
+  const handlePanEnd = (e: any, info: any) => {
+    // Swipe down threshold
+    if (info.offset.y > 50 && info.velocity.y > 200) {
+      // If it originated from the right side of the screen
+      if (info.point.x > window.innerWidth - 100) {
+        setControlCenterOpen(true);
+      } else {
+        setSpotlightOpen(true);
       }
-    };
+    }
+  };
 
-    return (
+  return (
+    <>
+      {/* 📱 MOBILE VIEW (Hidden on md and up) */}
       <motion.div 
-        className="h-[100dvh] w-full overflow-hidden text-black relative flex flex-col"
+        className="block md:hidden h-[100dvh] w-full overflow-hidden text-black relative flex flex-col"
         style={{ background: iOSWallpaper }}
         onPanEnd={handlePanEnd}
       >
         {/* Hide global floating AI button for this mobile view */}
         <style>{`
-          #global-ai-chatbot-trigger {
-            display: none !important;
+          @media (max-width: 767px) {
+            #global-ai-chatbot-trigger {
+              display: none !important;
+            }
           }
         `}</style>
         
         {/* Dynamic Island Status Bar */}
         <div className="h-12 w-full flex items-center justify-between px-6 pt-2 z-[900] text-black font-semibold text-sm pointer-events-none">
-          <span>{mounted ? time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ""}</span>
+          <span suppressHydrationWarning>{mounted ? time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ""}</span>
           
           {/* Functional Dynamic Island */}
           <button 
@@ -509,18 +500,15 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           content={content}
         />
       </motion.div>
-    );
-  }
 
-  // --- Desktop macOS View ---
-  return (
-    <div 
-      className="h-screen w-full overflow-hidden text-foreground selection:bg-blue-500/30 relative"
-      style={{ background: macOSWallpaper }}
-    >
-      {/* Menu Bar */}
-      <div className="absolute top-0 inset-x-0 h-7 bg-black/20 backdrop-blur-md border-b border-white/10 z-[9999] flex items-center justify-between px-4 text-xs font-medium text-white shadow-sm">
-        <div className="flex items-center gap-4">
+      {/* 💻 DESKTOP VIEW (Hidden on sm and down) */}
+      <div 
+        className="hidden md:block h-screen w-full overflow-hidden text-foreground selection:bg-blue-500/30 relative"
+        style={{ background: macOSWallpaper }}
+      >
+        {/* Menu Bar */}
+        <div className="absolute top-0 inset-x-0 h-7 bg-black/20 backdrop-blur-md border-b border-white/10 z-[9999] flex items-center justify-between px-4 text-xs font-medium text-white shadow-sm">
+          <div className="flex items-center gap-4">
           <Apple className="w-4 h-4" fill="currentColor" />
           <span className="font-bold">{activeAppName}</span>
           <span className="cursor-default">File</span>
@@ -534,7 +522,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           <Wifi className="w-4 h-4" />
           <Battery className="w-4 h-4" />
           <Search className="w-4 h-4" />
-          <span>{mounted ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', weekday: 'short', month: 'short', day: 'numeric' }) : ""}</span>
+          <span suppressHydrationWarning>{mounted ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', weekday: 'short', month: 'short', day: 'numeric' }) : ""}</span>
         </div>
       </div>
 
@@ -649,5 +637,6 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }
