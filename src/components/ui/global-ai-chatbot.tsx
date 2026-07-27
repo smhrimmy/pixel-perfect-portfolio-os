@@ -13,6 +13,12 @@ export function GlobalAIChatbot({ content }: { content: any }) {
     if (bodyRef.current) bodyRef.current.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isOpen]);
 
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener("portfolio-open-ai", handleOpen);
+    return () => window.removeEventListener("portfolio-open-ai", handleOpen);
+  }, []);
+
   const handleQuery = (raw: string) => {
     const cmd = raw.trim().toLowerCase();
     if (!cmd) return;
@@ -126,8 +132,10 @@ export function GlobalAIChatbot({ content }: { content: any }) {
 
   return (
     <>
+      {/* Floating Trigger (Hidden if macOS theme is active on mobile - handled via CSS in macos-desktop) */}
       {!isOpen && (
         <button
+          id="global-ai-chatbot-trigger"
           onClick={() => setIsOpen(true)}
           className="fixed bottom-safe-bottom mb-[110px] md:mb-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform animate-in zoom-in duration-300"
         >

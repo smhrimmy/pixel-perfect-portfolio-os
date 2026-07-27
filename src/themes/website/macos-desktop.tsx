@@ -15,9 +15,12 @@ import {
   X,
   Minus,
   Maximize2,
-  Signal
+  Signal,
+  Bot
 } from "lucide-react";
 import type { ThemeProps } from "./registry";
+import { IosControlCenter } from "../../components/ui/ios-control-center";
+import { IosSpotlight } from "../../components/ui/ios-spotlight";
 
 type AppData = {
   id: string;
@@ -230,6 +233,14 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   // Responsive state
   const [isMobile, setIsMobile] = useState(false);
   
+  // iOS Overlays State
+  const [isControlCenterOpen, setControlCenterOpen] = useState(false);
+  const [isSpotlightOpen, setSpotlightOpen] = useState(false);
+  
+  const triggerAi = () => {
+    window.dispatchEvent(new Event("portfolio-open-ai"));
+  };
+  
   // Mouse position for dock magnification
   const mouseX = useMotionValue(Infinity);
 
@@ -309,13 +320,62 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
   // If Mobile, render iOS Home Screen
   if (isMobile) {
+    const handlePanEnd = (e: any, info: any) => {
+      // Swipe down threshold
+      if (info.offset.y > 50 && info.velocity.y > 200) {
+        // If it originated from the right side of the screen
+        if (info.point.x > window.innerWidth - 100) {
+          setControlCenterOpen(true);
+        } else {
+          setSpotlightOpen(true);
+        }
+      }
+    };
+
     return (
-      <div 
+      <motion.div 
         className="h-screen w-full overflow-hidden text-black relative flex flex-col"
         style={{ background: iOSWallpaper }}
+        onPanEnd={handlePanEnd}
       >
+        {/* Hide global floating AI button for this mobile view */}
+        <style>{`
+          #global-ai-chatbot-trigger {
+            display: none !important;
+          }
+        `}</style>
+        
+        {/* Dynamic Island Status Bar */}
+        <div className="h-12 w-full flex items-center justify-between px-6 pt-2 z-[900] text-black font-semibold text-sm pointer-events-none">
+          <span>{time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+          
+          {/* Functional Dynamic Island */}
+          <button 
+            onClick={triggerAi}
+            className="pointer-events-auto absolute left-1/2 -translate-x-1/2 top-2 w-[120px] h-8 bg-black rounded-full flex items-center justify-between px-3 hover:scale-105 transition-transform"
+          >
+            <Bot className="w-4 h-4 text-white opacity-80" />
+            <div className="flex gap-1 items-center">
+               <div className="w-1 h-1 rounded-full bg-green-500 animate-pulse" />
+               <div className="w-1 h-1 rounded-full bg-orange-500" />
+            </div>
+          </button>
+
+          <div className="flex items-center gap-1.5">
+            <Signal className="w-4 h-4" />
+            <Wifi className="w-4 h-4" />
+            <BatteryMedium className="w-5 h-5" />
+          </div>
+        </div>
+
+        {/* Top-Right Control Center Hitbox */}
+        <div 
+          className="absolute top-0 right-0 w-32 h-16 z-[950]" 
+          onClick={() => setControlCenterOpen(true)}
+        />
+
         {/* App Grid */}
-        <div className="flex-1 pt-safe-top mt-8 px-6 grid grid-cols-4 gap-x-4 gap-y-8 content-start">
+        <div className="flex-1 pt-safe-top mt-4 px-6 grid grid-cols-4 gap-x-4 gap-y-8 content-start">
           {APPS.map((app) => (
             <button
               key={app.id}
@@ -372,14 +432,27 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
                 {/* Home Indicator */}
                 <div 
-                  className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors"
+                  className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors z-50"
                   onClick={() => closeApp(app.id)}
                 />
               </motion.div>
             </AnimatePresence>
           );
         })}
-      </div>
+
+        {/* Overlays */}
+        <IosControlCenter 
+          isOpen={isControlCenterOpen} 
+          onClose={() => setControlCenterOpen(false)}
+          onTriggerAI={triggerAi}
+        />
+        <IosSpotlight
+          isOpen={isSpotlightOpen}
+          onClose={() => setSpotlightOpen(false)}
+          content={content}
+          onOpenApp={openApp}
+        />
+      </motion.div>
     );
   }
 
