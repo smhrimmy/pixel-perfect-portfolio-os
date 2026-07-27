@@ -48,7 +48,7 @@ function Home() {
   const Theme = resolveWebsiteTheme(data.config.website_theme).component;
   return (
     <Suspense fallback={<div className="min-h-screen bg-background" />}>
-      <Theme content={data.content} />
+      <Theme data={data.content} />
       <GlobalAIChatbot content={data.content} />
     </Suspense>
   );
