@@ -229,6 +229,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const [windows, setWindows] = useState<Record<string, WindowState>>({});
   const [highestZ, setHighestZ] = useState(10);
   const [time, setTime] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
   
   // Responsive state
   const [isMobile, setIsMobile] = useState(false);
@@ -250,6 +251,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const mouseX = useMotionValue(Infinity);
 
   useEffect(() => {
+    setMounted(true);
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
@@ -318,6 +320,8 @@ export default function MacOsDesktop({ content }: ThemeProps) {
     .sort((a, b) => b.zIndex - a.zIndex)[0]?.id;
   const activeAppName = activeAppId ? APPS.find((a) => a.id === activeAppId)?.title : "Finder";
 
+  const openApps = Object.keys(windows).filter(id => windows[id].isOpen);
+
   // macOS Sonoma inspired wallpaper (abstract shapes/gradients)
   const macOSWallpaper = "radial-gradient(circle at 50% -20%, #4facfe 0%, #00f2fe 40%, #0250c5 100%)";
   // iOS 17 inspired wallpaper (blurry colorful mesh)
@@ -352,7 +356,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         
         {/* Dynamic Island Status Bar */}
         <div className="h-12 w-full flex items-center justify-between px-6 pt-2 z-[900] text-black font-semibold text-sm pointer-events-none">
-          <span>{time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+          <span>{mounted ? time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ""}</span>
           
           {/* Functional Dynamic Island */}
           <button 
@@ -530,7 +534,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           <Wifi className="w-4 h-4" />
           <Battery className="w-4 h-4" />
           <Search className="w-4 h-4" />
-          <span>{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          <span>{mounted ? time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', weekday: 'short', month: 'short', day: 'numeric' }) : ""}</span>
         </div>
       </div>
 
