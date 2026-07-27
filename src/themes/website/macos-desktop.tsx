@@ -15,7 +15,10 @@ import {
   Signal,
   Bot,
   ChevronLeft,
-  Home
+  Home,
+  X,
+  Minus,
+  Maximize2
 } from "lucide-react";
 import type { ThemeProps } from "./registry";
 import { IosControlCenter } from "../../components/ui/ios-control-center";
