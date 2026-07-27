@@ -1,6 +1,6 @@
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
-export default function AuroraMint({ content }: ThemeProps) {
+export default function AuroraMint({ data }: ThemeRendererProps) {
   const c = content;
   return (
     <main className="min-h-screen bg-[#04120f] text-emerald-50 overflow-hidden relative">

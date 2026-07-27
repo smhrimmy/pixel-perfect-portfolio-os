@@ -1,12 +1,10 @@
 import { lazy, type ComponentType } from "react";
-import type { SiteContent } from "@/lib/site-content";
-
-export type ThemeProps = { content: SiteContent };
+import type { ThemeRendererProps } from "../types";
 
 export type ThemeEntry = {
   id: string;
   name: string;
-  component: ComponentType<ThemeProps>;
+  component: ComponentType<ThemeRendererProps | any>;
 };
 
 // Registry maps theme id -> lazily-loaded component.

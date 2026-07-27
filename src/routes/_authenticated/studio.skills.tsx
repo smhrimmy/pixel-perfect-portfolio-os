@@ -1,17 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
-import type { z } from "zod";
+import { v4 as uuidv4 } from "uuid";
 
-import { qk } from "@/providers/query.provider";
-import { listSkills, createSkill, updateSkill, deleteSkill } from "@/actions";
-import { skillCreateSchema } from "@/features/skills/schemas/skill.schema";
-
+import { useUniversalStore } from "@/store/useUniversalStore";
 import { EntityWorkbench } from "@/components/studio/entity-workbench";
 import { EditorShell } from "@/components/studio/editor-shell";
 import { Input } from "@/components/ui/input";
@@ -23,31 +17,23 @@ import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/studio/skills")({ component: SkillsPage });
 
-type FormValues = z.input<typeof skillCreateSchema>;
-
-const defaults = (): FormValues => ({
+const defaults = () => ({
+  id: "",
   name: "",
-  category: "",
-  level: "intermediate",
-  years: 0,
-  iconUrl: null,
-  order: 0,
+  category: "General",
+  level: 50,
+  icon: "",
+  sort_order: 0,
 });
 
 function SkillsPage() {
-  const qc = useQueryClient();
-  const listFn = useServerFn(listSkills);
-  const createFn = useServerFn(createSkill);
-  const updateFn = useServerFn(updateSkill);
-  const deleteFn = useServerFn(deleteSkill);
-
-  const { data, isLoading } = useQuery({ queryKey: qk.skills.all, queryFn: () => listFn() });
+  const { skills, setSkills, saveToSupabase } = useUniversalStore();
+  
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selected = useMemo(() => data?.find((s) => s.id === selectedId) ?? null, [data, selectedId]);
+  const selected = useMemo(() => skills?.find((s) => s.id === selectedId) ?? null, [skills, selectedId]);
   const isNew = selectedId === "__new__";
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(skillCreateSchema),
+  const form = useForm({
     defaultValues: defaults(),
     mode: "onChange",
   });
@@ -55,82 +41,84 @@ function SkillsPage() {
   useEffect(() => {
     if (isNew) form.reset(defaults());
     else if (selected) form.reset({
+      id: selected.id,
       name: selected.name,
       category: selected.category,
       level: selected.level,
-      years: selected.years,
-      iconUrl: selected.iconUrl,
-      order: selected.order,
+      icon: selected.icon || "",
+      sort_order: selected.sort_order,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]);
+  }, [selectedId, selected, isNew, form]);
 
-  const save = async (values: FormValues) => {
-    if (isNew) {
-      const created = await createFn({ data: values });
-      setSelectedId(created.id);
-    } else if (selected) {
-      await updateFn({ data: { id: selected.id, ...values } });
+  const save = async (values: any) => {
+    try {
+      let newSkills = [...(skills || [])];
+      
+      if (isNew) {
+        values.id = uuidv4();
+        newSkills.push(values);
+        setSelectedId(values.id);
+      } else {
+        newSkills = newSkills.map(s => s.id === values.id ? { ...s, ...values } : s);
+      }
+      
+      setSkills(newSkills as any);
+      await saveToSupabase();
+      toast.success(isNew ? "Skill created" : "Skill updated");
+    } catch (error) {
+      toast.error("Failed to save skill");
     }
-    await qc.invalidateQueries({ queryKey: qk.skills.all });
   };
 
-  const deleteMut = useMutation({
-    mutationFn: (id: string) => deleteFn({ data: id }),
-    onSuccess: async () => {
-      toast.success("Deleted");
+  const deleteSkill = async (id: string) => {
+    try {
+      const newSkills = (skills || []).filter(s => s.id !== id);
+      setSkills(newSkills as any);
+      await saveToSupabase();
       setSelectedId(null);
-      await qc.invalidateQueries({ queryKey: qk.skills.all });
-    },
-  });
+      toast.success("Deleted");
+    } catch (error) {
+      toast.error("Failed to delete skill");
+    }
+  };
 
-  const items = (data ?? []).map((s) => ({
+  const items = (skills ?? []).map((s) => ({
     id: s.id,
-    label: s.name,
-    meta: `${s.category} · ${s.level}`,
+    label: s.name || "Untitled",
+    meta: s.category,
   }));
 
   const editor = selectedId ? (
-    <EditorShell<FormValues>
+    <EditorShell
       title={form.watch("name") || (isNew ? "New skill" : "Untitled")}
       subtitle={form.watch("category") || undefined}
       form={form}
       onSave={save}
       actionsSlot={
         !isNew && selected ? (
-          <Button size="sm" variant="ghost" onClick={() => confirm(`Delete "${selected.name}"?`) && deleteMut.mutate(selected.id)}>
+          <Button size="sm" variant="ghost" onClick={() => confirm(`Delete "${selected.name}"?`) && deleteSkill(selected.id)}>
             <Trash2 className="mr-1 h-4 w-4" /> Delete
           </Button>
         ) : null
       }
       renderForm={() => (
         <div className="space-y-4">
-          <Field label="Name" error={form.formState.errors.name?.message}>
+          <Field label="Name">
             <Input {...form.register("name")} />
           </Field>
-          <Field label="Category" error={form.formState.errors.category?.message}>
-            <Input {...form.register("category")} placeholder="e.g. Frontend, DevOps" />
+          <Field label="Category">
+            <Input {...form.register("category")} placeholder="e.g. Frontend, Backend" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Level">
-              <Select value={form.watch("level")} onValueChange={(v) => form.setValue("level", v as FormValues["level"], { shouldDirty: true })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {(["beginner", "intermediate", "advanced", "expert"] as const).map((l) => (
-                    <SelectItem key={l} value={l}>{l}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field label="Proficiency Level (0-100)">
+              <Input type="number" {...form.register("level", { valueAsNumber: true })} />
             </Field>
-            <Field label="Years">
-              <Input type="number" step="0.5" {...form.register("years", { valueAsNumber: true })} />
+            <Field label="Sort Order">
+              <Input type="number" {...form.register("sort_order", { valueAsNumber: true })} />
             </Field>
           </div>
-          <Field label="Icon URL" error={form.formState.errors.iconUrl?.message}>
-            <Input type="url" {...form.register("iconUrl", { setValueAs: (v) => v || null })} />
-          </Field>
-          <Field label="Order">
-            <Input type="number" {...form.register("order", { valueAsNumber: true })} />
+          <Field label="Icon (e.g. Lucide string or URL)">
+            <Input {...form.register("icon", { setValueAs: (v) => v || null })} />
           </Field>
         </div>
       )}
@@ -138,14 +126,12 @@ function SkillsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              {v.iconUrl && <img src={v.iconUrl} alt="" className="h-6 w-6 rounded" />}
               {v.name || "Untitled skill"}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {v.category && <Badge variant="outline">{v.category}</Badge>}
-            {v.level && <Badge variant="secondary">{v.level}</Badge>}
-            <Badge variant="outline">{v.years ?? 0} yrs</Badge>
+            <Badge variant="secondary">Level: {v.level ?? 0}</Badge>
           </CardContent>
         </Card>
       )}
@@ -161,7 +147,7 @@ function SkillsPage() {
       onCreate={() => setSelectedId("__new__")}
       createLabel="New skill"
       editor={editor}
-      isLoading={isLoading}
+      isLoading={false}
     />
   );
 }

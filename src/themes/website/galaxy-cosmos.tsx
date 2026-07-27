@@ -13,7 +13,7 @@ import {
   Rocket,
   type LucideIcon,
 } from "lucide-react";
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
 const ICONS: Record<string, LucideIcon> = { Bot, Code2, LayoutTemplate, Plug, Repeat };
 
@@ -119,8 +119,31 @@ const CSS = `
 .gc-eyebrow{ font-size:.72rem; letter-spacing:.24em; text-transform:uppercase; color:#7fdcff;}
 `;
 
-export default function GalaxyCosmos({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
+export default function GalaxyCosmos({ data }: ThemeRendererProps) {
+  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
+  
+  const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
+  const hero = { 
+    badge: "Available for work", 
+    headingLead: "I build", 
+    headingAccent: "bold", 
+    headingTail: "things", 
+    sub: profile?.bio || "A creative developer.", 
+    industries: ["Tech", "Design"] 
+  };
+  const services = [{title: "Design", body: "Visual identities."}, {title: "Development", body: "Full-stack apps."}];
+  const stats = [{value: projects?.length || 0, label: "Projects"}];
+  const why = [{title: "Speed", body: "Fast"}];
+  const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
+  const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
+  
+  const experience = (rawExperience || []).map(e => ({ 
+    ...e, 
+    startDate: e.start_date ? e.start_date.substring(0, 7) : "", 
+    endDate: e.end_date ? e.end_date.substring(0, 7) : null, 
+    role: e.position,
+    summary: e.description
+  }));
 
   return (
     <div className="gc-root">

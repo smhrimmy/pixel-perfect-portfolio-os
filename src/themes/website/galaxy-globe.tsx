@@ -13,7 +13,7 @@ import {
   Globe2,
   type LucideIcon,
 } from "lucide-react";
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
 const ICONS: Record<string, LucideIcon> = { Bot, Code2, LayoutTemplate, Plug, Repeat };
 
@@ -93,8 +93,35 @@ const CSS = `
 @keyframes gg-rot{to{transform:rotate(360deg);}}
 `;
 
-export default function GalaxyGlobe({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
+export default function GalaxyGlobe({ data }: ThemeRendererProps) {
+  const { profile, projects = [], skills = [], experience = [], socialLinks } = data;
+
+  const identity = { name: profile?.name || "Developer", brandDot: "." };
+  const hero = {
+    badge: "Available for orbit",
+    headingLead: "Building",
+    headingAccent: "Universes",
+    headingTail: "in code.",
+    sub: profile?.headline || "Creative developer and problem solver.",
+    industries: ["Tech", "Design", "Web3"]
+  };
+  const services = [
+    { title: "Frontend", icon: "LayoutTemplate", body: "Building beautiful UIs" }
+  ];
+  const stats = [{ label: "Projects", value: projects.length.toString() }];
+  const why = [{ title: "Focus", body: "I care about the details." }];
+  const contact = { badge: "Contact", headingLead: "Let's", headingAccent: "talk", sub: "Reach out to start a project." };
+  const links = {
+    book: "#", email: \`mailto:\${profile?.email || ""}\`, github: socialLinks?.github || "#",
+    linkedin: socialLinks?.linkedin || "#", twitter: socialLinks?.twitter || "#"
+  };
+  
+  const mappedExperience = experience.map((e: any) => ({
+    ...e,
+    startDate: e.start_date,
+    endDate: e.end_date,
+    role: e.position
+  }));
 
   return (
     <div className="gg-root">

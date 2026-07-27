@@ -20,7 +20,7 @@ import {
   Minus,
   Maximize2
 } from "lucide-react";
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 import { IosControlCenter } from "../../components/ui/ios-control-center";
 import { IosSpotlight } from "../../components/ui/ios-spotlight";
 import { IosAiSheet } from "../../components/ui/ios-ai-sheet";
@@ -229,7 +229,7 @@ type WindowState = {
   zIndex: number;
 };
 
-export default function MacOsDesktop({ content }: ThemeProps) {
+export default function MacOsDesktop({ data }: ThemeRendererProps) {
   const [windows, setWindows] = useState<Record<string, WindowState>>({});
   const [highestZ, setHighestZ] = useState(10);
   const [time, setTime] = useState(new Date());

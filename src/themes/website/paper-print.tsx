@@ -1,6 +1,6 @@
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
-export default function PaperPrint({ content }: ThemeProps) {
+export default function PaperPrint({ data }: ThemeRendererProps) {
   const c = content;
   return (
     <main className="min-h-screen bg-[#f5f1e8] text-neutral-900 font-serif">

@@ -1,14 +1,43 @@
 import { ArrowUpRight, Github, Linkedin, Mail } from "lucide-react";
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
-export default function AgencyBold({ content }: ThemeProps) {
-  const { identity, hero, services, stats, projects, why, contact, links, experience = [], skills = [] } = content;
+export default function AgencyBold({ data }: ThemeRendererProps) {
+  const { profile, projects, skills, experience, socialLinks } = data;
+
+  const name = profile?.name || "Agency";
+  const email = profile?.email || "hello@example.com";
+  
+  const heroBadge = "Digital Studio";
+  const heroHeadingLead = "We build";
+  const heroHeadingAccent = "bold";
+  const heroHeadingTail = "digital experiences.";
+  const heroSub = profile?.bio || "A creative studio engineering systems that convert. Every pixel and every workflow, built to move numbers.";
+
+  const stats = [
+    { value: projects?.length || 0, label: "Projects Shipped" },
+    { value: experience?.length || 0, label: "Combined Roles" },
+    { value: skills?.length || 0, label: "Expertise Areas" },
+    { value: "100%", label: "Client Success" },
+  ];
+
+  const services = [
+    { title: "Design", body: "Bold, unignorable visual identities." },
+    { title: "Development", body: "High-performance full-stack applications." },
+    { title: "Strategy", body: "Technical architecture that scales." }
+  ];
+
+  const why = [
+    { title: "Speed", body: "We ship fast without breaking things." },
+    { title: "Quality", body: "Pixel-perfect implementation every time." },
+    { title: "Impact", body: "Building products that move the needle." }
+  ];
+
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans">
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-200">
         <nav className="mx-auto max-w-7xl px-8 h-20 flex items-center justify-between">
           <a href="#top" className="text-2xl font-black tracking-tight">
-            {identity.name}<span className="text-orange-500">.</span>
+            {name}<span className="text-orange-500">.</span>
           </a>
           <div className="hidden md:flex items-center gap-10 text-sm font-medium uppercase tracking-wider">
             <a href="#services" className="hover:text-orange-500">Services</a>
@@ -18,7 +47,7 @@ export default function AgencyBold({ content }: ThemeProps) {
             <a href="#about" className="hover:text-orange-500">About</a>
             <a href="#contact" className="hover:text-orange-500">Contact</a>
           </div>
-          <a href={links.book} className="rounded-none bg-neutral-900 text-white px-6 py-3 text-sm font-bold uppercase tracking-wider hover:bg-orange-500 transition-colors">
+          <a href={`mailto:${email}`} className="rounded-none bg-neutral-900 text-white px-6 py-3 text-sm font-bold uppercase tracking-wider hover:bg-orange-500 transition-colors">
             Get quote
           </a>
         </nav>
@@ -28,19 +57,19 @@ export default function AgencyBold({ content }: ThemeProps) {
         <section id="top" className="relative overflow-hidden">
           <div className="mx-auto max-w-7xl px-8 py-32 grid md:grid-cols-12 gap-8 items-center">
             <div className="md:col-span-8">
-              <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">{hero.badge}</div>
+              <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">{heroBadge}</div>
               <h1 className="mt-6 text-6xl md:text-8xl lg:text-9xl font-black leading-[0.9] tracking-tighter uppercase">
-                {hero.headingLead}
+                {heroHeadingLead}
                 <br />
-                <span className="text-orange-500">{hero.headingAccent}</span>
+                <span className="text-orange-500">{heroHeadingAccent}</span>
                 <br />
-                {hero.headingTail}
+                {heroHeadingTail}
               </h1>
             </div>
             <div className="md:col-span-4">
-              <p className="text-lg text-neutral-600">{hero.sub}</p>
+              <p className="text-lg text-neutral-600">{heroSub}</p>
               <div className="mt-8 flex flex-col gap-3">
-                <a href={links.book} className="group flex items-center justify-between bg-neutral-900 text-white px-6 py-5 font-bold uppercase tracking-wider">
+                <a href={`mailto:${email}`} className="group flex items-center justify-between bg-neutral-900 text-white px-6 py-5 font-bold uppercase tracking-wider">
                   Start a project
                   <ArrowUpRight className="h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </a>
@@ -98,15 +127,15 @@ export default function AgencyBold({ content }: ThemeProps) {
             </div>
           </div>
           <div className="border-t border-neutral-900">
-            {experience.map((exp: any) => (
+            {(experience || []).map((exp) => (
               <div key={exp.id} className="border-b border-neutral-200 py-10 grid md:grid-cols-12 gap-8 items-start">
                 <div className="md:col-span-3 text-sm font-bold uppercase tracking-widest text-neutral-500">
-                  {exp.startDate} — {exp.endDate || "Present"}
+                  {exp.start_date?.substring(0, 7)} — {exp.end_date ? exp.end_date.substring(0, 7) : "Present"}
                 </div>
                 <div className="md:col-span-9">
-                  <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight">{exp.role}</h3>
+                  <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight">{exp.position}</h3>
                   <div className="text-xl font-bold uppercase tracking-wider text-orange-500 mt-2">{exp.company}</div>
-                  <p className="mt-6 text-neutral-600 max-w-3xl">{exp.summary}</p>
+                  <p className="mt-6 text-neutral-600 max-w-3xl">{exp.description}</p>
                 </div>
               </div>
             ))}
@@ -118,7 +147,7 @@ export default function AgencyBold({ content }: ThemeProps) {
             <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">Capabilities</div>
             <h2 className="mt-4 text-5xl md:text-6xl font-black tracking-tighter uppercase mb-16">Skills</h2>
             <div className="flex flex-wrap gap-4">
-              {skills.map((skill: any) => (
+              {(skills || []).map((skill) => (
                 <div key={skill.id} className="border-2 border-neutral-900 bg-white px-6 py-3 font-bold uppercase tracking-widest text-sm hover:bg-neutral-900 hover:text-white transition-colors cursor-default">
                   {skill.name}
                 </div>
@@ -142,14 +171,14 @@ export default function AgencyBold({ content }: ThemeProps) {
           <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">Selected Work</div>
           <h2 className="mt-4 text-5xl md:text-6xl font-black tracking-tighter uppercase mb-16">Case studies</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            {projects.map((p, i) => (
-              <a key={p.title} href="#" className="group block relative overflow-hidden bg-neutral-100 aspect-[4/3]">
+            {(projects || []).map((p, i) => (
+              <a key={p.id} href={p.live_demo_url || "#"} target="_blank" rel="noreferrer" className="group block relative overflow-hidden bg-neutral-100 aspect-[4/3]">
                 <div className={`absolute inset-0 ${["bg-gradient-to-br from-orange-400 to-red-500", "bg-gradient-to-br from-neutral-900 to-neutral-700", "bg-gradient-to-br from-blue-500 to-purple-600", "bg-gradient-to-br from-emerald-500 to-teal-700"][i % 4]}`} />
                 <div className="relative z-10 p-10 h-full flex flex-col justify-between text-white">
-                  <div className="text-xs uppercase tracking-widest opacity-70">{p.tag}</div>
+                  <div className="text-xs uppercase tracking-widest opacity-70">{Array.isArray(p.technologies) ? p.technologies[0] : ""}</div>
                   <div>
                     <h3 className="text-3xl md:text-4xl font-black uppercase tracking-tight">{p.title}</h3>
-                    <p className="mt-3 text-sm opacity-90">{p.outcome}</p>
+                    <p className="mt-3 text-sm opacity-90">{p.description}</p>
                     <div className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider">
                       View case <ArrowUpRight className="h-4 w-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </div>
@@ -177,18 +206,18 @@ export default function AgencyBold({ content }: ThemeProps) {
         </section>
 
         <section id="contact" className="mx-auto max-w-7xl px-8 py-32">
-          <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">{contact.badge}</div>
+          <div className="text-sm uppercase tracking-[0.4em] text-orange-500 font-bold">Get in touch</div>
           <h2 className="mt-4 text-6xl md:text-8xl lg:text-9xl font-black tracking-tighter uppercase leading-[0.9]">
-            {contact.headingLead}
+            Let's work
             <br />
-            <span className="text-orange-500">{contact.headingAccent}.</span>
+            <span className="text-orange-500">together.</span>
           </h2>
-          <p className="mt-8 text-xl text-neutral-600 max-w-2xl">{contact.sub}</p>
+          <p className="mt-8 text-xl text-neutral-600 max-w-2xl">Ready to take your digital presence to the next level? Contact us today.</p>
           <div className="mt-10 flex flex-wrap gap-4">
-            <a href={links.book} className="bg-neutral-900 text-white px-8 py-5 font-bold uppercase tracking-wider hover:bg-orange-500 transition-colors">
+            <a href={`mailto:${email}`} className="bg-neutral-900 text-white px-8 py-5 font-bold uppercase tracking-wider hover:bg-orange-500 transition-colors">
               Book a call →
             </a>
-            <a href={links.email} className="border-2 border-neutral-900 px-8 py-5 font-bold uppercase tracking-wider hover:bg-neutral-900 hover:text-white transition-colors">
+            <a href={`mailto:${email}`} className="border-2 border-neutral-900 px-8 py-5 font-bold uppercase tracking-wider hover:bg-neutral-900 hover:text-white transition-colors">
               Send email
             </a>
           </div>
@@ -197,11 +226,11 @@ export default function AgencyBold({ content }: ThemeProps) {
 
       <footer className="border-t border-neutral-200">
         <div className="mx-auto max-w-7xl px-8 py-10 flex items-center justify-between text-sm">
-          <div className="font-bold uppercase tracking-widest">© {new Date().getFullYear()} {identity.name}</div>
+          <div className="font-bold uppercase tracking-widest">© {new Date().getFullYear()} {name}</div>
           <div className="flex items-center gap-4">
-            <a href={links.linkedin}><Linkedin className="h-4 w-4" /></a>
-            <a href={links.github}><Github className="h-4 w-4" /></a>
-            <a href={links.email}><Mail className="h-4 w-4" /></a>
+            {socialLinks?.linkedin && <a href={socialLinks.linkedin} target="_blank" rel="noreferrer"><Linkedin className="h-4 w-4 hover:text-orange-500" /></a>}
+            {socialLinks?.github && <a href={socialLinks.github} target="_blank" rel="noreferrer"><Github className="h-4 w-4 hover:text-orange-500" /></a>}
+            {email && <a href={`mailto:${email}`}><Mail className="h-4 w-4 hover:text-orange-500" /></a>}
           </div>
         </div>
       </footer>

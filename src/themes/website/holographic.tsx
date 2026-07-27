@@ -1,6 +1,6 @@
-import type { ThemeProps } from "./registry";
+import type { ThemeRendererProps } from "../types";
 
-export default function Holographic({ content }: ThemeProps) {
+export default function Holographic({ data }: ThemeRendererProps) {
   const c = content;
   return (
     <main className="min-h-screen bg-black text-white relative overflow-hidden">
