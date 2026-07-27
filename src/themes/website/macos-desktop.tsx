@@ -24,6 +24,7 @@ import type { ThemeProps } from "./registry";
 import { IosControlCenter } from "../../components/ui/ios-control-center";
 import { IosSpotlight } from "../../components/ui/ios-spotlight";
 import { IosAiSheet } from "../../components/ui/ios-ai-sheet";
+import { ClockWidget, SkillsWidget, ExperienceWidget, ProjectsWidget } from "../../components/ui/ios-widgets";
 
 type AppData = {
   id: string;
@@ -239,8 +240,17 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const [isSpotlightOpen, setSpotlightOpen] = useState(false);
   const [isAiSheetOpen, setAiSheetOpen] = useState(false);
   
-  // App Switcher State
+  // App Switcher & Edit Mode State
   const [isAppSwitcherOpen, setAppSwitcherOpen] = useState(false);
+  const [isJiggling, setIsJiggling] = useState(false);
+  
+  // Widget visibility state
+  const [visibleWidgets, setVisibleWidgets] = useState({
+    clock: true,
+    experience: true,
+    skills: true,
+    projects: true
+  });
   
   const triggerAi = () => {
     setAiSheetOpen(true);
@@ -320,26 +330,49 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const iOSWallpaper = "radial-gradient(circle at top right, #ff9a9e 0%, #fecfef 99%, #fecfef 100%)";
 
   const handlePanEnd = (e: any, info: any) => {
-    // Swipe down threshold
-    if (info.offset.y > 50 && info.velocity.y > 200) {
-      // If it originated from the right side of the screen
-      if (info.point.x > window.innerWidth - 100) {
-        setControlCenterOpen(true);
-      } else {
-        setSpotlightOpen(true);
+      // Swipe down threshold
+      if (info.offset.y > 50 && info.velocity.y > 200) {
+        // If it originated from the right side of the screen
+        if (info.point.x > window.innerWidth - 100) {
+          setControlCenterOpen(true);
+        } else {
+          setSpotlightOpen(true);
+        }
       }
-    }
-  };
+    };
+    
+    // Long Press Timer for Jiggle Mode
+    let longPressTimer: NodeJS.Timeout;
+    const handleTouchStart = () => {
+      if (isJiggling) return; // already jiggling
+      longPressTimer = setTimeout(() => {
+        if (!isAppSwitcherOpen && Object.values(windows).every(w => !w.isOpen || w.isMinimized)) {
+          setIsJiggling(true);
+          // Trigger mild haptic feedback if supported
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(50);
+          }
+        }
+      }, 600); // 600ms hold
+    };
+    const handleTouchEnd = () => {
+      clearTimeout(longPressTimer);
+    };
 
-  return (
-    <>
-      {/* 📱 MOBILE VIEW (Hidden on md and up) */}
-      <motion.div 
-        className="block md:hidden h-[100dvh] w-full overflow-hidden text-black relative flex flex-col"
-        style={{ background: iOSWallpaper }}
-        onPanEnd={handlePanEnd}
-      >
-        {/* Hide global floating AI button for this mobile view */}
+    return (
+      <>
+        {/* 📱 MOBILE VIEW (Hidden on md and up) */}
+        <motion.div 
+          className="block md:hidden h-[100dvh] w-full overflow-hidden text-black relative flex flex-col"
+          style={{ background: iOSWallpaper }}
+          onPanEnd={handlePanEnd}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onClick={() => {
+            if (isJiggling) setIsJiggling(false);
+          }}
+        >
+          {/* Hide global floating AI button for this mobile view */}
         <style>{`
           @media (max-width: 767px) {
             #global-ai-chatbot-trigger {
@@ -374,26 +407,80 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         {/* Top-Right Control Center Hitbox */}
         <div 
           className="absolute top-0 right-0 w-32 h-16 z-[950]" 
-          onClick={() => setControlCenterOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent jiggle dismiss
+            setControlCenterOpen(true);
+          }}
         />
 
-        {/* App Grid */}
-        <div className="flex-1 pt-safe-top mt-4 px-6 grid grid-cols-4 gap-x-4 gap-y-8 content-start">
-          {APPS.map((app) => (
-            <button
-              key={app.id}
-              onClick={() => openApp(app.id)}
-              className="flex flex-col items-center gap-1 outline-none"
-            >
-              <div className={`w-[60px] h-[60px] rounded-[1.25rem] shadow-sm flex items-center justify-center text-white relative overflow-hidden ${app.bgGradient}`}>
-                <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent opacity-50" />
-                <app.icon className="w-7 h-7 relative z-10" strokeWidth={1.5} />
-              </div>
-              <span className="text-black/80 text-xs font-medium drop-shadow-md truncate w-full text-center">
-                {app.title}
-              </span>
-            </button>
-          ))}
+        {/* Home Screen Content Wrapper (Scrollable if lots of apps/widgets) */}
+        <div className="flex-1 pt-safe-top overflow-y-auto w-full no-scrollbar px-4 pb-24">
+          
+          {/* iOS Widget Grid (Top Section) */}
+          <div className="grid grid-cols-4 gap-4 mt-4 content-start">
+            {visibleWidgets.clock && (
+              <ClockWidget isJiggling={isJiggling} onRemove={() => setVisibleWidgets(p => ({ ...p, clock: false }))} />
+            )}
+            {visibleWidgets.experience && (
+              <ExperienceWidget isJiggling={isJiggling} content={content} onRemove={() => setVisibleWidgets(p => ({ ...p, experience: false }))} />
+            )}
+            {visibleWidgets.projects && (
+              <ProjectsWidget isJiggling={isJiggling} content={content} onRemove={() => setVisibleWidgets(p => ({ ...p, projects: false }))} />
+            )}
+            {visibleWidgets.skills && (
+              <SkillsWidget isJiggling={isJiggling} content={content} onRemove={() => setVisibleWidgets(p => ({ ...p, skills: false }))} />
+            )}
+          </div>
+
+          {/* App Grid */}
+          <div className="grid grid-cols-4 gap-x-4 gap-y-8 content-start mt-6 mb-8">
+            {APPS.map((app) => (
+              <motion.button
+                key={app.id}
+                animate={isJiggling ? {
+                  rotate: [ -1, 1, -1.5, 1.5, -1 ],
+                  transition: {
+                    repeat: Infinity,
+                    duration: 0.3 + Math.random() * 0.1,
+                    ease: "linear"
+                  }
+                } : {
+                  rotate: 0,
+                  transition: { duration: 0.2 }
+                }}
+                onClick={(e) => {
+                  if (isJiggling) {
+                    e.stopPropagation();
+                    return; // Disabled launching apps while jiggling
+                  }
+                  openApp(app.id);
+                }}
+                className="flex flex-col items-center gap-1 outline-none relative"
+              >
+                {/* Optional minus button on apps too */}
+                <AnimatePresence>
+                  {isJiggling && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      className="absolute -top-1 -left-1 z-50 w-6 h-6 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg border border-black/10 text-black pointer-events-none"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className={`w-[60px] h-[60px] rounded-[1.25rem] shadow-sm flex items-center justify-center text-white relative overflow-hidden ${app.bgGradient}`}>
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent opacity-50" />
+                  <app.icon className="w-7 h-7 relative z-10" strokeWidth={1.5} />
+                </div>
+                <span className="text-black/80 text-xs font-medium drop-shadow-md truncate w-full text-center">
+                  {app.title}
+                </span>
+              </motion.button>
+            ))}
+          </div>
         </div>
 
         {/* Bottom Fixed Dock */}
