@@ -12,15 +12,15 @@ import {
   Layers,
   Wrench,
   Mail,
-  X,
-  Minus,
-  Maximize2,
   Signal,
-  Bot
+  Bot,
+  ChevronLeft,
+  Home
 } from "lucide-react";
 import type { ThemeProps } from "./registry";
 import { IosControlCenter } from "../../components/ui/ios-control-center";
 import { IosSpotlight } from "../../components/ui/ios-spotlight";
+import { IosAiSheet } from "../../components/ui/ios-ai-sheet";
 
 type AppData = {
   id: string;
@@ -236,9 +236,14 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   // iOS Overlays State
   const [isControlCenterOpen, setControlCenterOpen] = useState(false);
   const [isSpotlightOpen, setSpotlightOpen] = useState(false);
+  const [isAiSheetOpen, setAiSheetOpen] = useState(false);
+  
+  // App Switcher State
+  const [isAppSwitcherOpen, setAppSwitcherOpen] = useState(false);
   
   const triggerAi = () => {
-    window.dispatchEvent(new Event("portfolio-open-ai"));
+    // We use the new IosAiSheet instead of the global event for mobile
+    setAiSheetOpen(true);
   };
   
   // Mouse position for dock magnification
@@ -334,7 +339,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
     return (
       <motion.div 
-        className="h-screen w-full overflow-hidden text-black relative flex flex-col"
+        className="h-[100dvh] w-full overflow-hidden text-black relative flex flex-col"
         style={{ background: iOSWallpaper }}
         onPanEnd={handlePanEnd}
       >
@@ -408,37 +413,79 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           ))}
         </div>
 
-        {/* Full Screen iOS Apps */}
-        {APPS.map((app) => {
-          const win = windows[app.id];
-          if (!win || !win.isOpen) return null;
-
+      {/* Render Opened Apps */}
+      <AnimatePresence>
+        {openApps.map((appId) => {
+          const app = APPS.find((a) => a.id === appId);
+          if (!app) return null;
           return (
-            <AnimatePresence key={app.id}>
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 50 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 50 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="absolute inset-0 z-[100] bg-background text-foreground flex flex-col"
-              >
-                {/* App Content */}
-                <div className="flex-1 overflow-y-auto pb-safe-bottom pb-10 pt-safe-top pt-4">
-                  <div className="px-6 py-4 border-b border-border/50">
-                    <h1 className="text-3xl font-bold">{app.title}</h1>
-                  </div>
-                  {app.renderContent(content)}
+            <motion.div 
+              key={app.id}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={isAppSwitcherOpen ? { opacity: 1, scale: 0.75, y: -50, borderRadius: 32 } : { opacity: 1, scale: 1, y: 0, borderRadius: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className={`absolute inset-0 bg-background z-[100] flex flex-col overflow-hidden shadow-2xl ${isAppSwitcherOpen ? 'cursor-pointer' : ''}`}
+              onClick={() => {
+                if (isAppSwitcherOpen) setAppSwitcherOpen(false);
+              }}
+              drag={isAppSwitcherOpen ? "y" : false}
+              dragConstraints={{ top: -200, bottom: 200 }}
+              onDragEnd={(e, info) => {
+                if (isAppSwitcherOpen && info.offset.y < -100) {
+                  closeApp(app.id);
+                  setAppSwitcherOpen(false);
+                }
+              }}
+            >
+              {/* iOS App Header */}
+              {!isAppSwitcherOpen && (
+                <div className="h-12 w-full flex items-center justify-between px-4 pt-safe-top bg-background/80 backdrop-blur-md border-b border-border z-10 shrink-0">
+                  <button onClick={() => setAppSwitcherOpen(true)} className="flex items-center text-primary font-medium text-[15px] active:opacity-50">
+                    <ChevronLeft className="w-5 h-5 mr-1 -ml-1" />
+                    Home
+                  </button>
+                  <span className="font-semibold text-[15px]">{app.title}</span>
+                  <button onClick={() => closeApp(app.id)} className="w-7 h-7 bg-muted rounded-full flex items-center justify-center active:opacity-50">
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
+              )}
+              
+              <div className="flex-1 overflow-y-auto w-full relative">
+                {/* Disable interactions when switcher is open */}
+                {isAppSwitcherOpen && <div className="absolute inset-0 z-50" />}
+                <app.renderContent content={content} />
+              </div>
 
-                {/* Home Indicator */}
+              {/* Home Indicator (Swipe up to switcher) */}
+              {!isAppSwitcherOpen && (
                 <div 
-                  className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors z-50"
-                  onClick={() => closeApp(app.id)}
+                  className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors z-50 active:bg-foreground/70"
+                  onClick={() => setAppSwitcherOpen(true)}
                 />
-              </motion.div>
-            </AnimatePresence>
+              )}
+            </motion.div>
           );
         })}
+      </AnimatePresence>
+
+      {/* App Switcher Background Overlay */}
+      <AnimatePresence>
+        {isAppSwitcherOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/60 backdrop-blur-md z-[90]"
+            onClick={() => setAppSwitcherOpen(false)}
+          >
+            <div className="absolute bottom-12 w-full text-center text-white/50 text-sm font-medium animate-pulse">
+              Swipe up on app to close
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
         {/* Overlays */}
         <IosControlCenter 
@@ -451,6 +498,11 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           onClose={() => setSpotlightOpen(false)}
           content={content}
           onOpenApp={openApp}
+        />
+        <IosAiSheet
+          isOpen={isAiSheetOpen}
+          onClose={() => setAiSheetOpen(false)}
+          content={content}
         />
       </motion.div>
     );
