@@ -11,7 +11,11 @@ export class SettingsJsonRepository implements ISettingsRepository {
     const existing = rows.find((r) => r.id === SETTINGS_ID);
     if (existing) return existing;
     const seed = defaultSettings();
-    await this.store.writeAll<SettingsProps>(COLLECTION, [seed]);
+    try {
+      await this.store.writeAll<SettingsProps>(COLLECTION, [seed]);
+    } catch (e) {
+      console.warn(`[SettingsJsonRepository] Skipping seed (read-only filesystem?)`, e);
+    }
     return seed;
   }
   async save(props: SettingsProps): Promise<SettingsProps> {

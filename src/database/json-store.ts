@@ -63,6 +63,12 @@ export class FsJsonStore implements JsonStore {
   }
   async seedIfEmpty<T>(collection: string, rows: T[]): Promise<void> {
     const existing = await this.readAll<T>(collection);
-    if (existing.length === 0) await this.writeAll(collection, rows);
+    if (existing.length === 0) {
+      try {
+        await this.writeAll(collection, rows);
+      } catch (e) {
+        console.warn(`[FsJsonStore] Skipping seed for ${collection} (read-only filesystem?)`, e);
+      }
+    }
   }
 }
