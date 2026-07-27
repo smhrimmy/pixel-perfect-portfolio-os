@@ -112,7 +112,7 @@ export default function GalaxyGlobe({ data }: ThemeRendererProps) {
   const why = [{ title: "Focus", body: "I care about the details." }];
   const contact = { badge: "Contact", headingLead: "Let's", headingAccent: "talk", sub: "Reach out to start a project." };
   const links = {
-    book: "#", email: \`mailto:\${profile?.email || ""}\`, github: socialLinks?.github || "#",
+    book: "#", email: `mailto:${profile?.email || ""}`, github: socialLinks?.github || "#",
     linkedin: socialLinks?.linkedin || "#", twitter: socialLinks?.twitter || "#"
   };
   
