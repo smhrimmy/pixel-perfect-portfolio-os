@@ -253,7 +253,18 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   });
   
   const triggerAi = () => {
+    triggerHaptic('medium');
     setAiSheetOpen(true);
+  };
+  
+  // Haptic feedback utility
+  const triggerHaptic = (style: 'light' | 'medium' | 'heavy' | 'success' = 'light') => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (style === 'light') navigator.vibrate(15);
+      if (style === 'medium') navigator.vibrate(30);
+      if (style === 'heavy') navigator.vibrate(50);
+      if (style === 'success') navigator.vibrate([20, 30, 20]);
+    }
   };
   
   // Mouse position for dock magnification
@@ -266,6 +277,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   }, []);
 
   const openApp = (id: string) => {
+    triggerHaptic('light');
     setHighestZ((prev) => prev + 1);
     setWindows((prev) => ({
       ...prev,
@@ -294,6 +306,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
   const closeApp = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+    triggerHaptic('medium');
     setWindows((prev) => ({
       ...prev,
       [id]: { ...prev[id], isOpen: false },
@@ -348,10 +361,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
       longPressTimer = setTimeout(() => {
         if (!isAppSwitcherOpen && Object.values(windows).every(w => !w.isOpen || w.isMinimized)) {
           setIsJiggling(true);
-          // Trigger mild haptic feedback if supported
-          if (typeof navigator !== 'undefined' && navigator.vibrate) {
-            navigator.vibrate(50);
-          }
+          triggerHaptic('success');
         }
       }, 600); // 600ms hold
     };
@@ -506,16 +516,20 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           return (
             <motion.div 
               key={app.id}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={isAppSwitcherOpen ? { opacity: 1, scale: 0.75, y: -50, borderRadius: 32 } : { opacity: 1, scale: 1, y: 0, borderRadius: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
               className={`absolute inset-0 bg-background z-[100] flex flex-col overflow-hidden shadow-2xl ${isAppSwitcherOpen ? 'cursor-pointer' : ''}`}
               onClick={() => {
-                if (isAppSwitcherOpen) setAppSwitcherOpen(false);
+                if (isAppSwitcherOpen) {
+                  triggerHaptic('light');
+                  setAppSwitcherOpen(false);
+                }
               }}
               drag={isAppSwitcherOpen ? "y" : false}
               dragConstraints={{ top: -200, bottom: 200 }}
+              dragElastic={0.2}
               onDragEnd={(e, info) => {
                 if (isAppSwitcherOpen && info.offset.y < -100) {
                   closeApp(app.id);
@@ -526,12 +540,12 @@ export default function MacOsDesktop({ content }: ThemeProps) {
               {/* iOS App Header */}
               {!isAppSwitcherOpen && (
                 <div className="h-12 w-full flex items-center justify-between px-4 pt-safe-top bg-background/80 backdrop-blur-md border-b border-border z-10 shrink-0">
-                  <button onClick={() => setAppSwitcherOpen(true)} className="flex items-center text-primary font-medium text-[15px] active:opacity-50">
+                  <button onClick={() => { triggerHaptic('medium'); setAppSwitcherOpen(true); }} className="flex items-center text-primary font-medium text-[15px] active:opacity-50">
                     <ChevronLeft className="w-5 h-5 mr-1 -ml-1" />
                     Home
                   </button>
                   <span className="font-semibold text-[15px]">{app.title}</span>
-                  <button onClick={() => closeApp(app.id)} className="w-7 h-7 bg-muted rounded-full flex items-center justify-center active:opacity-50">
+                  <button onClick={() => { triggerHaptic('light'); closeApp(app.id); }} className="w-7 h-7 bg-muted rounded-full flex items-center justify-center active:opacity-50">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
@@ -547,7 +561,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
               {!isAppSwitcherOpen && (
                 <div 
                   className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors z-50 active:bg-foreground/70"
-                  onClick={() => setAppSwitcherOpen(true)}
+                  onClick={() => { triggerHaptic('medium'); setAppSwitcherOpen(true); }}
                 />
               )}
             </motion.div>

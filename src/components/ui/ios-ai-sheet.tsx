@@ -11,6 +11,15 @@ export function IosAiSheet({ isOpen, onClose, content }: { isOpen: boolean; onCl
   const bodyRef = useRef<HTMLDivElement>(null);
   const dragControls = useDragControls();
 
+  // Haptic feedback utility
+  const triggerHaptic = (style: 'light' | 'medium' | 'heavy' = 'light') => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      if (style === 'light') navigator.vibrate(15);
+      if (style === 'medium') navigator.vibrate(30);
+      if (style === 'heavy') navigator.vibrate(50);
+    }
+  };
+
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isOpen, isTyping]);
@@ -144,16 +153,17 @@ export function IosAiSheet({ isOpen, onClose, content }: { isOpen: boolean; onCl
           
           {/* Bottom Sheet */}
           <motion.div
-            initial={{ y: "100%", opacity: 0.5, scale: 0.95 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: "100%", opacity: 0.5, scale: 0.95 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            initial={{ y: "100%", opacity: 0.5 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0.5, transition: { duration: 0.2 } }}
+            transition={{ type: "spring", damping: 30, stiffness: 350, mass: 0.8 }}
             drag="y"
             dragControls={dragControls}
-            dragConstraints={{ top: 0, bottom: 500 }}
+            dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.2}
             onDragEnd={(e, info) => {
-              if (info.offset.y > 100 && info.velocity.y > 100) {
+              if (info.offset.y > 100 && info.velocity.y > 20) {
+                triggerHaptic('medium');
                 onClose();
               }
             }}
@@ -178,7 +188,7 @@ export function IosAiSheet({ isOpen, onClose, content }: { isOpen: boolean; onCl
                   </div>
                 </div>
                 <button 
-                  onClick={onClose} 
+                  onClick={() => { triggerHaptic('light'); onClose(); }} 
                   className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20 transition-colors"
                 >
                   <ChevronDown className="h-5 w-5 text-foreground" />
