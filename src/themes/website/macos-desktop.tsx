@@ -248,8 +248,8 @@ export default function MacOsDesktop({ content }: ThemeProps) {
   const [visibleWidgets, setVisibleWidgets] = useState({
     clock: true,
     experience: true,
-    skills: true,
-    projects: true
+    skills: false,
+    projects: false
   });
   
   const triggerAi = () => {
@@ -413,11 +413,11 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           }}
         />
 
-        {/* Home Screen Content Wrapper (Scrollable if lots of apps/widgets) */}
-        <div className="flex-1 pt-safe-top overflow-y-auto w-full no-scrollbar px-4 pb-24">
+        {/* Home Screen Content Wrapper (Strictly single screen, no scroll) */}
+        <div className="flex-1 pt-safe-top w-full px-5 pb-6 flex flex-col">
           
           {/* iOS Widget Grid (Top Section) */}
-          <div className="grid grid-cols-4 gap-4 mt-4 content-start">
+          <div className="grid grid-cols-4 gap-4 mt-2">
             {visibleWidgets.clock && (
               <ClockWidget isJiggling={isJiggling} onRemove={() => setVisibleWidgets(p => ({ ...p, clock: false }))} />
             )}
@@ -433,7 +433,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
           </div>
 
           {/* App Grid */}
-          <div className="grid grid-cols-4 gap-x-4 gap-y-8 content-start mt-6 mb-8">
+          <div className="grid grid-cols-4 gap-x-4 gap-y-6 mt-8">
             {APPS.map((app) => (
               <motion.button
                 key={app.id}
@@ -484,7 +484,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         </div>
 
         {/* Bottom Fixed Dock */}
-        <div className="mb-safe-bottom mb-8 mx-4 h-[88px] rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/20 p-4 flex items-center justify-around">
+        <div className="mb-safe-bottom mb-4 mx-4 h-[84px] rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/20 p-3 flex items-center justify-around shrink-0 z-50">
            {/* Show first 4 apps in dock for iOS */}
            {APPS.slice(0, 4).map((app) => (
             <button
