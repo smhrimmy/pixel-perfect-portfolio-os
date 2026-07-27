@@ -314,20 +314,8 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         className="h-screen w-full overflow-hidden text-black relative flex flex-col"
         style={{ background: iOSWallpaper }}
       >
-        {/* iOS Status Bar */}
-        <div className="h-12 w-full flex items-center justify-between px-6 pt-2 z-50 text-black font-semibold text-sm">
-          <span>{time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
-          {/* Dynamic Island fake */}
-          <div className="absolute left-1/2 -translate-x-1/2 top-2 w-32 h-7 bg-black rounded-full" />
-          <div className="flex items-center gap-1.5">
-            <Signal className="w-4 h-4" />
-            <Wifi className="w-4 h-4" />
-            <BatteryMedium className="w-5 h-5" />
-          </div>
-        </div>
-
         {/* App Grid */}
-        <div className="flex-1 pt-8 px-6 grid grid-cols-4 gap-x-4 gap-y-8 content-start">
+        <div className="flex-1 pt-safe-top mt-8 px-6 grid grid-cols-4 gap-x-4 gap-y-8 content-start">
           {APPS.map((app) => (
             <button
               key={app.id}
@@ -346,7 +334,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
         </div>
 
         {/* Bottom Fixed Dock */}
-        <div className="mb-4 mx-4 h-[88px] rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/20 p-4 flex items-center justify-around">
+        <div className="mb-safe-bottom mb-8 mx-4 h-[88px] rounded-[2rem] bg-white/30 backdrop-blur-xl border border-white/20 p-4 flex items-center justify-around">
            {/* Show first 4 apps in dock for iOS */}
            {APPS.slice(0, 4).map((app) => (
             <button
@@ -374,18 +362,8 @@ export default function MacOsDesktop({ content }: ThemeProps) {
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
                 className="absolute inset-0 z-[100] bg-background text-foreground flex flex-col"
               >
-                {/* Fake App Header with time */}
-                <div className="h-12 w-full flex items-center justify-between px-6 pt-2 text-foreground font-semibold text-sm">
-                  <span>{time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
-                  <div className="flex items-center gap-1.5">
-                    <Signal className="w-4 h-4" />
-                    <Wifi className="w-4 h-4" />
-                    <BatteryMedium className="w-5 h-5" />
-                  </div>
-                </div>
-                
                 {/* App Content */}
-                <div className="flex-1 overflow-y-auto pb-10">
+                <div className="flex-1 overflow-y-auto pb-safe-bottom pb-10 pt-safe-top pt-4">
                   <div className="px-6 py-4 border-b border-border/50">
                     <h1 className="text-3xl font-bold">{app.title}</h1>
                   </div>
@@ -394,7 +372,7 @@ export default function MacOsDesktop({ content }: ThemeProps) {
 
                 {/* Home Indicator */}
                 <div 
-                  className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors"
+                  className="absolute bottom-safe-bottom bottom-4 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-foreground/30 rounded-full cursor-pointer hover:bg-foreground/50 transition-colors"
                   onClick={() => closeApp(app.id)}
                 />
               </motion.div>

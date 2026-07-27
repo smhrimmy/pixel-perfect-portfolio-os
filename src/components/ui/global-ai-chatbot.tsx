@@ -129,7 +129,7 @@ export function GlobalAIChatbot({ content }: { content: any }) {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform animate-in zoom-in duration-300"
+          className="fixed bottom-safe-bottom mb-[110px] md:mb-6 right-6 z-40 grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform animate-in zoom-in duration-300"
         >
           <Bot className="h-6 w-6" />
         </button>
@@ -137,7 +137,7 @@ export function GlobalAIChatbot({ content }: { content: any }) {
 
       {isOpen && (
         <div
-          className="fixed bottom-6 right-6 z-50 flex flex-col w-[300px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 fade-in duration-300"
+          className="fixed bottom-safe-bottom mb-[110px] md:mb-6 right-6 z-50 flex flex-col w-[300px] max-w-[calc(100vw-3rem)] overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-in slide-in-from-bottom-8 fade-in duration-300"
         >
           <div className="flex items-center justify-between border-b border-border bg-muted/50 px-4 py-3">
             <div className="flex items-center gap-2">
