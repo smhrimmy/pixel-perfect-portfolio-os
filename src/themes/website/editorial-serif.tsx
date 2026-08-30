@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2,
   VolumeX,
   X,
-  ArrowUpRight,
   MapPin,
   Mail,
   Phone,
@@ -14,15 +13,14 @@ import {
   CheckCircle2,
   Send,
   Sparkles,
-  Package,
   Layers,
-  Award,
-  Menu,
+  BookOpen,
+  Info,
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
 
-// Synthesized Vintage Tactile Audio (Web Audio API)
-function playTactileSound(type: 'slide' | 'open' | 'close' | 'stamp' | 'courier' | 'toggle', isMuted: boolean) {
+// Synthesized Audio Helper (Web Audio API)
+function playSound(type: 'slide' | 'open' | 'close' | 'stamp' | 'owl' | 'toggle', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -36,51 +34,50 @@ function playTactileSound(type: 'slide' | 'open' | 'close' | 'stamp' | 'courier'
 
     if (type === 'slide') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(140, now);
-      osc.frequency.linearRampToValueAtTime(80, now + 0.15);
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.linearRampToValueAtTime(90, now + 0.12);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
       osc.start(now);
-      osc.stop(now + 0.15);
+      osc.stop(now + 0.12);
     } else if (type === 'open') {
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(220, now);
-      osc.frequency.linearRampToValueAtTime(110, now + 0.2);
-      gain.gain.setValueAtTime(0.08, now);
+      osc.frequency.setValueAtTime(240, now);
+      osc.frequency.linearRampToValueAtTime(130, now + 0.18);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+      osc.start(now);
+      osc.stop(now + 0.18);
+    } else if (type === 'close') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(130, now);
+      osc.frequency.exponentialRampToValueAtTime(35, now + 0.2);
+      gain.gain.setValueAtTime(0.25, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
       osc.start(now);
       osc.stop(now + 0.2);
-    } else if (type === 'close') {
-      // Deep book slam
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(35, now + 0.22);
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.start(now);
-      osc.stop(now + 0.22);
     } else if (type === 'stamp') {
-      // Wax seal thud
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.exponentialRampToValueAtTime(50, now + 0.16);
-      gain.gain.setValueAtTime(0.2, now);
+      osc.frequency.setValueAtTime(190, now);
+      osc.frequency.exponentialRampToValueAtTime(45, now + 0.16);
+      gain.gain.setValueAtTime(0.22, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
       osc.start(now);
       osc.stop(now + 0.16);
-    } else if (type === 'courier') {
-      // Postal bell / chime
+    } else if (type === 'owl') {
+      // Owl hoot sound synthesis (low-high-low dual resonant tone)
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, now);
-      osc.frequency.setValueAtTime(1174.66, now + 0.08);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.frequency.setValueAtTime(480, now);
+      osc.frequency.linearRampToValueAtTime(540, now + 0.15);
+      osc.frequency.linearRampToValueAtTime(440, now + 0.4);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
       osc.start(now);
-      osc.stop(now + 0.35);
+      osc.stop(now + 0.55);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, now);
-      gain.gain.setValueAtTime(0.06, now);
+      osc.frequency.setValueAtTime(500, now);
+      gain.gain.setValueAtTime(0.05, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
       osc.start(now);
       osc.stop(now + 0.05);
@@ -107,645 +104,376 @@ export default function TheReadingRoom({ data }: ThemeRendererProps) {
   const github = profile?.github || links?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [navDrawerOpen, setNavDrawerOpen] = useState(false);
-
-  // Active Selected Book on Shelf (3D Cover Reveal modal)
   const [activeBook, setActiveBook] = useState<any | null>(null);
-  const [hoveredBookIndex, setHoveredBookIndex] = useState<number | null>(null);
+  const [hoveredBookId, setHoveredBookId] = useState<string | null>(null);
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
-  // Contact Form & Librarian Courier Packing Animation State
-  const [formData, setFormData] = useState({
+  // Contact Form & Owl Post State: 'idle' -> 'wrapping' -> 'owl_flight' -> 'delivered_popup'
+  const [contactData, setContactData] = useState({
     name: "",
     email: "",
-    subject: "Full Stack & Web Advisory Inquiry",
+    subject: "Full Stack & Web Advisory Opportunity",
     message: "",
   });
+  const [owlStage, setOwlStage] = useState<'idle' | 'wrapping' | 'owl_flight' | 'delivered_popup'>('idle');
 
-  // State sequence: 'idle' -> 'packing' -> 'courier_collecting' -> 'dispatched'
-  const [dispatchStage, setDispatchStage] = useState<'idle' | 'packing' | 'courier_collecting' | 'dispatched'>('idle');
-
-  // The 10 Shelf Spines exactly mirroring Olena Mizrakh's Dribbble composition
+  // ALL 8 COMPONENTS PACKED AS BOOKS ON THE SHELF
   const shelfBooks = [
     {
       id: "book-1",
+      vol: "VOL. I",
       title: "Portfolio OS",
       color: "linear-gradient(160deg, #E85D26, #CF4615)", // Orange
       height: 250,
-      width: 56,
-      category: "Full Stack Operating System",
+      width: 54,
+      type: "project",
+      category: "Spatial Operating System",
       year: "2026",
-      desc: "Architected a multi-theme spatial operating system featuring 20 real-world physical metaphors, sub-100ms LCP, and a dual draft-to-live pipeline with Studio HQ Terminal.",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and a dual draft-to-live pipeline with Studio HQ Terminal.",
       tags: ["React 19", "TypeScript", "Three.js", "TanStack Start", "Tailwind CSS"],
       liveUrl: "https://praxel.space/",
       repoUrl: "https://github.com/smhrimmy/pixel-perfect-portfolio-os",
-      patternType: "solid",
     },
     {
       id: "book-2",
+      vol: "VOL. II",
       title: "Praxel Space",
       color: "linear-gradient(160deg, #1C1B17, #0D0C0A)", // Black
-      height: 275,
-      width: 60,
-      category: "Cloud Hosting & DNS Orchestrator",
+      height: 270,
+      width: 58,
+      type: "project",
+      category: "Cloud Hosting & DNS Platform",
       year: "2025",
-      desc: "Cloud infrastructure platform orchestrating automated SSL provisioning, DNS records propagation checks, and zero-downtime website migration pipelines.",
-      tags: ["WordPress", "DNS Management", "SSL Automation", "PHP", "MySQL"],
+      desc: "Cloud infrastructure portal automating SSL certificate provisioning, real-time DNS propagation health checks, and zero-downtime website migrations.",
+      tags: ["WordPress Support", "DNS Management", "SSL Automation", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
-      patternType: "halftone-square",
+      pattern: "dots",
     },
     {
       id: "book-3",
+      vol: "VOL. III",
       title: "Vitvara App",
-      color: "linear-gradient(160deg, #EAD7BA, #D9B78A)", // Beige diagonal
-      height: 200,
-      width: 46,
+      color: "linear-gradient(160deg, #EAD7BA, #D9B78A)", // Beige
+      height: 210,
+      width: 48,
+      type: "project",
       category: "Scalable Frontend Web App",
       year: "2024",
       desc: "Engineered responsive, user-centric web applications with modern React.js best practices and scalable REST API endpoints adhering to high performance budgets.",
       tags: ["React.js", "JavaScript", "HTML5", "CSS3", "REST APIs"],
       liveUrl: "https://praxel.space/",
-      patternType: "diagonal-stripe",
     },
     {
       id: "book-4",
-      title: "Client Platforms",
-      color: "linear-gradient(160deg, #1F5E4E, #144035)", // Deep Emerald Teal
-      height: 255,
+      vol: "VOL. IV",
+      title: "Client Works",
+      color: "linear-gradient(160deg, #1F5E4E, #144035)", // Emerald
+      height: 260,
       width: 54,
+      type: "project",
       category: "Bespoke Web Engineering & CMS",
       year: "2025",
-      desc: "Delivered custom client websites and performant web applications with bespoke WordPress architectures, secure contact pipelines, and high-converting UI layouts.",
+      desc: "Delivered bespoke client web applications and high-converting storefronts with custom WordPress architectures and secure contact pipelines.",
       tags: ["Full Stack", "Node.js", "WordPress", "UI/UX Design"],
       liveUrl: "https://praxel.space/",
-      patternType: "wireframe-crest",
     },
     {
       id: "book-5",
-      title: "Unifycx · Advisor",
-      color: "linear-gradient(160deg, #8FC98A, #6FB36A)", // Light Green [01]
-      height: 290,
-      width: 42,
+      vol: "CHRONICLES",
+      title: "Work History",
+      color: "linear-gradient(160deg, #4E9B5C, #2E6E3A)", // Green [02]
+      height: 285,
+      width: 52,
       index: "01",
-      category: "Web Advisory & Server Migration",
-      year: "2025–Pres",
-      desc: "Assisting customers with website migrations, SSL installations, email configurations, and hosting control panels across shared hosting environments.",
-      tags: ["Web Advisory", "DNS Management", "SSL Installations", "cPanel"],
-      patternType: "indexed",
+      type: "experience",
+      category: "Career Timeline & Roles",
+      year: "2024–26",
+      desc: "Verified career history at Unifycx (Web Advisor), Freelancer (Full Stack Developer), Glowtouch Technologies (Junior Support Engineer), and Vitvara Technologies (Intern).",
+      tags: ["Unifycx", "Freelancer", "Glowtouch", "Vitvara"],
     },
     {
       id: "book-6",
-      title: "Freelance · Full Stack",
-      color: "linear-gradient(160deg, #4E9B5C, #3B8047)", // Medium Green [02]
-      height: 295,
-      width: 42,
-      index: "02",
-      category: "Independent Full Stack Engineering",
-      year: "2024–25",
-      desc: "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements with continuous improvements.",
-      tags: ["React.js", "TypeScript", "Tailwind CSS", "PHP", "MySQL"],
-      patternType: "indexed",
+      vol: "MATRIX",
+      title: "Skills Ledger",
+      color: "linear-gradient(160deg, #3A8F96, #1C4E57)", // Ocean Teal
+      height: 265,
+      width: 66,
+      type: "skills",
+      category: "Technical Proficiencies Matrix",
+      year: "2026",
+      desc: "Technical Troubleshooting, WordPress Support, DNS Management, Frontend Development (HTML/CSS, React.js, TypeScript), UI/UX Design, PHP, MySQL, Server Migrations.",
+      tags: ["Frontend", "DNS/SSL", "WordPress", "PHP & MySQL", "Troubleshooting"],
     },
     {
       id: "book-7",
-      title: "Glowtouch · Support",
-      color: "linear-gradient(160deg, #1F6B3A, #144E29)", // Forest Green [03]
-      height: 300,
-      width: 42,
-      index: "03",
-      category: "Junior Support Engineering",
+      vol: "ACADEMY",
+      title: "Credentials",
+      color: "linear-gradient(160deg, #E8B830, #C99B1A)", // Mustard Yellow
+      height: 245,
+      width: 52,
+      type: "education",
+      category: "Diploma & High School",
       year: "2024",
-      desc: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues, collaborating with engineering teams to ensure swift resolution.",
-      tags: ["Technical Troubleshooting", "WordPress", "Server Infrastructure", "DNS"],
-      patternType: "indexed",
+      desc: "Karnataka (Govt) Polytechnic, Mangalore (Diploma: Full Stack Development, May 2024) & Milagres High School, Mangalore (10th Standard, May 2018).",
+      tags: ["Polytechnic Diploma", "Full Stack Development", "Milagres High School"],
     },
     {
       id: "book-8",
-      title: "Vitvara · Intern",
-      color: "linear-gradient(160deg, #CF3226, #A82017)", // Red with dots
-      height: 235,
-      width: 52,
-      category: "Web Development Internship",
-      year: "2024",
-      desc: "Engineered responsive, user-centric web applications using HTML, CSS, JavaScript, and React.js, optimizing code for maintainability and security.",
-      tags: ["React.js", "JavaScript", "HTML5", "CSS3", "REST APIs"],
-      patternType: "five-dots",
-    },
-    {
-      id: "book-9",
-      title: "Polytechnic Diploma",
-      color: "linear-gradient(160deg, #E8B830, #C99B1A)", // Mustard Yellow with halftone
-      height: 260,
-      width: 58,
-      category: "Diploma: Full Stack Development",
-      year: "2024",
-      desc: "Karnataka (Govt) Polytechnic, Mangalore. Graduated May 2024 with specialized coursework in software engineering, algorithms, database management, and web development.",
-      tags: ["Full Stack Development", "Algorithms", "Databases", "Mangalore"],
-      patternType: "top-halftone",
-    },
-    {
-      id: "book-10",
-      title: "Core Competencies",
-      color: "linear-gradient(160deg, #3A8F96, #1C4E57)", // Wide Ocean Teal
-      height: 270,
-      width: 82,
-      category: "Technical Proficiency Matrix",
-      year: "2026",
-      desc: "Technical Troubleshooting, WordPress Support, DNS Management, HTML/CSS, JavaScript, React.js, TypeScript, UI/UX Design, PHP, MySQL, Server & Website Migrations.",
-      tags: ["Frontend", "DNS", "SSL", "WordPress", "Troubleshooting", "PHP/MySQL"],
-      patternType: "wide-editorial",
+      vol: "DISPATCH",
+      title: "Contact Book",
+      color: "linear-gradient(160deg, #CF3226, #8F1F17)", // Crimson Red
+      height: 275,
+      width: 56,
+      type: "contact",
+      category: "Direct Inquiry Dispatch",
+      year: "LIVE",
+      desc: "Fill the inquiry journal page to have your correspondence wax-sealed and delivered by the Hogwarts & Mangalore Owl Post courier.",
+      tags: ["Direct Inbox", "Owl Post", "pdlkpt@gmail.com"],
     },
   ];
 
-  // Handle Form Submission with Book Packing & Librarian Collection
-  const handleSubmitInquiry = (e: React.FormEvent) => {
+  // Submit Contact Form & Trigger Harry Potter Owl Delivery
+  const handleOwlDispatch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) return;
+    if (!contactData.name || !contactData.email) return;
 
-    // Stage 1: Packing
-    setDispatchStage('packing');
-    playTactileSound('close', isMuted);
+    // Stage 1: Book Snaps Shut & Wraps in Twine
+    setOwlStage('wrapping');
+    playSound('close', isMuted);
 
     setTimeout(() => {
-      playTactileSound('stamp', isMuted);
+      playSound('stamp', isMuted);
     }, 600);
 
-    // Stage 2: Courier Librarian Arrival
+    // Stage 2: Owl Arrives & Takes Book in Talons
     setTimeout(() => {
-      setDispatchStage('courier_collecting');
-      playTactileSound('courier', isMuted);
-    }, 1400);
+      setOwlStage('owl_flight');
+      playSound('owl', isMuted);
+    }, 1300);
 
-    // Stage 3: Dispatched confirmation
+    // Stage 3: Delivery Certificate Popup
     setTimeout(() => {
-      setDispatchStage('dispatched');
-      // Construct mailto link fallback
-      const subject = encodeURIComponent(`[Book Inquiry] ${formData.subject} - ${formData.name}`);
-      const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
+      setOwlStage('delivered_popup');
+      playSound('stamp', isMuted);
+
+      // Trigger mailto fallback
+      const subject = encodeURIComponent(`[Owl Post Inquiry] ${contactData.subject} - ${contactData.name}`);
+      const body = encodeURIComponent(`Name: ${contactData.name}\nEmail: ${contactData.email}\n\nMessage:\n${contactData.message}`);
       window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-    }, 3800);
+    }, 3600);
   };
 
   return (
-    <div className="min-h-screen bg-[#EFE6D3] text-[#1C1B17] font-sans antialiased selection:bg-[#E85D26] selection:text-[#EFE6D3] overflow-x-hidden">
-      {/* 1. ACCESSIBILITY SKIP LINK */}
-      <a
-        href="#shelf-section"
-        className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#1C1B17] text-[#EFE6D3] font-bold text-xs rounded-sm shadow-xl focus:outline-none focus:ring-2 focus:ring-[#E85D26]"
-      >
-        Skip to interactive bookshelf
-      </a>
-
-      {/* 2. STICKY EDITORIAL TOP NAVIGATION */}
-      <header className="sticky top-0 z-40 bg-[#EFE6D3]/95 backdrop-blur-md border-b border-[#1C1B17]/10 px-6 sm:px-10 h-20 flex items-center justify-between">
-        <button
-          onClick={() => setNavDrawerOpen(true)}
-          aria-label="Open menu drawer"
-          className="p-2 -ml-2 text-[#1C1B17] hover:text-[#E85D26] transition cursor-pointer flex flex-col gap-1.5"
-        >
-          <span className="w-6 h-0.5 bg-current rounded-full" />
-          <span className="w-6 h-0.5 bg-current rounded-full" />
-          <span className="w-4 h-0.5 bg-current rounded-full" />
-        </button>
-
-        <div className="text-center">
-          <a href="#hero-top" className="font-serif font-black tracking-tight text-xl sm:text-2xl uppercase hover:text-[#E85D26] transition">
-            {candidateName}
-          </a>
+    <div className="h-[100dvh] max-h-[100dvh] w-screen bg-[#EFE6D3] text-[#1C1B17] font-sans antialiased overflow-hidden flex flex-col justify-between select-none selection:bg-[#E85D26] selection:text-[#EFE6D3]">
+      {/* 1. TOP EDITORIAL BAR */}
+      <header className="h-14 sm:h-16 px-4 sm:px-8 border-b border-[#1C1B17]/10 flex items-center justify-between shrink-0 bg-[#EFE6D3]">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowAboutModal(true)}
+            className="font-serif font-black tracking-tight text-lg sm:text-2xl uppercase hover:text-[#E85D26] transition flex items-center gap-2 cursor-pointer"
+          >
+            <span>{candidateName}</span>
+            <Info className="w-4 h-4 text-[#E85D26] opacity-80" />
+          </button>
+          <span className="hidden md:inline text-[11px] font-mono text-[#7A7568] border-l border-[#1C1B17]/15 pl-3">
+            INTERACTIVE 3D BOOKSHELF · THE READING ROOM
+          </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Quick Access Spines & Sound Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => {
+              const contactBook = shelfBooks.find((b) => b.id === "book-8");
+              if (contactBook) {
+                setActiveBook(contactBook);
+                playSound('open', isMuted);
+              }
+            }}
+            className="bg-[#CF3226] text-white hover:bg-[#1C1B17] transition px-3.5 py-1.5 rounded-full text-xs font-bold font-mono uppercase shadow-sm cursor-pointer inline-flex items-center gap-1.5"
+          >
+            <span>Owl Contact</span>
+            <Send className="w-3 h-3" />
+          </button>
+
           <button
             onClick={() => {
               setIsMuted(!isMuted);
-              playTactileSound('toggle', !isMuted);
+              playSound('toggle', !isMuted);
             }}
             title={isMuted ? "Enable Tactile Sounds" : "Mute Sounds"}
-            className="w-10 h-10 rounded-full border border-[#1C1B17] bg-[#EFE6D3] hover:bg-[#1C1B17] hover:text-[#EFE6D3] transition flex items-center justify-center cursor-pointer shadow-sm"
+            className="w-9 h-9 rounded-full border border-[#1C1B17] bg-[#EFE6D3] hover:bg-[#1C1B17] hover:text-[#EFE6D3] transition flex items-center justify-center cursor-pointer shadow-sm"
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#E85D26]" />}
           </button>
-
-          <a
-            href="#contact-book"
-            className="bg-[#1C1B17] text-[#EFE6D3] hover:bg-[#E85D26] hover:text-white transition px-5 py-2 rounded-full font-bold text-xs tracking-wider uppercase shadow-md inline-flex items-center gap-1.5"
-          >
-            <span>Get in touch</span>
-          </a>
         </div>
       </header>
 
-      {/* 3. SLIDE-OUT NAV DRAWER */}
-      <AnimatePresence>
-        {navDrawerOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setNavDrawerOpen(false)}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm cursor-pointer"
-            />
-            <motion.nav
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="fixed top-0 bottom-0 left-0 z-50 w-80 max-w-[85vw] bg-[#1C1B17] text-[#EFE6D3] p-8 flex flex-col justify-between shadow-2xl"
-            >
-              <div className="space-y-8">
-                <div className="flex items-center justify-between border-b border-[#EFE6D3]/15 pb-4">
-                  <span className="font-serif font-bold tracking-widest text-sm uppercase text-[#E85D26]">LIBRARY DIRECTORY</span>
-                  <button
-                    onClick={() => setNavDrawerOpen(false)}
-                    className="w-8 h-8 rounded-full border border-[#EFE6D3]/30 flex items-center justify-center hover:bg-[#EFE6D3] hover:text-[#1C1B17] transition"
+      {/* 2. CENTER STAGE: MASSIVE BLEED WORD & THE 3D BOOKSHELF */}
+      <main className="flex-1 flex flex-col justify-center px-4 sm:px-8 relative max-w-7xl mx-auto w-full overflow-hidden">
+        {/* Giant Typographic Backdrop */}
+        <div className="text-center sm:text-left mb-2 sm:mb-4 pointer-events-none">
+          <h1 className="font-serif font-black text-[12vw] sm:text-[9.5vw] leading-[0.82] tracking-tighter text-[#1C1B17] opacity-85 select-none uppercase">
+            {candidateName.split(" ")[0]} <span className="text-[#E85D26]">{candidateName.split(" ")[1] || "DL"}</span>
+          </h1>
+          <p className="text-[11px] sm:text-xs text-[#5A554A] font-medium mt-1">
+            Every component is a physical book on the shelf. Pull down any volume to inspect.
+          </p>
+        </div>
+
+        {/* THE 3D BOOKSHELF */}
+        <div className="relative w-full pt-12 pb-2">
+          {/* Books Row with 3D Perspective */}
+          <div
+            className="flex items-end justify-start sm:justify-center gap-2 sm:gap-3 overflow-x-auto pb-0 pt-10 scrollbar-none px-2"
+            style={{ perspective: 1200 }}
+          >
+            {shelfBooks.map((book) => {
+              const isHovered = hoveredBookId === book.id;
+              return (
+                <div
+                  key={book.id}
+                  onMouseEnter={() => {
+                    setHoveredBookId(book.id);
+                    playSound('slide', isMuted);
+                  }}
+                  onMouseLeave={() => setHoveredBookId(null)}
+                  onClick={() => {
+                    setActiveBook(book);
+                    playSound('open', isMuted);
+                  }}
+                  className="relative shrink-0 cursor-pointer select-none group"
+                  style={{
+                    height: `${book.height}px`,
+                    width: `${book.width}px`,
+                    transformStyle: "preserve-3d",
+                  }}
+                >
+                  {/* 3D Book Spine */}
+                  <motion.div
+                    animate={{
+                      y: isHovered ? -22 : 0,
+                      rotateZ: isHovered ? (book.id === "book-8" ? -2 : 1.5) : 0,
+                      scale: isHovered ? 1.03 : 1,
+                    }}
+                    transition={{ duration: 0.22, ease: [0.2, 0.8, 0.3, 1.2] }}
+                    className="w-full h-full rounded-t-[4px] shadow-[inset_-4px_0_8px_rgba(0,0,0,0.18)] flex flex-col justify-between items-center p-2 relative overflow-hidden"
+                    style={{
+                      background: book.color,
+                      boxShadow: isHovered
+                        ? "0 22px 35px -8px rgba(28,27,23,0.38), 0 0 15px rgba(232,93,38,0.3)"
+                        : "0 6px 14px -3px rgba(28,27,23,0.16)",
+                    }}
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
+                    {/* Top Index / Badge */}
+                    <div className="border-t border-b border-white/30 w-full py-0.5 text-center">
+                      <span className="text-[8px] font-mono font-bold text-white/90 block leading-none">
+                        {book.vol}
+                      </span>
+                    </div>
 
-                <div className="flex flex-col gap-5 text-2xl font-serif">
-                  <a href="#shelf-section" onClick={() => setNavDrawerOpen(false)} className="hover:text-[#E85D26] transition">01 · The Bookshelf</a>
-                  <a href="#about-section" onClick={() => setNavDrawerOpen(false)} className="hover:text-[#E85D26] transition">02 · Biography</a>
-                  <a href="#skills-section" onClick={() => setNavDrawerOpen(false)} className="hover:text-[#E85D26] transition">03 · Skills Matrix</a>
-                  <a href="#contact-book" onClick={() => setNavDrawerOpen(false)} className="hover:text-[#E85D26] transition">04 · Dispatch Journal</a>
-                </div>
-              </div>
+                    {/* Vertical Title (Embossed Gilt Lettering) */}
+                    <div className="flex-1 flex items-center justify-center my-auto overflow-hidden py-1">
+                      <span
+                        className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-white/95 whitespace-nowrap"
+                        style={{
+                          writingMode: "vertical-rl",
+                          transform: "rotate(180deg)",
+                          textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+                        }}
+                      >
+                        {book.title}
+                      </span>
+                    </div>
 
-              <div className="space-y-2 text-xs font-mono text-[#EFE6D3]/60 border-t border-[#EFE6D3]/15 pt-6">
-                <p>{location}</p>
-                <p>{email}</p>
-                <p>{phone}</p>
+                    {/* Year Tag */}
+                    <span className="text-[7px] font-mono text-white/75 block">
+                      {book.year}
+                    </span>
+
+                    {/* Hover Pill */}
+                    {isHovered && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1C1B17] text-[#EFE6D3] px-2 py-0.5 rounded text-[8px] font-mono font-bold whitespace-nowrap shadow-lg z-20"
+                      >
+                        OPEN {book.vol}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Heavy Solid Wood Shelf Base */}
+          <div className="w-full h-3 bg-gradient-to-r from-[#241710] via-[#3D2518] to-[#241710] rounded-sm mt-0 shadow-lg border-t border-[#5C3925]" />
+        </div>
+      </main>
+
+      {/* 3. BOTTOM EDITORIAL FOOTER BAR */}
+      <footer className="h-12 sm:h-14 px-4 sm:px-8 border-t border-[#1C1B17]/10 flex items-center justify-between text-xs font-mono text-[#7A7568] shrink-0 bg-[#EFE6D3]">
+        <div className="flex items-center gap-4">
+          <span className="flex items-center gap-1 text-[#1C1B17]">
+            <MapPin className="w-3.5 h-3.5 text-[#E85D26]" /> {location}
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span className="hidden sm:inline">{email}</span>
+        </div>
+
+        <div className="flex items-center gap-4 text-[#1C1B17] font-bold">
+          <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">LinkedIn</a>
+          <a href={github} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">GitHub</a>
+          <a href={website} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">Praxel.space</a>
+        </div>
+      </footer>
+
+      {/* 4. MODAL: FULL AUTHOR BIOGRAPHY */}
+      <AnimatePresence>
+        {showAboutModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              className="max-w-md w-full rounded-2xl bg-[#EFE6D3] text-[#1C1B17] p-6 sm:p-8 space-y-4 shadow-2xl border border-[#1C1B17]/20 relative"
+            >
+              <button
+                onClick={() => setShowAboutModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full border border-[#1C1B17]/30 flex items-center justify-center hover:bg-[#1C1B17] hover:text-[#EFE6D3] transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <span className="text-[10px] font-mono font-bold tracking-widest text-[#E85D26] uppercase block">
+                AUTHOR BIOGRAPHY &amp; DOSSIER
+              </span>
+              <h2 className="text-2xl font-serif font-bold">{candidateName}</h2>
+              <p className="text-xs sm:text-sm text-[#4A463C] leading-relaxed">
+                {bio}
+              </p>
+
+              <div className="pt-2 border-t border-[#1C1B17]/10 space-y-1.5 text-xs font-mono text-[#1C1B17]">
+                <p>📍 {location}</p>
+                <p>📞 {phone}</p>
+                <p>✉️ {email}</p>
               </div>
-            </motion.nav>
-          </>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* 4. MAIN SINGLE-PAGE CONTAINER */}
-      <main id="hero-top">
-        {/* HERO HEADER WITH BLEED TYPOGRAPHY */}
-        <section className="pt-8 sm:pt-14 px-6 sm:px-10 max-w-7xl mx-auto">
-          <div className="overflow-hidden">
-            <h1 className="font-serif font-black text-[14vw] sm:text-[11vw] leading-[0.82] tracking-tighter text-[#1C1B17] select-none opacity-90 uppercase">
-              {candidateName.split(" ")[0]} <span className="text-[#E85D26]">{candidateName.split(" ")[1] || "DL"}</span>
-            </h1>
-          </div>
-
-          <p className="mt-4 sm:mt-6 text-[#4A463C] max-w-xl text-sm sm:text-base leading-relaxed font-sans font-medium">
-            Full Stack Developer &amp; Web Advisor based in Mangalore. Every volume on this shelf represents an end-to-end system I architected, engineered, and shipped. Click any spine below to pull it down and read the case study.
-          </p>
-        </section>
-
-        {/* 5. THE DRIBBLE-STYLE INTERACTIVE BOOKSHELF */}
-        <section id="shelf-section" className="pt-10 sm:pt-16 pb-12 px-4 sm:px-8 max-w-7xl mx-auto">
-          <div className="relative">
-            {/* The Books Row */}
-            <div
-              className="flex items-end justify-start sm:justify-center gap-1.5 sm:gap-2.5 overflow-x-auto pb-0 pt-16 scrollbar-none px-4"
-              style={{ perspective: 1200 }}
-            >
-              {shelfBooks.map((book, idx) => {
-                const isHovered = hoveredBookIndex === idx;
-                return (
-                  <div
-                    key={book.id}
-                    onMouseEnter={() => {
-                      setHoveredBookIndex(idx);
-                      playTactileSound('slide', isMuted);
-                    }}
-                    onMouseLeave={() => setHoveredBookIndex(null)}
-                    onClick={() => {
-                      setActiveBook(book);
-                      playTactileSound('open', isMuted);
-                    }}
-                    className="relative shrink-0 cursor-pointer select-none group"
-                    style={{
-                      height: `${book.height}px`,
-                      width: `${book.width}px`,
-                      transformStyle: "preserve-3d",
-                    }}
-                  >
-                    {/* The 3D Book Spine */}
-                    <motion.div
-                      animate={{
-                        y: isHovered ? -22 : 0,
-                        rotateZ: isHovered ? (idx % 2 === 0 ? -1.5 : 1.5) : 0,
-                        scale: isHovered ? 1.02 : 1,
-                      }}
-                      transition={{ duration: 0.24, ease: [0.2, 0.8, 0.3, 1.2] }}
-                      className="w-full h-full rounded-t-[4px] shadow-[inset_-4px_0_8px_rgba(0,0,0,0.15)] flex flex-col justify-between items-center p-2 relative overflow-hidden"
-                      style={{
-                        background: book.color,
-                        boxShadow: isHovered
-                          ? "0 24px 40px -8px rgba(28,27,23,0.35), 0 0 15px rgba(232,93,38,0.25)"
-                          : "0 8px 18px -4px rgba(28,27,23,0.18)",
-                      }}
-                    >
-                      {/* Top Index Badge or Pattern */}
-                      {book.index && (
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-white/90 text-[#1C1B17] font-bold text-[9px] px-1.5 py-0.5 rounded-xs font-mono">
-                          {book.index}
-                        </div>
-                      )}
-
-                      {book.patternType === "halftone-square" && (
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 grid grid-cols-2 gap-1 opacity-70">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                        </div>
-                      )}
-
-                      {book.patternType === "five-dots" && (
-                        <div className="absolute top-3 left-1/2 -translate-x-1/2 flex flex-col gap-1 opacity-80">
-                          <span className="w-1 h-1 rounded-full bg-black/60" />
-                          <span className="w-1 h-1 rounded-full bg-black/60" />
-                          <span className="w-1 h-1 rounded-full bg-black/60" />
-                          <span className="w-1 h-1 rounded-full bg-black/60" />
-                          <span className="w-1 h-1 rounded-full bg-black/60" />
-                        </div>
-                      )}
-
-                      {/* Vertical Spine Title */}
-                      <div className="flex-1 flex items-center justify-center my-auto overflow-hidden">
-                        <span
-                          className="font-serif font-black text-xs sm:text-sm tracking-wider uppercase text-white/95 whitespace-nowrap"
-                          style={{
-                            writingMode: "vertical-rl",
-                            transform: "rotate(180deg)",
-                            textShadow: "0 1px 2px rgba(0,0,0,0.5)",
-                          }}
-                        >
-                          {book.title}
-                        </span>
-                      </div>
-
-                      {/* Hover Tooltip Pill */}
-                      {isHovered && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#1C1B17] text-[#EFE6D3] px-2 py-0.5 rounded text-[8px] font-mono font-bold whitespace-nowrap shadow-lg"
-                        >
-                          PULL BOOK
-                        </motion.div>
-                      )}
-                    </motion.div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Solid Black Wooden Shelf Base Line */}
-            <div className="w-full h-2 bg-[#1C1B17] rounded-full mt-0 shadow-md" />
-          </div>
-        </section>
-
-        {/* 6. ABOUT BIOGRAPHY SECTION */}
-        <section id="about-section" className="py-20 px-6 sm:px-10 max-w-4xl mx-auto space-y-4">
-          <span className="text-xs font-mono font-bold tracking-widest text-[#E85D26] uppercase block">
-            02 · BIOGRAPHY &amp; BACKGROUND
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-serif font-bold text-[#1C1B17] leading-tight">
-            Dedicated &amp; Adaptable Full Stack Developer &amp; Web Advisor.
-          </h2>
-          <p className="text-base text-[#4A463C] leading-relaxed font-sans pt-2">
-            {bio}
-          </p>
-          <div className="flex flex-wrap gap-6 pt-4 text-xs font-mono font-bold text-[#1C1B17]">
-            <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-[#E85D26]" /> {location}</span>
-            <a href={`tel:${phone}`} className="flex items-center gap-1.5 hover:text-[#E85D26] transition"><Phone className="w-4 h-4 text-[#E85D26]" /> {phone}</a>
-            <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-[#E85D26] transition"><Mail className="w-4 h-4 text-[#E85D26]" /> {email}</a>
-          </div>
-        </section>
-
-        {/* 7. SKILLS MATRIX SECTION */}
-        <section id="skills-section" className="py-16 px-6 sm:px-10 max-w-4xl mx-auto space-y-6">
-          <span className="text-xs font-mono font-bold tracking-widest text-[#E85D26] uppercase block">
-            03 · TECHNICAL PROFICIENCIES ON THE SHELF
-          </span>
-          <div className="flex flex-wrap gap-2.5">
-            {[
-              "Frontend Development",
-              "React.js",
-              "TypeScript",
-              "Tailwind CSS",
-              "Technical Troubleshooting",
-              "WordPress Support",
-              "DNS Management",
-              "SSL Provisioning",
-              "Server & Website Migrations",
-              "PHP & MySQL",
-              "REST APIs",
-              "UI/UX Design",
-              "Microsoft Excel",
-              "Git & GitHub",
-            ].map((skill) => (
-              <span
-                key={skill}
-                className="bg-[#1C1B17] text-[#EFE6D3] hover:bg-[#E85D26] transition px-4 py-2 rounded-full font-sans font-semibold text-xs shadow-sm cursor-default"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* 8. SIGNATURE CONTACT JOURNAL & ANIMATED COURIER DISPATCH */}
-        <section id="contact-book" className="py-20 px-6 sm:px-10 max-w-4xl mx-auto">
-          <div className="bg-[#1C1B17] text-[#EFE6D3] rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden">
-            {/* Header */}
-            <div className="space-y-2 border-b border-[#EFE6D3]/15 pb-6">
-              <span className="text-xs font-mono font-bold tracking-widest text-[#E8B830] uppercase block">
-                04 · THE DISPATCH JOURNAL
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white">
-                Place an Inquiry into the Open Journal.
-              </h2>
-              <p className="text-xs sm:text-sm text-[#CFC9B8]">
-                Fill out the page below. When submitted, the book physically closes, wraps with postal twine, and our vintage courier collects it for immediate delivery.
-              </p>
-            </div>
-
-            {/* INQUIRY FORM OR PACKED BOOK & LIBRARIAN ANIMATION */}
-            <div className="mt-8 min-h-[380px] flex items-center justify-center">
-              {dispatchStage === 'idle' && (
-                <form onSubmit={handleSubmitInquiry} className="w-full space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono font-bold text-[#EFE6D3]/80 uppercase block">Your Name</label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="Ada Lovelace"
-                        className="w-full bg-[#2A2822] border border-[#4A463C] text-[#EFE6D3] px-4 py-3 rounded-lg text-xs font-sans placeholder:text-[#8A8574] focus:outline-none focus:border-[#E85D26] focus:ring-1 focus:ring-[#E85D26]"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[11px] font-mono font-bold text-[#EFE6D3]/80 uppercase block">Your Email</label>
-                      <input
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="ada@domain.com"
-                        className="w-full bg-[#2A2822] border border-[#4A463C] text-[#EFE6D3] px-4 py-3 rounded-lg text-xs font-sans placeholder:text-[#8A8574] focus:outline-none focus:border-[#E85D26] focus:ring-1 focus:ring-[#E85D26]"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono font-bold text-[#EFE6D3]/80 uppercase block">Inquiry Topic</label>
-                    <input
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full bg-[#2A2822] border border-[#4A463C] text-[#EFE6D3] px-4 py-3 rounded-lg text-xs font-sans focus:outline-none focus:border-[#E85D26] focus:ring-1 focus:ring-[#E85D26]"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-mono font-bold text-[#EFE6D3]/80 uppercase block">Message / Specification</label>
-                    <textarea
-                      rows={4}
-                      required
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      placeholder="Write your note into the reading room ledger..."
-                      className="w-full bg-[#2A2822] border border-[#4A463C] text-[#EFE6D3] px-4 py-3 rounded-lg text-xs font-sans placeholder:text-[#8A8574] focus:outline-none focus:border-[#E85D26] focus:ring-1 focus:ring-[#E85D26]"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="bg-[#E85D26] text-white hover:bg-white hover:text-[#1C1B17] transition px-8 py-3.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wider shadow-xl inline-flex items-center gap-2 cursor-pointer"
-                  >
-                    <span>Close Book &amp; Dispatch Courier</span>
-                    <Send className="w-4 h-4" />
-                  </button>
-                </form>
-              )}
-
-              {/* STAGE 1: BOOK SNAPS SHUT & WRAPS IN POSTAL TWINE */}
-              {dispatchStage === 'packing' && (
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="flex flex-col items-center justify-center text-center space-y-5 py-8"
-                >
-                  {/* 3D Packed Book Illustration */}
-                  <motion.div
-                    animate={{ rotateY: [0, 360], scale: [0.95, 1.05, 1] }}
-                    transition={{ duration: 1.2, ease: "easeInOut" }}
-                    className="w-48 h-64 rounded-xl bg-gradient-to-br from-[#D9A066] to-[#B37840] border-4 border-[#8A5626] shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative p-4 flex flex-col justify-between text-left select-none"
-                  >
-                    {/* Postal Twine Cross Ribbons */}
-                    <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-4 bg-[#664322] border-y border-[#FAF2E8]/40" />
-                    <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4 bg-[#664322] border-x border-[#FAF2E8]/40" />
-
-                    {/* Wax Stamp Seal */}
-                    <motion.div
-                      initial={{ scale: 2, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-                      className="absolute inset-0 m-auto w-14 h-14 rounded-full bg-[#CF3226] border-2 border-[#FAF2E8] flex items-center justify-center text-white shadow-xl z-10"
-                    >
-                      <Sparkles className="w-6 h-6" />
-                    </motion.div>
-
-                    <span className="text-[10px] font-mono font-bold text-[#4A2E14] uppercase">PARCEL #PDL-2026</span>
-                    <span className="text-[10px] font-mono font-bold text-[#4A2E14] uppercase self-end">TO: {candidateName}</span>
-                  </motion.div>
-
-                  <div className="space-y-1">
-                    <h3 className="font-serif text-2xl font-bold text-[#E8B830]">Journal Packed &amp; Wax Sealed...</h3>
-                    <p className="text-xs font-mono text-[#CFC9B8]">Summoning library postal courier...</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STAGE 2: LIBRARIAN / POSTAL COURIER ARRIVES TO COLLECT */}
-              {dispatchStage === 'courier_collecting' && (
-                <motion.div
-                  initial={{ opacity: 0, x: -60 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex flex-col items-center justify-center text-center space-y-6 py-8"
-                >
-                  <div className="relative">
-                    {/* Animated Courier Character / Icon Animation */}
-                    <motion.div
-                      animate={{ y: [0, -8, 0], rotate: [-2, 2, -2] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-24 h-24 rounded-full bg-[#E85D26] border-4 border-[#EFE6D3] flex items-center justify-center text-white shadow-2xl mx-auto"
-                    >
-                      <Package className="w-12 h-12" />
-                    </motion.div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-xs font-mono font-bold text-[#8FC98A] uppercase block">
-                      COURIER ARRIVED AT READING ROOM
-                    </span>
-                    <h3 className="font-serif text-2xl font-bold text-white">
-                      Collecting Book Parcel from Desk...
-                    </h3>
-                    <p className="text-xs text-[#CFC9B8] max-w-sm">
-                      The postal courier has safely secured your correspondence parcel into the vintage dispatch satchel.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* STAGE 3: CONFIRMED DISPATCHED */}
-              {dispatchStage === 'dispatched' && (
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-center space-y-6 py-8"
-                >
-                  <div className="w-16 h-16 rounded-full bg-[#8FC98A] text-[#1C1B17] flex items-center justify-center mx-auto shadow-xl">
-                    <CheckCircle2 className="w-9 h-9" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-serif text-3xl font-bold text-white">
-                      Correspondence Dispatched!
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#CFC9B8] max-w-md mx-auto">
-                      Your message from <span className="text-[#E8B830] font-bold">{formData.name}</span> has been picked up by the courier and routed to <span className="text-[#8FC98A] font-mono">{email}</span>.
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setDispatchStage('idle');
-                      setFormData({ name: "", email: "", subject: "Full Stack & Web Advisory Inquiry", message: "" });
-                    }}
-                    className="bg-[#2A2822] text-[#EFE6D3] border border-[#4A463C] hover:bg-[#E85D26] hover:text-white transition px-6 py-2.5 rounded-full text-xs font-bold font-mono uppercase"
-                  >
-                    Open New Journal Page
-                  </button>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* 9. THE 3D BOOK COVER REVEAL MODAL (FLIP MODAL FROM SHELF) */}
+      {/* 5. MODAL: 3D HARDCOVER BOOK INSPECTION FOR ALL SHELF VOLUMES */}
       <AnimatePresence>
         {activeBook && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-[#1C1B17]/70 backdrop-blur-md">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md">
             <motion.div
-              initial={{ scale: 0.7, opacity: 0, y: 50 }}
+              initial={{ scale: 0.75, opacity: 0, y: 40 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.7, opacity: 0, y: 50 }}
-              transition={{ duration: 0.35, ease: [0.2, 0.8, 0.3, 1.2] }}
-              className="max-w-md w-full rounded-2xl p-7 text-white space-y-5 relative shadow-[0_30px_90px_rgba(0,0,0,0.85)] border border-white/20 select-none overflow-hidden"
+              exit={{ scale: 0.75, opacity: 0, y: 40 }}
+              transition={{ duration: 0.3, ease: [0.2, 0.8, 0.3, 1.2] }}
+              className="max-w-xl w-full rounded-2xl p-6 sm:p-8 text-white space-y-5 relative shadow-[0_30px_90px_rgba(0,0,0,0.9)] border border-white/20 select-none overflow-hidden max-h-[90vh] overflow-y-auto"
               style={{
                 background: activeBook.color,
               }}
@@ -754,90 +482,318 @@ export default function TheReadingRoom({ data }: ThemeRendererProps) {
               <button
                 onClick={() => {
                   setActiveBook(null);
-                  playTactileSound('close', isMuted);
+                  playSound('close', isMuted);
                 }}
-                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black transition cursor-pointer"
-                aria-label="Close book"
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-black transition cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
 
-              {/* Geometric Vector Book Graphic Emblem */}
-              <div className="h-36 flex items-center justify-center opacity-80">
-                <svg viewBox="0 0 200 200" className="w-32 h-32">
-                  <circle cx="100" cy="100" r="45" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" />
-                  <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="4 4" />
-                  <line x1="20" y1="100" x2="180" y2="100" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
-                  <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" />
-                </svg>
+              {/* Book Header */}
+              <div className="border-b border-white/20 pb-3">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-white/75 block">
+                  {activeBook.vol} · {activeBook.category} · {activeBook.year}
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">
+                  {activeBook.title}
+                </h2>
               </div>
 
-              {/* Book Details */}
-              <div className="space-y-3">
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-white/70 block">
-                    {activeBook.category} · {activeBook.year}
-                  </span>
-                  <h3 className="text-2xl sm:text-3xl font-serif font-bold text-white mt-0.5">
-                    {activeBook.title}
-                  </h3>
+              {/* DYNAMIC CONTENT BASED ON BOOK TYPE */}
+              {/* Type A: PROJECT BOOK */}
+              {activeBook.type === "project" && (
+                <div className="space-y-4">
+                  <p className="text-xs sm:text-sm text-white/95 leading-relaxed font-sans">
+                    {activeBook.desc}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-2">
+                    {activeBook.tags.map((tag: string) => (
+                      <span key={tag} className="px-2.5 py-0.5 rounded-full border border-white/40 text-[10px] font-mono text-white/90">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {activeBook.liveUrl && (
+                    <div className="pt-2 flex gap-3">
+                      <a
+                        href={activeBook.liveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-white text-[#1C1B17] hover:bg-[#1C1B17] hover:text-white transition px-5 py-2 rounded-lg font-bold text-xs inline-flex items-center gap-1.5 shadow-md"
+                      >
+                        <span>Launch Project</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <p className="text-xs sm:text-sm text-white/90 font-sans leading-relaxed">
-                  {activeBook.desc}
-                </p>
-
-                {/* Tech Badges */}
-                <div className="flex flex-wrap gap-1.5 pt-2">
-                  {activeBook.tags.map((tag: string) => (
-                    <span
-                      key={tag}
-                      className="px-2.5 py-0.5 rounded-full border border-white/40 text-[10px] font-mono text-white/95"
-                    >
-                      {tag}
-                    </span>
+              {/* Type B: EXPERIENCE CHRONICLES BOOK */}
+              {activeBook.type === "experience" && (
+                <div className="space-y-4 text-xs font-sans">
+                  {rawExperience.map((exp: any, i: number) => (
+                    <div key={i} className="p-3.5 rounded-xl bg-black/30 border border-white/15 space-y-1">
+                      <div className="flex justify-between font-bold text-white">
+                        <span>{exp.role} @ {exp.company}</span>
+                        <span className="font-mono text-[10px] text-white/80">{exp.startDate} – {exp.endDate || "Present"}</span>
+                      </div>
+                      <p className="text-white/85 text-[11px]">{exp.summary}</p>
+                    </div>
                   ))}
                 </div>
-              </div>
+              )}
 
-              {/* Live Links */}
-              <div className="pt-3 border-t border-white/20 flex items-center justify-between">
+              {/* Type C: SKILLS MATRIX BOOK */}
+              {activeBook.type === "skills" && (
+                <div className="space-y-3">
+                  <p className="text-xs text-white/90">Core competencies and verified engineering proficiencies:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "Frontend Development",
+                      "React.js",
+                      "TypeScript",
+                      "Tailwind CSS",
+                      "Technical Troubleshooting",
+                      "WordPress Support",
+                      "DNS Management",
+                      "SSL Provisioning",
+                      "Server Migrations",
+                      "PHP & MySQL",
+                      "REST APIs",
+                      "UI/UX Design",
+                    ].map((s) => (
+                      <span key={s} className="bg-white/20 border border-white/30 px-3 py-1 rounded-full text-xs font-mono">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Type D: EDUCATION CREDENTIALS BOOK */}
+              {activeBook.type === "education" && (
+                <div className="space-y-4 text-xs font-sans">
+                  {rawEducation.map((edu: any, i: number) => (
+                    <div key={i} className="p-4 rounded-xl bg-black/30 border border-white/15 space-y-1.5">
+                      <div className="flex items-center gap-2 text-white font-bold text-sm">
+                        <GraduationCap className="w-4 h-4" />
+                        <span>{edu.degree}</span>
+                      </div>
+                      <p className="text-white/85">{edu.institution}</p>
+                      <p className="font-mono text-[10px] text-white/70">{edu.location} · {edu.graduationDate}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Type E: CONTACT BOOK (HARRY POTTER OWL POST FORM) */}
+              {activeBook.type === "contact" && (
+                <div className="space-y-4">
+                  {owlStage === 'idle' && (
+                    <form onSubmit={handleOwlDispatch} className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-white/80 block mb-1">Your Name</label>
+                          <input
+                            type="text"
+                            required
+                            value={contactData.name}
+                            onChange={(e) => setContactData({ ...contactData, name: e.target.value })}
+                            placeholder="Albus Dumbledore"
+                            className="w-full bg-black/30 border border-white/30 text-white px-3 py-2 rounded text-xs font-sans focus:outline-none focus:border-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-white/80 block mb-1">Your Email</label>
+                          <input
+                            type="email"
+                            required
+                            value={contactData.email}
+                            onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
+                            placeholder="albus@hogwarts.edu"
+                            className="w-full bg-black/30 border border-white/30 text-white px-3 py-2 rounded text-xs font-sans focus:outline-none focus:border-white"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-[10px] font-mono uppercase text-white/80 block mb-1">Message Note</label>
+                        <textarea
+                          rows={3}
+                          required
+                          value={contactData.message}
+                          onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
+                          placeholder="Write your parchment note for delivery..."
+                          className="w-full bg-black/30 border border-white/30 text-white px-3 py-2 rounded text-xs font-sans focus:outline-none focus:border-white"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-white text-[#1C1B17] hover:bg-[#EFE6D3] transition py-3 rounded-lg font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-2"
+                      >
+                        <span>Pack Book &amp; Summon Owl Courier</span>
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </form>
+                  )}
+
+                  {/* STAGE 1: BOOK WRAPPING IN TWINE WITH WAX STAMP */}
+                  {owlStage === 'wrapping' && (
+                    <motion.div
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="flex flex-col items-center justify-center text-center space-y-4 py-4"
+                    >
+                      {/* Wrapped Book Parcel with Postal Twine */}
+                      <motion.div
+                        animate={{ scale: [0.95, 1.05, 1], rotate: [0, -3, 3, 0] }}
+                        transition={{ duration: 0.8 }}
+                        className="w-40 h-52 rounded-xl bg-gradient-to-br from-[#D9A066] to-[#B37840] border-4 border-[#664322] shadow-2xl relative p-3 flex flex-col justify-between select-none"
+                      >
+                        {/* Postal Ribbons */}
+                        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-3 bg-[#4A2E14]" />
+                        <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-3 bg-[#4A2E14]" />
+
+                        {/* Wax Seal Stamp */}
+                        <motion.div
+                          initial={{ scale: 2.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          transition={{ delay: 0.4, type: "spring", stiffness: 350 }}
+                          className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-[#CF3226] border-2 border-white flex items-center justify-center text-white shadow-xl z-10 font-serif font-black text-xs"
+                        >
+                          PDL
+                        </motion.div>
+
+                        <span className="text-[8px] font-mono font-bold text-[#4A2E14]">PARCEL #PDL-2026</span>
+                        <span className="text-[8px] font-mono font-bold text-[#4A2E14] self-end">TO: PRAJWAL DL</span>
+                      </motion.div>
+
+                      <div className="space-y-0.5">
+                        <h4 className="font-serif text-lg font-bold text-white">Book Wrapped &amp; Wax Sealed</h4>
+                        <p className="text-[11px] font-mono text-white/80">Summoning Owl Post from the tower...</p>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* STAGE 2: HARRY POTTER FLYING OWL SWOOPS DOWN AND TAKES THE BOOK */}
+                  {owlStage === 'owl_flight' && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-col items-center justify-center text-center space-y-4 py-4 overflow-hidden relative min-h-[220px]"
+                    >
+                      {/* Animated Flying Owl with Flapping Wings taking Parcel */}
+                      <motion.div
+                        animate={{
+                          x: [-120, 0, 140],
+                          y: [-30, 20, -70],
+                          scale: [0.8, 1.1, 0.7],
+                        }}
+                        transition={{ duration: 2.2, ease: "easeInOut" }}
+                        className="relative z-10 flex flex-col items-center"
+                      >
+                        {/* Majestic Owl Graphic */}
+                        <svg viewBox="0 0 100 80" className="w-24 h-20 drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
+                          {/* Owl Body */}
+                          <ellipse cx="50" cy="45" rx="18" ry="24" fill="#D2B48C" stroke="#8B5A2B" strokeWidth="2" />
+                          {/* Owl Head */}
+                          <circle cx="50" cy="24" r="16" fill="#E6D7B8" stroke="#8B5A2B" strokeWidth="2" />
+                          {/* Owl Eyes */}
+                          <circle cx="43" cy="22" r="5" fill="#FFD700" stroke="#000" strokeWidth="1" />
+                          <circle cx="43" cy="22" r="2.5" fill="#000" />
+                          <circle cx="57" cy="22" r="5" fill="#FFD700" stroke="#000" strokeWidth="1" />
+                          <circle cx="57" cy="22" r="2.5" fill="#000" />
+                          {/* Owl Beak */}
+                          <polygon points="50,26 47,32 53,32" fill="#E85D26" />
+                          {/* Flapping Wings */}
+                          <motion.path
+                            animate={{ d: ["M 32 35 Q 5 10 10 45 Q 30 50 34 40", "M 32 35 Q 5 60 10 75 Q 30 65 34 40", "M 32 35 Q 5 10 10 45 Q 30 50 34 40"] }}
+                            transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
+                            fill="#B38B59"
+                            stroke="#5C381E"
+                            strokeWidth="1.5"
+                          />
+                          <motion.path
+                            animate={{ d: ["M 68 35 Q 95 10 90 45 Q 70 50 66 40", "M 68 35 Q 95 60 90 75 Q 70 65 66 40", "M 68 35 Q 95 10 90 45 Q 70 50 66 40"] }}
+                            transition={{ duration: 0.4, repeat: Infinity, ease: "easeInOut" }}
+                            fill="#B38B59"
+                            stroke="#5C381E"
+                            strokeWidth="1.5"
+                          />
+                          {/* Owl Talons clutching wrapped book */}
+                          <rect x="42" y="62" width="16" height="14" rx="2" fill="#B37840" stroke="#4A2E14" strokeWidth="1" />
+                        </svg>
+                      </motion.div>
+
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] font-mono uppercase text-[#E8B830] font-bold block">
+                          🦉 HOGWARTS OWL POST IN TRANSIT
+                        </span>
+                        <h4 className="font-serif text-lg font-bold text-white">
+                          Owl Swooping Away With Your Parcel...
+                        </h4>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* STAGE 3: MAGICAL OWL DELIVERY POPUP (HARRY POTTER PARCHMENT STYLE) */}
+                  {owlStage === 'delivered_popup' && (
+                    <motion.div
+                      initial={{ scale: 0.85, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="rounded-xl bg-[#EFE6D3] text-[#1C1B17] p-5 space-y-3 shadow-2xl border-2 border-[#8B5A2B] text-center"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-[#1F6B3A] text-white flex items-center justify-center mx-auto shadow-md">
+                        <CheckCircle2 className="w-7 h-7" />
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-mono uppercase font-bold tracking-widest text-[#8B5A2B] block">
+                          OFFICIAL HOGWARTS &amp; MANGALORE OWL POST RECEIPT
+                        </span>
+                        <h3 className="font-serif text-xl font-bold text-[#1C1B17]">
+                          Book Delivered to Prajwal DL!
+                        </h3>
+                        <p className="text-xs text-[#4A463C] leading-relaxed">
+                          Your correspondence from <span className="font-bold text-[#E85D26]">{contactData.name}</span> was delivered via Owl Post to <span className="font-mono font-bold text-[#1F6B3A]">{email}</span>.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setOwlStage('idle');
+                          setContactData({ name: "", email: "", subject: "Full Stack & Web Advisory Opportunity", message: "" });
+                        }}
+                        className="bg-[#1C1B17] text-[#EFE6D3] hover:bg-[#E85D26] transition px-4 py-2 rounded-full text-xs font-mono font-bold uppercase cursor-pointer"
+                      >
+                        Dispatch Another Owl Post
+                      </button>
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* Bottom Return Button */}
+              <div className="pt-2 border-t border-white/20 flex justify-between items-center">
                 <button
                   onClick={() => {
                     setActiveBook(null);
-                    playTactileSound('close', isMuted);
+                    playSound('close', isMuted);
                   }}
                   className="text-xs font-mono font-bold text-white/80 hover:text-white underline cursor-pointer"
                 >
-                  Return to Shelf
+                  Return Volume to Shelf
                 </button>
-
-                {activeBook.liveUrl && (
-                  <a
-                    href={activeBook.liveUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-white text-[#1C1B17] hover:bg-[#1C1B17] hover:text-white transition px-5 py-2 rounded-lg font-bold text-xs inline-flex items-center gap-1.5 shadow-md"
-                  >
-                    <span>Launch Project</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                )}
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* 10. FOOTER */}
-      <footer className="border-t border-[#1C1B17]/10 py-12 px-6 text-center text-xs font-mono text-[#8A8574] space-y-3">
-        <p>© {new Date().getFullYear()} {candidateName}. Designed as an interactive editorial bookshelf.</p>
-        <div className="flex justify-center gap-6 text-[#1C1B17]">
-          <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">LinkedIn</a>
-          <a href={website} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">Website</a>
-          <a href={github} target="_blank" rel="noreferrer" className="hover:text-[#E85D26] transition">GitHub</a>
-        </div>
-      </footer>
     </div>
   );
 }
