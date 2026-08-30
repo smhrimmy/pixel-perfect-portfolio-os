@@ -1,69 +1,201 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, VolumeX, X, Archive, Folder } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Folder, Inbox, Compass, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+
+function playSoundEffect(type: 'trophy' | 'engine' | 'desk' | 'film', isMuted: boolean) {
+  if (isMuted || typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'trophy') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1046.5, now);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.2);
+    } else if (type === 'engine') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.linearRampToValueAtTime(160, now + 0.15);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } else if (type === 'film') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(300, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+      osc.start(now);
+      osc.stop(now + 0.04);
+    } else {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(220, now);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.start(now);
+      osc.stop(now + 0.06);
+    }
+  } catch {}
+}
+
+
 export default function TheArchitectsStudy({ data }: ThemeRendererProps) {
-  const { profile, projects } = data;
+  const profile = (data as any)?.profile || (data as any)?.identity || {};
+  const links = (data as any)?.socialLinks || (data as any)?.links || {};
+  const rawExperience = (data as any)?.experience || [];
+  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
+
   const candidateName = profile?.name || "Prajwal DL";
+  const bio = profile?.bio || "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.";
+  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || links?.phone || "+918105561638";
+  const location = profile?.location || "Mangalore, Karnataka, India";
+  const website = profile?.website || links?.website || "https://praxel.space/";
 
-  const drawers = (projects && projects.length > 0 ? projects : [
-    { title: "DRAWER 01: SPATIAL COMPUTING SCHEMATICS", tag: "Oak Slide A", desc: "Original blueprints detailing real-time WebGL polygon clipping and viewport transformations." },
-    { title: "DRAWER 02: AUTONOMOUS AGENT PROTOCOLS", tag: "Oak Slide B", desc: "Rolodex filing cards coordinating consensus contracts across multi-model microservices." },
-    { title: "DRAWER 03: CLOUD PERSISTENCE VAULT", tag: "Oak Slide C", desc: "Brass-keyed drawer containing disaster recovery blueprints and transaction write-ahead logs." },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [activeDrawer, setActiveDrawer] = useState<any | null>(null);
 
-  const [activeDrawer, setActiveDrawer] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const displayProjects = rawProjects.length > 0 ? rawProjects : [
+    { title: "Portfolio OS · 20 Tactile Themes", category: "Full Stack", desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine." },
+    { title: "Praxel Space Cloud Platform", category: "Infrastructure", desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal." },
+    { title: "Vitvara Scalable Web App", category: "Frontend", desc: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+    { title: "Custom Client Platforms", category: "Full Stack", desc: "Delivered bespoke performant web applications and custom CMS solutions." },
+  ];
+
+  const displayExperience = rawExperience.length > 0 ? rawExperience : [
+    { company: "Unifycx", role: "Web Advisor", startDate: "Jun 2025", endDate: "Present", summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panels." },
+    { company: "Freelancer", role: "Full Stack Developer", startDate: "Dec 2024", endDate: "Jun 2025", summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies." },
+    { company: "Glowtouch Technologies", role: "Junior Support Engineer", startDate: "Aug 2024", endDate: "Dec 2024", summary: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues." },
+    { company: "Vitvara Technologies", role: "Web Developer Intern", startDate: "Jan 2024", endDate: "May 2024", summary: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#241710] text-[#EADBCE] font-serif p-6 sm:p-12 flex flex-col justify-between selection:bg-[#8B5A2B] selection:text-white">
-      <header className="border-b border-[#543625] pb-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <Folder className="h-6 w-6 text-[#C29267]" />
-          <div>
-            <h1 className="text-base font-bold text-[#F5EBE1] uppercase tracking-wider">THE ARCHITECT'S ROLLTOP DESK</h1>
-            <p className="text-[11px] text-[#A8805F]">SOLID OAK DESK · SLIDING DRAWERS · ROLODEX DOCK · {candidateName}</p>
+    <div className="min-h-screen bg-[#241A13] text-[#E0D2C3] font-serif selection:bg-[#B88746] selection:text-black">
+      <a href="#main-content" className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#B88746] text-black font-sans font-bold text-xs rounded">
+        Skip 3D experience
+      </a>
+
+      {/* LOADER: Rolltop Desk Sliding */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#160E08] flex flex-col items-center justify-center p-6 text-center text-[#E0D2C3]">
+            <Archive className="w-12 h-12 text-[#B88746] animate-pulse" />
+            <h3 className="mt-4 text-xl">Sliding Rolltop Oak Desk Open...</h3>
+            <button onClick={() => setLoading(false)} className="mt-3 text-xs underline font-mono text-[#8C6D53]">[Skip]</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <header className="border-b border-[#3D2D20] bg-[#1E150F]/95 sticky top-0 z-40 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
+          <span className="font-bold tracking-wider uppercase text-sm text-[#B88746]">{candidateName} // ARCHITECT'S STUDY</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setIsMuted(!isMuted);
+                playSoundEffect("desk", !isMuted);
+              }}
+              className="h-8 w-8 rounded-full border border-[#3D2D20] text-[#E0D2C3] flex items-center justify-center hover:bg-[#3D2D20]"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            <Button asChild size="sm" className="bg-[#B88746] text-black font-bold text-xs rounded-full px-4 font-sans hover:bg-[#D4A35B]">
+              <a href="#stationery">Fountain Pen</a>
+            </Button>
           </div>
         </div>
-        <span className="text-xs font-mono text-[#C29267]">DESK COMPARTMENT {activeDrawer + 1} OF {drawers.length}</span>
       </header>
 
-      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
-        <div className="text-center space-y-2">
-          <span className="text-xs text-[#C29267] uppercase tracking-widest font-mono">ROLLTOP DRAWERS</span>
-          <h2 className="text-3xl sm:text-5xl text-[#F5EBE1] italic">Filed Architectural Papers</h2>
-        </div>
+      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        <section className="p-8 rounded-3xl border border-[#3D2D20] bg-[#1E150F] shadow-2xl space-y-4">
+          <span className="text-xs font-mono text-[#8C6D53] uppercase tracking-widest">SOLID OAK ROLLTOP DESK</span>
+          <h1 className="text-4xl sm:text-5xl leading-tight">{candidateName}</h1>
+          <p className="text-sm text-[#BFAEA0] font-sans leading-relaxed max-w-2xl">{bio}</p>
+        </section>
 
-        {/* Physical Oak Rolltop Drawer Card */}
-        <div className="p-8 sm:p-12 rounded-2xl border-2 border-[#543625] bg-[#362217] shadow-[0_20px_50px_rgba(0,0,0,0.8)] space-y-6">
-          <div className="flex justify-between items-center text-xs font-mono text-[#A8805F] border-b border-[#543625] pb-3">
-            <span>SLIDE: {drawers[activeDrawer].tag}</span>
-            <span className="text-[#C29267]">BRASS HARDWARE LOCKED</span>
+        {/* DRAWERS */}
+        <section className="space-y-6">
+          <h2 className="text-2xl">Sliding Oak Drawers // Case Files</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {displayProjects.map((proj: any, idx: number) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  setActiveDrawer(proj);
+                  playSoundEffect("desk", isMuted);
+                }}
+                className="p-7 rounded-3xl border border-[#3D2D20] bg-[#1E150F] hover:border-[#B88746] transition shadow-xl space-y-3 cursor-pointer"
+              >
+                <div className="flex justify-between text-xs font-mono text-[#8C6D53]">
+                  <span>Brass Label Drawer #{idx + 1}</span>
+                  <span className="text-[#B88746]">[SLIDE DRAWER]</span>
+                </div>
+                <h3 className="text-xl font-bold">{proj.title}</h3>
+                <p className="text-xs text-[#BFAEA0] font-sans leading-relaxed">{proj.desc}</p>
+              </div>
+            ))}
           </div>
+        </section>
 
-          <h3 className="text-2xl sm:text-4xl text-[#F5EBE1] font-bold">{drawers[activeDrawer].title}</h3>
-          <p className="text-sm text-[#D4C0AD] leading-relaxed italic">{drawers[activeDrawer].desc || drawers[activeDrawer].description}</p>
-
-          <div className="pt-6 border-t border-[#543625] flex justify-between items-center text-xs font-mono text-[#A8805F]">
-            <span>PRINCIPAL ARCHITECT: {candidateName.toUpperCase()}</span>
-            <span className="text-[#C29267]">DRAWINGS SECURED</span>
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <h2 className="text-2xl">Career Dossiers // Experience</h2>
+          <div className="space-y-4">
+            {displayExperience.map((exp: any, idx: number) => (
+              <div key={idx} className="p-6 rounded-2xl border border-[#3D2D20] bg-[#1E150F] space-y-2">
+                <div className="flex justify-between text-sm">
+                  <h3 className="font-bold">{exp.role} @ {exp.company}</h3>
+                  <span className="text-xs font-mono text-[#8C6D53]">{exp.startDate} – {exp.endDate || "Present"}</span>
+                </div>
+                <p className="text-xs text-[#BFAEA0] font-sans">{exp.summary}</p>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Slide Open Next Drawer */}
-        <div className="flex justify-center">
-          <Button
-            onClick={() => setActiveDrawer((d) => (d + 1) % drawers.length)}
-            className="bg-[#C29267] text-[#241710] hover:bg-[#C29267]/90 font-bold text-xs h-11 px-8 rounded-full shadow-lg"
-          >
-            Slide Open Next Oak Drawer →
+        <section id="stationery" className="p-8 rounded-3xl border border-[#3D2D20] bg-[#1E150F] text-center space-y-4 shadow-2xl">
+          <h2 className="text-2xl">Fountain Pen Stationery</h2>
+          <p className="text-xs text-[#BFAEA0] font-sans">{email} · {phone}</p>
+          <Button asChild size="sm" className="bg-[#B88746] text-black font-sans font-bold text-xs rounded-full px-6">
+            <a href={`mailto:${email}`}>Write Letter with Fountain Pen</a>
           </Button>
-        </div>
+        </section>
       </main>
 
-      <footer className="border-t border-[#543625] pt-4 text-center text-xs text-[#A8805F]">
-        <span>THE PRIVATE STUDY OF ARCHITECTURE · CRAFTED IN SOLID OAK</span>
-      </footer>
+      <AnimatePresence>
+        {activeDrawer && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+            <div className="max-w-md w-full rounded-3xl border-2 border-[#B88746] bg-[#1E150F] p-6 space-y-4 relative shadow-2xl text-[#E0D2C3]">
+              <button onClick={() => setActiveDrawer(null)} className="absolute top-4 right-4 text-[#8C6D53]">
+                <X className="w-4 h-4" />
+              </button>
+              <h3 className="text-xl font-bold">{activeDrawer.title}</h3>
+              <p className="text-xs text-[#BFAEA0] font-sans leading-relaxed">{activeDrawer.desc}</p>
+              <Button size="sm" onClick={() => setActiveDrawer(null)} className="bg-[#B88746] text-black font-sans font-bold text-xs rounded-full w-full">
+                Slide Drawer In
+              </Button>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

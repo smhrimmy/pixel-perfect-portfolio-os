@@ -1,71 +1,210 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, VolumeX, X, Gamepad2 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Gamepad2, Play, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+
+function playSoundEffect(type: 'click' | 'stamp' | 'page' | 'water' | 'coin' | 'clay', isMuted: boolean) {
+  if (isMuted || typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    if (type === 'stamp') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else if (type === 'page') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    } else if (type === 'coin') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(987.77, now);
+      osc.frequency.setValueAtTime(1318.51, now + 0.08);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === 'water') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(450, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+      osc.start(now);
+      osc.stop(now + 0.12);
+    } else {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(600, now);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    }
+  } catch {}
+}
+
+
 export default function TheArcadeCabinet({ data }: ThemeRendererProps) {
-  const { profile, projects } = data;
+  const profile = (data as any)?.profile || (data as any)?.identity || {};
+  const links = (data as any)?.socialLinks || (data as any)?.links || {};
+  const rawExperience = (data as any)?.experience || [];
+  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
+
   const candidateName = profile?.name || "Prajwal DL";
+  const bio = profile?.bio || "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.";
+  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || links?.phone || "+918105561638";
+  const location = profile?.location || "Mangalore, Karnataka, India";
+  const website = profile?.website || links?.website || "https://praxel.space/";
 
-  const games = (projects && projects.length > 0 ? projects : [
-    { title: "CYBER ATTACK 2077 · STAGE 1", score: "999,990 PTS", desc: "Defend distributed microservice clusters from rogue token payloads." },
-    { title: "RASTER RUNNER · STAGE 2", score: "840,200 PTS", desc: "High-speed WebGL fragment shader evasion course running at 120 FPS." },
-    { title: "POSTGRES INVADERS · STAGE 3", score: "720,150 PTS", desc: "Execute zero-latency query transactions before the buffer pool overflows." },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [activeGame, setActiveGame] = useState<any | null>(null);
 
-  const [activeGame, setActiveGame] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const displayProjects = rawProjects.length > 0 ? rawProjects : [
+    { title: "Portfolio OS · 20 Tactile Themes", category: "Full Stack", desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine." },
+    { title: "Praxel Space Cloud Platform", category: "Infrastructure", desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal." },
+    { title: "Vitvara Scalable Web App", category: "Frontend", desc: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+    { title: "Custom Client Platforms", category: "Full Stack", desc: "Delivered bespoke performant web applications and custom CMS solutions." },
+  ];
+
+  const displayExperience = rawExperience.length > 0 ? rawExperience : [
+    { company: "Unifycx", role: "Web Advisor", startDate: "Jun 2025", endDate: "Present", summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panels." },
+    { company: "Freelancer", role: "Full Stack Developer", startDate: "Dec 2024", endDate: "Jun 2025", summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies." },
+    { company: "Glowtouch Technologies", role: "Junior Support Engineer", startDate: "Aug 2024", endDate: "Dec 2024", summary: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues." },
+    { company: "Vitvara Technologies", role: "Web Developer Intern", startDate: "Jan 2024", endDate: "May 2024", summary: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0D021A] text-[#F3E8FF] font-mono p-6 sm:p-12 flex flex-col justify-between selection:bg-[#FF007F] selection:text-black">
-      <header className="border-b-2 border-[#FF007F]/40 pb-4 flex justify-between items-center">
-        <div className="flex items-center gap-3">
-          <Gamepad2 className="h-6 w-6 text-[#00F0FF]" />
-          <div>
-            <h1 className="text-base font-black text-[#F3E8FF] tracking-widest">THE RETRO ARCADE CABINET</h1>
-            <p className="text-[10px] text-[#FF007F]">INSERT 1 COIN TO PLAY · PLAYER 1: {candidateName}</p>
+    <div className="min-h-screen bg-[#100818] text-[#2FF3FF] font-sans selection:bg-[#FF2FB2] selection:text-white">
+      <a href="#main-content" className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#FF2FB2] text-white font-bold text-xs rounded">
+        Skip 3D experience
+      </a>
+
+      {/* LOADER: CRT Degauss Wobble */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#08040C] flex flex-col items-center justify-center p-6 text-center text-[#FF2FB2]">
+            <Gamepad2 className="w-12 h-12 animate-spin" />
+            <h3 className="mt-4 text-xl font-bold tracking-widest uppercase">DEGAUSSING RETRO ARCADE CRT...</h3>
+            <button onClick={() => setLoading(false)} className="mt-3 text-xs underline font-mono text-[#2FF3FF]">[SKIP]</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <header className="border-b border-[#3D1A54] bg-[#1A0D26]/95 sticky top-0 z-40 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
+          <span className="font-bold text-sm uppercase tracking-widest text-[#FF2FB2]">{candidateName} // ARCADE</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                setIsMuted(!isMuted);
+                playSoundEffect("coin", !isMuted);
+              }}
+              className="h-8 w-8 rounded-full border border-[#3D1A54] text-[#FF2FB2] flex items-center justify-center hover:bg-[#3D1A54]"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            <Button asChild size="sm" className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full hover:bg-[#E0269B]">
+              <a href="#highscore">Insert Coin</a>
+            </Button>
           </div>
-        </div>
-        <div className="text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-3 py-1 rounded border border-[#00F0FF]/40">
-          CREDITS: 99
         </div>
       </header>
 
-      <main className="my-12 max-w-3xl mx-auto w-full space-y-8">
-        <div className="text-center space-y-1">
-          <span className="text-xs text-[#00F0FF] tracking-widest">★ 3D CRT CHASSIS ENCLOSURE ★</span>
-          <h2 className="text-3xl sm:text-5xl font-black text-[#FF007F] tracking-tight">HIGH SCORE VAULT</h2>
-        </div>
+      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
+        <section className="p-8 rounded-3xl border-2 border-[#3D1A54] bg-[#1A0D26] shadow-[0_0_40px_rgba(255,47,178,0.2)] space-y-4">
+          <span className="text-xs font-mono text-[#FF2FB2] uppercase tracking-widest">[INSERT COIN TO PLAY]</span>
+          <h1 className="text-4xl sm:text-5xl font-black text-white">{candidateName}</h1>
+          <p className="text-sm text-[#A8B2D1] leading-relaxed max-w-2xl">{bio}</p>
+        </section>
 
-        {/* Physical Curved CRT Screen Box */}
-        <div className="p-8 sm:p-12 rounded-3xl border-4 border-[#00F0FF] bg-[#05000A] shadow-[0_0_50px_rgba(255,0,127,0.3)] space-y-6 relative overflow-hidden">
-          <div className="flex justify-between items-center text-xs border-b border-[#FF007F]/30 pb-3 text-[#00F0FF]">
-            <span>{games[activeGame].score}</span>
-            <span className="text-[#FF007F]">HI-SCORE: 1,000,000</span>
+        {/* GAMES SHOWCASE */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-bold uppercase text-white">SELECT GAME // PROJECTS</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {displayProjects.map((proj: any, idx: number) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  setActiveGame(proj);
+                  playSoundEffect("coin", isMuted);
+                }}
+                className="p-7 rounded-3xl border-2 border-[#3D1A54] bg-[#1A0D26] hover:border-[#FF2FB2] transition shadow-xl space-y-3 cursor-pointer"
+              >
+                <div className="flex justify-between text-xs font-mono text-[#FF2FB2]">
+                  <span>CARTRIDGE #{idx + 1}</span>
+                  <span>[PRESS 'A' TO LAUNCH]</span>
+                </div>
+                <h3 className="text-xl font-bold text-white">{proj.title}</h3>
+                <p className="text-xs text-[#A8B2D1] leading-relaxed">{proj.desc}</p>
+              </div>
+            ))}
           </div>
+        </section>
 
-          <h3 className="text-2xl sm:text-4xl font-black text-[#F3E8FF] uppercase">{games[activeGame].title}</h3>
-          <p className="text-xs sm:text-sm text-[#D8B4FE] leading-relaxed">{games[activeGame].desc || games[activeGame].description}</p>
-
-          <div className="pt-6 border-t border-[#FF007F]/30 flex justify-between items-center text-xs text-[#00F0FF]">
-            <span>JOYSTICK: 8-WAY DIGITAL</span>
-            <span className="font-bold text-[#FF007F]">READY PLAYER ONE</span>
+        {/* HIGH SCORES (EXPERIENCE) */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-bold uppercase text-white">HIGH SCORES // EXPERIENCE</h2>
+          <div className="space-y-4">
+            {displayExperience.map((exp: any, idx: number) => (
+              <div key={idx} className="p-6 rounded-2xl border border-[#3D1A54] bg-[#1A0D26] space-y-2">
+                <div className="flex justify-between text-sm">
+                  <h3 className="font-bold text-white">{exp.role} @ {exp.company}</h3>
+                  <span className="text-xs font-mono text-[#FF2FB2]">{exp.startDate} – {exp.endDate || "Present"}</span>
+                </div>
+                <p className="text-xs text-[#A8B2D1]">{exp.summary}</p>
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Joystick & Button Controls */}
-        <div className="flex justify-center gap-4">
-          <Button
-            onClick={() => setActiveGame((g) => (g + 1) % games.length)}
-            className="bg-[#FF007F] text-black hover:bg-[#FF007F]/90 font-black text-xs h-12 px-8 rounded-full shadow-[0_0_20px_rgba(255,0,127,0.5)]"
-          >
-            Press Button A: Next Stage →
+        <section id="highscore" className="p-8 rounded-3xl border-2 border-[#FF2FB2] bg-[#1A0D26] text-center space-y-4 shadow-[0_0_50px_rgba(255,47,178,0.25)]">
+          <h2 className="text-2xl font-bold uppercase text-white">ENTER INITIALS // CONTACT</h2>
+          <p className="text-xs text-[#A8B2D1]">{email} · {phone}</p>
+          <Button asChild size="sm" className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full px-6">
+            <a href={`mailto:${email}`}>Submit High Score Record</a>
           </Button>
-        </div>
+        </section>
       </main>
 
-      <footer className="border-t-2 border-[#FF007F]/40 pt-4 text-center text-xs text-[#D8B4FE]">
-        <span>ARCADE TIME: 1984 · ALL SCORES SAVED TO EEPROM</span>
-      </footer>
+      <AnimatePresence>
+        {activeGame && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+            <div className="max-w-md w-full rounded-3xl border-2 border-[#FF2FB2] bg-[#1A0D26] p-6 space-y-4 relative shadow-2xl text-[#2FF3FF]">
+              <button onClick={() => setActiveGame(null)} className="absolute top-4 right-4 text-[#FF2FB2]">
+                <X className="w-4 h-4" />
+              </button>
+              <h3 className="text-xl font-bold text-white">{activeGame.title}</h3>
+              <p className="text-xs text-[#A8B2D1] leading-relaxed">{activeGame.desc}</p>
+              <Button size="sm" onClick={() => setActiveGame(null)} className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full w-full">
+                Exit Arcade Demo
+              </Button>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
