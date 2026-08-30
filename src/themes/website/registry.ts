@@ -9,7 +9,7 @@ export interface ThemeMeta {
   component: React.ComponentType<ThemeRendererProps>;
 }
 
-export const WEBSITE_THEMES: ThemeMeta[] = [
+export const websiteThemes: ThemeMeta[] = [
   {
     id: "the-workshop",
     name: "The Workshop (Flagship 3D)",
@@ -152,7 +152,8 @@ export const WEBSITE_THEMES: ThemeMeta[] = [
   },
 ];
 
-export const websiteThemes = WEBSITE_THEMES;
+export const WEBSITE_THEMES = websiteThemes;
+
 
 
 // Alias mapping for backward compatibility with database records and legacy URLs
