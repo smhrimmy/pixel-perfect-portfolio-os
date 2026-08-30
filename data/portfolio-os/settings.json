@@ -1,12 +1,14 @@
 [
   {
     "id": "site",
-    "siteTitle": "Prajwal DL - Portfolio",
-    "siteDescription": "Personal portfolio for Prajwal DL",
-    "ownerName": "PRAJWAL DL",
+    "siteTitle": "Prajwal DL — Full Stack Developer & Support Engineer",
+    "siteDescription": "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly. Strong work ethic and effective communication skills.",
+    "ownerName": "Prajwal DL",
     "ownerEmail": "pdlkpt@gmail.com",
-    "location": "MANGALORE, KA",
-    "tagline": "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.",
+    "location": "Mangalore, Karnataka, India",
+    "phone": "+918105561638",
+    "tagline": "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly. Strong work ethic and effective communication skills.",
+    "bio": "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly. Strong work ethic and effective communication skills. Eager to contribute to a dynamic team and support organizational goals.",
     "socials": [
       {
         "label": "LinkedIn",
@@ -19,20 +21,31 @@
       {
         "label": "Phone",
         "url": "tel:+918105561638"
+      },
+      {
+        "label": "Email",
+        "url": "mailto:pdlkpt@gmail.com"
+      },
+      {
+        "label": "GitHub",
+        "url": "https://github.com/smhrimmy"
       }
     ],
     "primaryColor": "#00ffff",
     "accentColor": "#0b0b0d",
-    "activeWebsiteTheme": "macos-desktop",
+    "activeWebsiteTheme": "the-workshop",
     "activeBlogTheme": "editorial-longform",
     "seo": {
       "defaultOgImage": null,
       "twitterHandle": null,
       "canonicalOrigin": "https://praxel.space"
     },
-    "featureFlags": {},
+    "featureFlags": {
+      "enable_ai_chat": true,
+      "enable_visitor_theme_switcher": true
+    },
     "resumeUrl": null,
     "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-08-30T11:02:02.320Z"
+    "updatedAt": "2026-08-30T14:03:26.085Z"
   }
 ]

@@ -2,141 +2,86 @@
   {
     "id": "proj-1",
     "slug": "portfolio-os",
-    "title": "Portfolio OS",
-    "summary": "A sophisticated personal operating system and digital showcase.",
-    "description": "Traditional developer portfolios often act merely as static CVs. The challenge was to build a portfolio that actively demonstrates technical capability—operating as a 'system' rather than a document—while remaining highly performant, accessible, and cinematic.",
-    "tags": ["React", "TypeScript", "Tailwind CSS", "Framer Motion", "Three.js"],
-    "category": "Full Stack",
-    "technologies": ["React", "TypeScript", "Tailwind CSS", "Framer Motion", "Three.js"],
-    "techStack": [
-      {
-        "category": "Frontend",
-        "items": [
-          { "name": "React", "reason": "Component-based UI architecture." },
-          { "name": "TypeScript", "reason": "End-to-end type safety and self-documenting code." }
-        ]
-      },
-      {
-        "category": "Graphics & Motion",
-        "items": [
-          { "name": "Three.js & R3F", "reason": "Web-native 3D storytelling." },
-          { "name": "Framer Motion", "reason": "Declarative, physics-based UI transitions." }
-        ]
-      }
+    "title": "Portfolio OS — 20 Physically-Metaphored 3D Themes",
+    "summary": "Architected a full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine.",
+    "description": "Built with React, TypeScript, TanStack Start, Tailwind CSS, and Three.js/WebGL. Features sub-100ms LCP, dual draft-to-live deployment pipeline, and full Studio Admin permissions.",
+    "tags": [
+      "React.js",
+      "TypeScript",
+      "Three.js",
+      "TanStack Start",
+      "Tailwind CSS"
     ],
+    "category": "Full Stack",
     "featured": true,
     "status": "published",
     "role": "Lead Architect & Developer",
     "duration": "2026",
-    "problem": "Traditional developer portfolios often act merely as static CVs. The challenge was to build a portfolio that actively demonstrates technical capability—operating as a 'system' rather than a document—while remaining highly performant, accessible, and cinematic.",
-    "goals": [
-      "Prove architectural maturity through a modular, CMS-ready codebase.",
-      "Achieve 60fps cinematic scroll transitions without scroll-jacking.",
-      "Provide a robust WebGL/3D experience that degrades gracefully."
-    ],
-    "constraints": [
-      "Must score 100/100 on Lighthouse Performance despite using 3D.",
-      "All visual choreography must respect 'prefers-reduced-motion'.",
-      "No unnecessary external library bloat."
-    ],
-    "architecture": "The Portfolio OS is built as a single-page application heavily relying on React Context and Zustand for state. A dedicated 3D scene manager mounts independently behind the DOM, utilizing 'useFrame' and DOM querying to synchronize canvas elements with semantic HTML content.",
-    "challenges": [
-      {
-        "challenge": "Synchronizing React DOM with WebGL cleanly.",
-        "solution": "Decoupled 3D state from React render cycle by reading DOM coordinates and scroll progress directly inside the WebGL requestAnimationFrame loop.",
-        "result": "Eliminated React re-renders during scroll, maintaining a perfect 60fps."
-      }
-    ],
-    "solutions": [],
-    "results": [
-      "0 hydration errors or console warnings in production.",
-      "Lighthouse metrics consistently maxed out across all 4 categories.",
-      "Fully functional fallback for systems without WebGL capabilities."
-    ],
-    "lessons": [
-      "Decoupling UI state from animation state is critical for performant WebGL.",
-      "Always design data models early; migrating from flat data to structured data later is expensive."
-    ],
-    "coverImageUrl": "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/cfe4b3f3-b00f-4333-9e1c-e71ef1a29542",
-    "liveUrl": "https://praxel.space",
-    "repoUrl": "https://github.com/prajwaldl/portfolio-os",
-    "order": 1,
-    "createdAt": "2026-08-17T07:02:54.582Z",
-    "updatedAt": "2026-08-17T09:01:33.119Z"
+    "liveUrl": "https://praxel.space/",
+    "repoUrl": "https://github.com/smhrimmy/pixel-perfect-portfolio-os"
   },
   {
     "id": "proj-2",
-    "slug": "design-system-core",
-    "title": "Design System Core",
-    "summary": "An accessible, framework-agnostic component library.",
-    "description": "The engineering team was suffering from inconsistent UI patterns across multiple product suites, leading to severe design debt and massive accessibility compliance gaps.",
-    "tags": ["Figma", "React", "Radix UI", "Tailwind CSS"],
-    "category": "Design Systems",
-    "technologies": ["Figma", "React", "Radix UI", "Tailwind CSS"],
-    "techStack": [
-      {
-        "category": "UI Foundation",
-        "items": [
-          { "name": "React", "reason": "Core component rendering." },
-          { "name": "Radix UI", "reason": "Headless, unstyled accessible primitives." },
-          { "name": "Tailwind CSS", "reason": "Utility-first token system mapping." }
-        ]
-      }
+    "slug": "praxel-space-platform",
+    "title": "Praxel Space Cloud Platform",
+    "summary": "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal.",
+    "description": "Engineered web migration workflows, cPanel integrations, automated DNS records diagnostics, and SSL provisioning for shared and cloud hosting environments.",
+    "tags": [
+      "WordPress",
+      "DNS",
+      "PHP",
+      "MySQL",
+      "SSL",
+      "Linux"
     ],
+    "category": "Support & Infrastructure",
     "featured": true,
     "status": "published",
-    "role": "Design Engineer",
+    "role": "Infrastructure Engineer",
     "duration": "2025",
-    "problem": "The engineering team was suffering from inconsistent UI patterns across multiple product suites, leading to severe design debt and massive accessibility compliance gaps.",
-    "goals": [
-      "Standardize 40+ UI components.",
-      "Achieve WCAG AA compliance out of the box."
-    ],
-    "challenges": [],
-    "solutions": [],
-    "results": [
-      "Reduced time-to-market for new features by 40%.",
-      "Achieved 100% WCAG AA compliance across core flows."
-    ],
-    "coverImageUrl": null,
-    "liveUrl": null,
-    "repoUrl": null,
-    "order": 2,
-    "createdAt": "2026-08-17T07:02:54.864Z",
-    "updatedAt": "2026-08-17T09:01:33.141Z"
+    "liveUrl": "https://praxel.space/",
+    "repoUrl": "https://github.com/smhrimmy"
   },
   {
     "id": "proj-3",
-    "slug": "fintech-dashboard",
-    "title": "FinTech Analytics Dashboard",
-    "summary": "High-performance data visualization for financial metrics.",
-    "description": "Financial analysts were using static reports. We needed an interactive, real-time analytics dashboard capable of rendering 100,000+ data points smoothly.",
-    "tags": ["Vue.js", "D3.js", "TypeScript", "Node.js"],
-    "category": "Frontend",
-    "technologies": ["Vue.js", "D3.js", "TypeScript", "Node.js"],
-    "techStack": [
-      {
-        "category": "Frontend & Viz",
-        "items": [
-          { "name": "Vue.js", "reason": "Reactive dashboard UI." },
-          { "name": "D3.js", "reason": "High performance canvas & SVG chart rendering." }
-        ]
-      }
+    "slug": "vitvara-web-app",
+    "title": "Vitvara Scalable Web Application",
+    "summary": "Engineered a responsive, user-centric web application using modern React best practices with scalable REST API endpoints.",
+    "description": "Systematically debugged and tested applications, leading to enhanced software reliability, clean user experience, and optimized API latency.",
+    "tags": [
+      "React.js",
+      "JavaScript",
+      "HTML5",
+      "CSS3",
+      "REST APIs"
     ],
-    "featured": false,
+    "category": "Frontend Development",
+    "featured": true,
     "status": "published",
-    "role": "Full Stack Engineer",
+    "role": "Web Developer Intern",
     "duration": "2024",
-    "problem": "Financial analysts were using static reports. We needed an interactive, real-time analytics dashboard capable of rendering 100,000+ data points smoothly.",
-    "goals": ["Sub-100ms render time for financial time series data."],
-    "challenges": [],
-    "solutions": [],
-    "results": ["Rendered 100,000+ data points with 60fps interaction."],
-    "coverImageUrl": null,
-    "liveUrl": null,
-    "repoUrl": null,
-    "order": 3,
-    "createdAt": "2026-08-17T07:02:55.160Z",
-    "updatedAt": "2026-08-17T09:01:33.160Z"
+    "liveUrl": "https://praxel.space/",
+    "repoUrl": "https://github.com/smhrimmy"
+  },
+  {
+    "id": "proj-4",
+    "slug": "custom-client-platforms",
+    "title": "Custom Client Web Applications & CMS",
+    "summary": "Architected and delivered custom websites and web applications leveraging modern frontend and backend tech stacks.",
+    "description": "Delivered responsive, performance-focused, and user-friendly solutions while improving applications through client feedback and continuous enhancements.",
+    "tags": [
+      "React.js",
+      "Node.js",
+      "WordPress",
+      "UI/UX Design",
+      "PHP"
+    ],
+    "category": "Full Stack",
+    "featured": true,
+    "status": "published",
+    "role": "Freelance Full Stack Developer",
+    "duration": "2024 - 2025",
+    "liveUrl": "https://praxel.space/",
+    "repoUrl": "https://github.com/smhrimmy"
   }
 ]

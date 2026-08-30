@@ -1,122 +1,110 @@
 [
   {
     "id": "skill-1",
-    "name": "React",
-    "category": "Frontend",
+    "name": "Technical Troubleshooting",
+    "category": "Support & Systems",
     "level": "expert",
-    "proficiency": 95,
-    "years": 3,
-    "iconUrl": null,
-    "order": 1,
-    "createdAt": "2026-07-26T15:35:30.952Z",
-    "updatedAt": "2026-07-26T15:35:30.952Z"
+    "proficiency": 98,
+    "years": 2,
+    "order": 1
   },
   {
     "id": "skill-2",
-    "name": "TypeScript",
-    "category": "Frontend",
+    "name": "WordPress Support",
+    "category": "CMS & Platforms",
     "level": "expert",
-    "proficiency": 92,
-    "years": 3,
-    "iconUrl": null,
-    "order": 2,
-    "createdAt": "2026-07-26T15:35:30.971Z",
-    "updatedAt": "2026-07-26T15:35:30.971Z"
+    "proficiency": 95,
+    "years": 2,
+    "order": 2
   },
   {
     "id": "skill-3",
-    "name": "Tailwind CSS",
-    "category": "Frontend",
+    "name": "DNS Management",
+    "category": "Hosting & Networking",
     "level": "expert",
-    "proficiency": 90,
-    "years": 3,
-    "iconUrl": null,
-    "order": 3,
-    "createdAt": "2026-07-26T15:35:30.999Z",
-    "updatedAt": "2026-07-26T15:35:30.999Z"
+    "proficiency": 95,
+    "years": 2,
+    "order": 3
   },
   {
     "id": "skill-4",
-    "name": "Node.js",
-    "category": "Backend",
-    "level": "advanced",
-    "proficiency": 88,
+    "name": "Frontend Development",
+    "category": "Web Engineering",
+    "level": "expert",
+    "proficiency": 92,
     "years": 2,
-    "iconUrl": null,
-    "order": 4,
-    "createdAt": "2026-07-26T15:35:31.030Z",
-    "updatedAt": "2026-07-26T15:35:31.030Z"
+    "order": 4
   },
   {
     "id": "skill-5",
-    "name": "PostgreSQL & Supabase",
-    "category": "Backend",
-    "level": "advanced",
-    "proficiency": 85,
+    "name": "React.js & TypeScript",
+    "category": "Web Engineering",
+    "level": "expert",
+    "proficiency": 90,
     "years": 2,
-    "iconUrl": null,
-    "order": 5,
-    "createdAt": "2026-07-26T15:35:31.071Z",
-    "updatedAt": "2026-07-26T15:35:31.071Z"
+    "order": 5
   },
   {
     "id": "skill-6",
-    "name": "Three.js & WebGL",
-    "category": "Graphics",
-    "level": "intermediate",
-    "proficiency": 75,
-    "years": 2,
-    "iconUrl": null,
-    "order": 6,
-    "createdAt": "2026-07-26T15:35:31.092Z",
-    "updatedAt": "2026-07-26T15:35:31.092Z"
-  },
-  {
-    "id": "skill-7",
-    "name": "UI/UX Design & Figma",
+    "name": "UI/UX Design",
     "category": "Design",
     "level": "advanced",
     "proficiency": 88,
     "years": 2,
-    "iconUrl": null,
-    "order": 7,
-    "createdAt": "2026-07-26T15:35:31.120Z",
-    "updatedAt": "2026-07-26T15:35:31.120Z"
+    "order": 6
+  },
+  {
+    "id": "skill-7",
+    "name": "PHP & MySQL",
+    "category": "Backend & Database",
+    "level": "advanced",
+    "proficiency": 85,
+    "years": 2,
+    "order": 7
   },
   {
     "id": "skill-8",
-    "name": "WordPress & CMS Infrastructure",
-    "category": "Infrastructure",
-    "level": "advanced",
-    "proficiency": 90,
+    "name": "Server & Website Migrations",
+    "category": "Hosting & Networking",
+    "level": "expert",
+    "proficiency": 94,
     "years": 2,
-    "iconUrl": null,
-    "order": 8,
-    "createdAt": "2026-07-26T15:35:31.143Z",
-    "updatedAt": "2026-07-26T15:35:31.143Z"
+    "order": 8
   },
   {
     "id": "skill-9",
-    "name": "DNS & Server Management",
-    "category": "Infrastructure",
-    "level": "advanced",
-    "proficiency": 88,
+    "name": "SSL & Email Configurations",
+    "category": "Hosting & Networking",
+    "level": "expert",
+    "proficiency": 96,
     "years": 2,
-    "iconUrl": null,
-    "order": 9,
-    "createdAt": "2026-07-26T15:35:31.166Z",
-    "updatedAt": "2026-07-26T15:35:31.166Z"
+    "order": 9
   },
   {
     "id": "skill-10",
-    "name": "AI Automation & Systems",
-    "category": "AI",
+    "name": "Problem-Solving & Communication",
+    "category": "Soft Skills",
+    "level": "expert",
+    "proficiency": 95,
+    "years": 3,
+    "order": 10
+  },
+  {
+    "id": "skill-11",
+    "name": "Microsoft Excel",
+    "category": "Productivity",
     "level": "advanced",
-    "proficiency": 86,
-    "years": 2,
-    "iconUrl": null,
-    "order": 10,
-    "createdAt": "2026-07-26T15:35:31.200Z",
-    "updatedAt": "2026-07-26T15:35:31.200Z"
+    "proficiency": 90,
+    "years": 3,
+    "order": 11
+  },
+  {
+    "id": "skill-12",
+    "name": "Multitasking & Quick Learner",
+    "category": "Soft Skills",
+    "level": "expert",
+    "proficiency": 95,
+    "years": 3,
+    "order": 12
   }
 ]
