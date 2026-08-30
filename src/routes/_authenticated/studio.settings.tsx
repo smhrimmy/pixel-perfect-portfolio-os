@@ -47,7 +47,24 @@ function SettingsPage() {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(settingsUpdateSchema),
-    defaultValues: {},
+    defaultValues: {
+      siteTitle: "Prajwal DL — Portfolio OS",
+      siteDescription: "Dedicated Full Stack Developer & Web Advisor portfolio featuring 20 real-world physical metaphors.",
+      ownerName: "Prajwal DL",
+      ownerEmail: "pdlkpt@gmail.com",
+      location: "Mangalore, Karnataka, India",
+      tagline: "Dedicated and adaptable professional with a proactive attitude and strong work ethic.",
+      socials: [
+        { label: "GitHub", url: "https://github.com/smhrimmy" },
+        { label: "LinkedIn", url: "https://linkedin.com/in/prajwal-d-l-118198370/" },
+        { label: "Website", url: "https://praxel.space/" },
+      ],
+      primaryColor: "#00E6C3",
+      accentColor: "#E85D26",
+      activeWebsiteTheme: "the-reading-room",
+      activeBlogTheme: "editorial-longform",
+      resumeUrl: "https://praxel.space/",
+    },
     mode: "onChange",
   });
 
