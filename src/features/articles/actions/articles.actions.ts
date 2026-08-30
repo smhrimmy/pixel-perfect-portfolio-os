@@ -17,17 +17,17 @@ export const listAllArticlesJson = createServerFn({ method: "GET" })
   .handler(async () => articlesService().queries.listAll());
 export const getArticleJson = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => articlesService().queries.get(data));
 export const createArticleJson = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => articleCreateSchema.parse(i))
+  .validator((i: unknown) => articleCreateSchema.parse(i))
   .handler(async ({ data }) => articlesService().commands.create(data));
 export const updateArticleJson = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => articleUpdateSchema.parse(i))
+  .validator((i: unknown) => articleUpdateSchema.parse(i))
   .handler(async ({ data }) => articlesService().commands.update(data));
 export const deleteArticleJson = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => articlesService().commands.delete(data));

@@ -47,7 +47,7 @@ async function gh<T>(url: string): Promise<T> {
 }
 
 export const getGithubBundle = createServerFn({ method: "GET" })
-  .inputValidator((i: unknown) => inputSchema.parse(i))
+  .validator((i: unknown) => inputSchema.parse(i))
   .handler(async ({ data }): Promise<GithubBundle> => {
     const { username } = data;
     const [profile, repos] = await Promise.all([

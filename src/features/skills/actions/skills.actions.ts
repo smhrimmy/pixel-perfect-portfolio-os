@@ -12,13 +12,13 @@ export const listSkillsByCategory = createServerFn({ method: "GET" }).handler(as
 );
 export const createSkill = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => skillCreateSchema.parse(i))
+  .validator((i: unknown) => skillCreateSchema.parse(i))
   .handler(async ({ data }) => skillsService().commands.create(data));
 export const updateSkill = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => skillUpdateSchema.parse(i))
+  .validator((i: unknown) => skillUpdateSchema.parse(i))
   .handler(async ({ data }) => skillsService().commands.update(data));
 export const deleteSkill = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => skillsService().commands.delete(data));

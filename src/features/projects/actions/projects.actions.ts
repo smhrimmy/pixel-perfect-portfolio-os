@@ -15,7 +15,7 @@ export const listPublishedProjects = createServerFn({ method: "GET" }).handler(
 );
 
 export const getProjectBySlug = createServerFn({ method: "GET" })
-  .inputValidator((slug: string) => z.string().min(1).parse(slug))
+  .validator((slug: string) => z.string().min(1).parse(slug))
   .handler(async ({ data }): Promise<ProjectDto> =>
     projectsService().queries.findBySlug(data),
   );
@@ -28,26 +28,26 @@ export const listAllProjects = createServerFn({ method: "GET" })
 
 export const getProject = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }): Promise<ProjectDto> =>
     projectsService().queries.get(data),
   );
 
 export const createProject = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((input: unknown) => projectCreateSchema.parse(input))
+  .validator((input: unknown) => projectCreateSchema.parse(input))
   .handler(async ({ data }): Promise<ProjectDto> =>
     projectsService().commands.create(data),
   );
 
 export const updateProject = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((input: unknown) => projectUpdateSchema.parse(input))
+  .validator((input: unknown) => projectUpdateSchema.parse(input))
   .handler(async ({ data }): Promise<ProjectDto> =>
     projectsService().commands.update(data),
   );
 
 export const deleteProject = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => projectsService().commands.delete(data));

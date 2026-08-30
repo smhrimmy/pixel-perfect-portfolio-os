@@ -9,7 +9,7 @@ export const getSettings = createServerFn({ method: "GET" }).handler(async () =>
 
 export const updateSettings = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => settingsUpdateSchema.parse(i))
+  .validator((i: unknown) => settingsUpdateSchema.parse(i))
   .handler(async ({ data }) => {
     const updated = await settingsService().commands.update(data);
     try {

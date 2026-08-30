@@ -9,17 +9,17 @@ export const listMedia = createServerFn({ method: "GET" })
   .handler(async () => mediaService().queries.list());
 export const getMedia = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => mediaService().queries.get(data));
 export const createMedia = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => mediaCreateSchema.parse(i))
+  .validator((i: unknown) => mediaCreateSchema.parse(i))
   .handler(async ({ data }) => mediaService().commands.create(data));
 export const updateMedia = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => mediaUpdateSchema.parse(i))
+  .validator((i: unknown) => mediaUpdateSchema.parse(i))
   .handler(async ({ data }) => mediaService().commands.update(data));
 export const deleteMedia = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => mediaService().commands.delete(data));

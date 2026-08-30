@@ -12,17 +12,17 @@ export const listExperience = createServerFn({ method: "GET" }).handler(async ()
 );
 export const getExperience = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => experienceService().queries.get(data));
 export const createExperience = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => experienceCreateSchema.parse(i))
+  .validator((i: unknown) => experienceCreateSchema.parse(i))
   .handler(async ({ data }) => experienceService().commands.create(data));
 export const updateExperience = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((i: unknown) => experienceUpdateSchema.parse(i))
+  .validator((i: unknown) => experienceUpdateSchema.parse(i))
   .handler(async ({ data }) => experienceService().commands.update(data));
 export const deleteExperience = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
-  .inputValidator((id: string) => z.string().min(1).parse(id))
+  .validator((id: string) => z.string().min(1).parse(id))
   .handler(async ({ data }) => experienceService().commands.delete(data));

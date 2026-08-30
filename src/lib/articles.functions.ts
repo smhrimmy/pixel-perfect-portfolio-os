@@ -123,7 +123,7 @@ export const listArticlesAdmin = createServerFn({ method: "GET" })
 
 export const getArticleAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((id: string) => z.string().uuid().parse(id))
+  .validator((id: string) => z.string().uuid().parse(id))
   .handler(async ({ context, data }): Promise<ArticleRow | null> => {
     const { data: row, error } = await context.supabase
       .from("articles")
@@ -136,7 +136,7 @@ export const getArticleAdmin = createServerFn({ method: "GET" })
 
 export const upsertArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => upsertInput.parse(input))
+  .validator((input: unknown) => upsertInput.parse(input))
   .handler(async ({ context, data }): Promise<ArticleRow> => {
     const now = new Date().toISOString();
     const publishedAt = data.status === "published" ? now : null;
@@ -182,7 +182,7 @@ export const upsertArticle = createServerFn({ method: "POST" })
 
 export const deleteArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((id: string) => z.string().uuid().parse(id))
+  .validator((id: string) => z.string().uuid().parse(id))
   .handler(async ({ context, data }) => {
     const { error } = await context.supabase.from("articles").delete().eq("id", data);
     if (error) throw error;
@@ -198,7 +198,7 @@ const aiInput = z.object({
 
 export const aiDraftArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => aiInput.parse(input))
+  .validator((input: unknown) => aiInput.parse(input))
   .handler(async ({ data }): Promise<{ slug: string; excerpt: string; markdown: string }> => {
     const key = process.env.AI_API_KEY || process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing AI_API_KEY");
@@ -267,7 +267,7 @@ export type ArticleHistoryRow = {
 
 export const listArticleHistory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((id: string) => z.string().uuid().parse(id))
+  .validator((id: string) => z.string().uuid().parse(id))
   .handler(async ({ context, data }): Promise<ArticleHistoryRow[]> => {
     const { data: rows, error } = await (context.supabase as any)
       .from("article_history")
@@ -281,7 +281,7 @@ export const listArticleHistory = createServerFn({ method: "GET" })
 
 export const rollbackArticle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((snapshotId: string) => z.string().uuid().parse(snapshotId))
+  .validator((snapshotId: string) => z.string().uuid().parse(snapshotId))
   .handler(async ({ context, data }) => {
     // Verify caller is admin (has_role runs as invoker; user can read own roles).
     const { data: isAdmin, error: roleErr } = await (context.supabase as any).rpc("has_role", {
