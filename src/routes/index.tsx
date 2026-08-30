@@ -1,9 +1,19 @@
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getLiveSite } from "@/lib/cms.functions";
 import { resolveWebsiteTheme } from "@/themes/website/registry";
 import { GlobalAIChatbot } from "@/components/ui/global-ai-chatbot";
+import { FloatingThemeSwitcher } from "@/components/ui/FloatingThemeSwitcher";
+import { ThemeAware3DLoader, type LoaderStyle } from "@/components/ui/ThemeAware3DLoader";
+import { z } from "zod";
+
+const searchSchema = z.object({
+  theme: z.any().optional(),
+  __preview_theme: z.any().optional(),
+  __preview_loader: z.any().optional(),
+  __preview_theme_switcher: z.any().optional(),
+}).catchall(z.any());
 
 const liveSiteQuery = () =>
   queryOptions({
@@ -13,19 +23,20 @@ const liveSiteQuery = () =>
   });
 
 export const Route = createFileRoute("/")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Prajwal DL — AI Automation & Web Developer" },
+      { title: "Prajwal DL — Full Stack Engineer & AI Automation Architect" },
       {
         name: "description",
         content:
-          "Prajwal DL designs and ships AI automation systems and premium, high-converting websites for ambitious brands.",
+          "High-performance web applications, reactive architecture engines, and bespoke AI automation systems engineered by Prajwal DL.",
       },
-      { property: "og:title", content: "Prajwal DL — AI Automation & Web Developer" },
+      { property: "og:title", content: "Prajwal DL — Full Stack Engineer & AI Automation Architect" },
       {
         property: "og:description",
         content:
-          "Prajwal DL designs and ships AI automation systems and premium, high-converting websites for ambitious brands.",
+          "High-performance web applications, reactive architecture engines, and bespoke AI automation systems engineered by Prajwal DL.",
       },
     ],
   }),
@@ -44,12 +55,66 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const searchParams = Route.useSearch();
   const { data } = useSuspenseQuery(liveSiteQuery());
-  const Theme = resolveWebsiteTheme(data.config.website_theme).component;
+  const [selectedTheme, setSelectedTheme] = useState<string | null>(null);
+  const [show3DLoader, setShow3DLoader] = useState(false);
+  const [loaderStyle, setLoaderStyle] = useState<LoaderStyle>("auto");
+  const [showVisitorSwitcher, setShowVisitorSwitcher] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("portfolio_os_theme");
+      if (savedTheme) setSelectedTheme(savedTheme);
+
+      // Check 3D Animated Loader settings
+      const loaderSetting = localStorage.getItem("portfolio_3d_loader_enabled");
+      const loaderStyleSetting = (localStorage.getItem("portfolio_3d_loader_style") as LoaderStyle) || "auto";
+      setLoaderStyle(loaderStyleSetting);
+
+      const hasVisited = sessionStorage.getItem("pdl_has_visited_intro");
+      const isForced = searchParams.__preview_loader === "true";
+
+      if (isForced || (loaderSetting === "true" && !hasVisited)) {
+        setShow3DLoader(true);
+        sessionStorage.setItem("pdl_has_visited_intro", "true");
+      }
+
+      // Check if Visitor Theme Switcher is enabled by admin
+      const isVisitorSwitcherEnabled = localStorage.getItem("portfolio_visitor_theme_switcher_enabled") === "true";
+      const isPreviewingSwitcher = searchParams.__preview_theme_switcher === "true" || Boolean(searchParams.__preview_theme);
+      setShowVisitorSwitcher(isVisitorSwitcherEnabled || isPreviewingSwitcher);
+    }
+  }, [searchParams.__preview_loader, searchParams.__preview_theme_switcher, searchParams.__preview_theme]);
+
+  const activeThemeId =
+    searchParams.__preview_theme ||
+    searchParams.theme ||
+    selectedTheme ||
+    data.config.website_theme ||
+    "prajwal-premium";
+
+  const Theme = resolveWebsiteTheme(activeThemeId).component;
+
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background" />}>
-      <Theme data={data.content} />
+    <Suspense fallback={<div className="min-h-screen bg-[#07070e]" />}>
+      {show3DLoader && (
+        <ThemeAware3DLoader
+          themeId={activeThemeId}
+          styleOverride={loaderStyle}
+          onComplete={() => setShow3DLoader(false)}
+        />
+      )}
+      <Theme data={data.content} content={data.content} />
       <GlobalAIChatbot content={data.content} />
+
+      {/* Floating Theme Switcher: Only displayed if enabled by admin in settings or during admin preview */}
+      {showVisitorSwitcher && (
+        <FloatingThemeSwitcher
+          currentTheme={activeThemeId}
+          onThemeChange={(newTheme) => setSelectedTheme(newTheme)}
+        />
+      )}
     </Suspense>
   );
 }

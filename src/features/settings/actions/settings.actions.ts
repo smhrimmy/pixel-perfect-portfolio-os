@@ -10,4 +10,22 @@ export const getSettings = createServerFn({ method: "GET" }).handler(async () =>
 export const updateSettings = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((i: unknown) => settingsUpdateSchema.parse(i))
-  .handler(async ({ data }) => settingsService().commands.update(data));
+  .handler(async ({ data }) => {
+    const updated = await settingsService().commands.update(data);
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      if (data.activeWebsiteTheme || data.activeBlogTheme) {
+        await supabaseAdmin
+          .from("cms_config")
+          .update({
+            ...(data.activeWebsiteTheme ? { website_theme: data.activeWebsiteTheme } : {}),
+            ...(data.activeBlogTheme ? { blog_theme: data.activeBlogTheme } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .in("state", ["live", "draft"]);
+      }
+    } catch {
+      // Supabase sync optional
+    }
+    return updated;
+  });

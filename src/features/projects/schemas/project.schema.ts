@@ -14,6 +14,20 @@ export const projectCreateSchema = z.object({
   status: projectStatusSchema.default("draft"),
   featured: z.boolean().default(false),
   order: z.number().int().min(0).default(0),
+  category: z.string().optional(),
+  technologies: z.array(z.string()).optional(),
+  techStack: z.any().optional(),
+  role: z.string().optional(),
+  duration: z.string().optional(),
+  problem: z.string().optional(),
+  goals: z.array(z.string()).optional(),
+  constraints: z.array(z.string()).optional(),
+  architecture: z.string().optional(),
+  challenges: z.any().optional(),
+  solutions: z.any().optional(),
+  results: z.array(z.string()).optional(),
+  lessons: z.array(z.string()).optional(),
+  threeConfig: z.any().optional(),
 });
 
 export const projectUpdateSchema = projectCreateSchema.partial().extend({

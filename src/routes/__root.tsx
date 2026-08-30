@@ -103,7 +103,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap",
       },
     ],
   }),
@@ -127,6 +127,7 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 import { GlobalInteractiveTerminal } from "@/components/ui/global-interactive-terminal";
+import { Toaster } from "sonner";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -136,6 +137,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <GlobalInteractiveTerminal />
+      <Toaster position="bottom-right" richColors theme="dark" />
     </QueryClientProvider>
   );
 }

@@ -322,16 +322,6 @@ export default function PrajwalPremium({ data }: ThemeRendererProps) {
         <div className="pointer-events-none fixed inset-0 z-[9998] backdrop-invert backdrop-hue-rotate-180" />
       )}
 
-      {/* Loading screen */}
-      {!loaded && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#050510]">
-          <div className="text-center">
-            <div className="mx-auto h-14 w-14 rounded-full border-2 border-[var(--accent-cyan)]/30 border-t-[var(--accent-cyan)] animate-spin" />
-            <p className="mt-6 font-mono text-xs uppercase tracking-[0.4em] text-[var(--accent-cyan)]">Booting Portfolio_OS…</p>
-          </div>
-        </div>
-      )}
-
       {/* Custom cursor */}
       {!isTouch && (
         <>
@@ -664,20 +654,30 @@ function Work({ id, cmsServices, cmsProjects, cmsExperience }: { id: string; cms
                   <span key={t} className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/70">{t}</span>
                 ))}
               </div>
-              {(p.liveUrl || p.repoUrl) && (
-                <div className="mt-5 flex gap-2">
-                  {p.liveUrl && (
-                    <a href={p.liveUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-black">
-                      Launch <ExternalLink className="h-3 w-3" />
+              <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+                {p.slug ? (
+                  <a
+                    href={`/projects/${p.slug}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-cyan)] hover:underline"
+                  >
+                    <span>Read Architecture Case Study</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </a>
+                ) : <span />}
+
+                <div className="flex gap-2">
+                  {p.liveUrl && p.liveUrl !== "#" && (
+                    <a href={p.liveUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full bg-white px-3.5 py-1 text-xs font-semibold text-black hover:bg-white/90 transition">
+                      Live <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
-                  {p.repoUrl && (
-                    <a href={p.repoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-xs font-mono text-white/90">
-                      <Github className="h-3 w-3" /> Source
+                  {p.repoUrl && p.repoUrl !== "#" && (
+                    <a href={p.repoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-3.5 py-1 text-xs font-mono text-white/90 hover:bg-white/10 transition">
+                      <Github className="h-3 w-3" /> Code
                     </a>
                   )}
                 </div>
-              )}
+              </div>
               {p.hasLog && (
                 <div className="mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 font-mono text-[11px] text-emerald-300/90">
                   <p className="text-emerald-400/70">system.log</p>
@@ -936,10 +936,30 @@ function Connect({ id, contact, links, identity, resumeUrl }: { id: string; cont
 
 function Footer({ identity }: { identity: ThemeProps["content"]["identity"] }) {
   return (
-    <footer className="relative border-t border-white/10 py-10 px-4">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
-        <p className="font-mono text-xs text-white/40">© {new Date().getFullYear()} {identity.name || "Prajwal DL"} — {identity.role || "AI Automation & Web Developer"}</p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">Built with Portfolio OS · v1.0</p>
+    <footer className="relative border-t border-white/10 py-12 px-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex flex-wrap items-center justify-between gap-6 pb-8 border-b border-white/5">
+          <div>
+            <div className="font-display font-bold text-lg text-white">
+              {identity.name || "Prajwal DL"}<span className="text-[var(--accent-cyan)]">{identity.brandDot || "."}</span>
+            </div>
+            <p className="font-mono text-xs text-white/50 mt-1">{identity.role || "Full Stack Developer & AI Automation"}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-medium text-white/70">
+            <a href="/projects" className="hover:text-[var(--accent-cyan)] transition-colors">Projects</a>
+            <a href="/experience" className="hover:text-[var(--accent-cyan)] transition-colors">Experience</a>
+            <a href="/skills" className="hover:text-[var(--accent-cyan)] transition-colors">Skills</a>
+            <a href="/certifications" className="hover:text-[var(--accent-cyan)] transition-colors">Certifications</a>
+            <a href="/lab" className="hover:text-[var(--accent-cyan)] transition-colors">The Lab</a>
+            <a href="/about" className="hover:text-[var(--accent-cyan)] transition-colors">About</a>
+            <a href="/contact" className="hover:text-[var(--accent-cyan)] transition-colors">Contact</a>
+            <a href="/blog" className="hover:text-[var(--accent-cyan)] transition-colors">Blog</a>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
+          <p className="font-mono text-xs text-white/40">© {new Date().getFullYear()} {identity.name || "Prajwal DL"} — All rights reserved.</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">Built with Portfolio OS · High Performance SSR</p>
+        </div>
       </div>
     </footer>
   );
@@ -951,6 +971,13 @@ function CommandPalette({ onClose, onGoto }: { onClose: () => void; onGoto: (id:
   const [q, setQ] = useState("");
   const items = [
     ...NAV_SECTIONS.map((s) => ({ label: `Go to ${s.label}`, action: () => onGoto(s.id) })),
+    { label: "View All Projects (/projects)", action: () => (window.location.href = "/projects") },
+    { label: "View Experience (/experience)", action: () => (window.location.href = "/experience") },
+    { label: "View Skills Matrix (/skills)", action: () => (window.location.href = "/skills") },
+    { label: "View Certifications (/certifications)", action: () => (window.location.href = "/certifications") },
+    { label: "Open The Lab & Prototypes (/lab)", action: () => (window.location.href = "/lab") },
+    { label: "About Prajwal (/about)", action: () => (window.location.href = "/about") },
+    { label: "Contact & Collaboration (/contact)", action: () => (window.location.href = "/contact") },
     { label: "Open GitHub", action: () => window.open(`https://github.com/${GITHUB_STATS.handle}`, "_blank") },
     { label: "Email Prajwal", action: () => (window.location.href = "mailto:pdlkpt@gmail.com") },
   ];

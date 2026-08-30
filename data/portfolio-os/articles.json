@@ -1,0 +1,42 @@
+[
+  {
+    "id": "art-1",
+    "slug": "zero-latency-reactive-state-sync",
+    "title": "Zero-Latency Reactive State Synchronization in TanStack 2026",
+    "excerpt": "Architecting a hybrid local-first database and edge CDN cache invalidation system with zero layout shift and sub-100ms response budgets.",
+    "markdown": "# Zero-Latency Reactive State Synchronization in TanStack 2026\n\n## Executive Summary\nModern enterprise web applications demand instant visual feedback, rock-solid schema validation, and bidirectional synchronization across distributed edge databases. This publication explores how we engineered the state layer in Portfolio OS to achieve zero layout shifts and instant updates.\n\n## The Architectural Challenge\nTraditional SSR frameworks often suffer from a dual-synchronization dilemma:\n1. **Hydration Delays**: Re-fetching server data on client mount triggers visible content flashes.\n2. **Optimistic Drift**: Client-side state mutations can diverge from persistent storage if edge latency spikes.\n\n```ts\n// Optimized Unified Cache Key Engine\nexport function createReactiveQuery<T>(key: QueryKey, fetcher: () => Promise<T>) {\n  return queryOptions({\n    queryKey: key,\n    queryFn: fetcher,\n    staleTime: 60_000,\n    gcTime: 300_000,\n  });\n}\n```\n\n## Engineered Pipeline\n- **Local-First Pre-fetching**: Data is verified and seeded synchronously into the router cache during route transition.\n- **Micro-batch Mutations**: Mutations queue optimistic updates with automatic rollback on network timeout.\n- **Realtime Broadcast**: Multi-tab synchronization via BroadcastChannel API.\n\n## Benchmark Results\nAcross 500 simulated high-concurrency mutation tests:\n- **P50 Mutation Latency**: 12ms (in-memory optimistic)\n- **P99 Sync Guarantee**: 142ms across distributed replicas\n- **Cumulative Layout Shift (CLS)**: 0.000",
+    "coverImageUrl": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&auto=format&fit=crop&q=80",
+    "status": "published",
+    "template": "editorial-longform",
+    "tags": [
+      "Architecture",
+      "TypeScript",
+      "Performance",
+      "React 19"
+    ],
+    "authorId": "prajwal-dl",
+    "publishedAt": "2026-08-30T09:27:37.643Z",
+    "createdAt": "2026-08-30T09:27:37.659Z",
+    "updatedAt": "2026-08-30T09:27:37.659Z"
+  },
+  {
+    "id": "art-2",
+    "slug": "building-autonomous-agentic-workspaces",
+    "title": "Building Autonomous Agentic Workspaces with Strict Type Safety",
+    "excerpt": "A deep dive into constructing multi-agent orchestration engines, dynamic sandbox runtimes, and self-healing deployment pipelines.",
+    "markdown": "# Building Autonomous Agentic Workspaces with Strict Type Safety\n\n## Overview\nAutonomous AI coding agents and interactive web workspaces require deterministic boundary enforcement. When LLMs generate or edit live code, the underlying execution environment must provide real-time linting, sandboxed evaluations, and instant error telemetry.\n\n## System Topology & Schema Enforcement\n```ts\nexport const agentExecutionSchema = z.object({\n  taskId: z.string().uuid(),\n  context: z.record(z.unknown()),\n  maxIterations: z.number().int().min(1).max(50),\n  sandboxConstraints: z.object({\n    timeoutMs: z.number().default(5000),\n    memoryLimitMb: z.number().default(512),\n  }),\n});\n```\n\n## Key Architectural Principles\n1. **Immutable Snapshot Revisions**: Every agent action creates a discrete rollback point.\n2. **Telemetry Tracing**: Granular execution timing across step parsing and AST verification.\n3. **Graceful Degradation**: Built-in fallback heuristics when external model gateways experience throttling.\n\n## Conclusion\nBy treating agent interactions as type-checked state machines, developers can build resilient, production-ready AI workspaces that never crash in production.",
+    "coverImageUrl": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+    "status": "published",
+    "template": "technical-breakdown",
+    "tags": [
+      "AI",
+      "Agents",
+      "Architecture",
+      "System Design"
+    ],
+    "authorId": "prajwal-dl",
+    "publishedAt": "2026-08-30T09:27:37.659Z",
+    "createdAt": "2026-08-30T09:27:37.659Z",
+    "updatedAt": "2026-08-30T09:27:37.659Z"
+  }
+]

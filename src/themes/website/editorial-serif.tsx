@@ -1,193 +1,79 @@
-import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { BookOpen, Lamp, ChevronRight, ChevronLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function EditorialSerif({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
-  
-  const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
-  const hero = { 
-    badge: "Available for work", 
-    headingLead: "I build", 
-    headingAccent: "bold", 
-    headingTail: "things", 
-    sub: profile?.bio || "A creative developer.", 
-    industries: ["Tech", "Design"] 
-  };
-  const services = [{title: "Design", body: "Visual identities."}, {title: "Development", body: "Full-stack apps."}];
-  const stats = [{value: projects?.length || 0, label: "Projects"}];
-  const why = [{title: "Speed", body: "Fast"}];
-  const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
-  const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
-  
-  const experience = (rawExperience || []).map(e => ({ 
-    ...e, 
-    startDate: e.start_date ? e.start_date.substring(0, 7) : "", 
-    endDate: e.end_date ? e.end_date.substring(0, 7) : null, 
-    role: e.position,
-    summary: e.description
-  }));
+export default function TheReadingRoom({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
+
+  const books = (projects && projects.length > 0 ? projects : [
+    { title: "TOME I: THE FOUNDATIONS OF DISTRIBUTED COMPUTE", pages: "Pages 1–142", desc: "A deep architectural treatise on multi-agent consensus and deterministic software loops." },
+    { title: "TOME II: THE OPTICAL SHADER DISQUISITION", pages: "Pages 143–288", desc: "Principles of raymarching, photon scattering, and physical WebGL material synthesis." },
+    { title: "TOME III: THE EDGE PERSISTENCE CHRONICLES", pages: "Pages 289–410", desc: "Scalable Postgres replication, transaction isolation levels, and low-latency failover." },
+  ]);
+
+  const [activeBook, setActiveBook] = useState(0);
 
   return (
-    <div className="min-h-screen bg-[#f7f3ec] text-[#1a1613] font-serif [font-family:'Cormorant_Garamond',Georgia,serif]">
-      <header className="border-b border-[#1a1613]/20 bg-[#f7f3ec]/90 backdrop-blur sticky top-0 z-40">
-        <nav className="mx-auto max-w-6xl px-8 h-16 flex items-center justify-between">
-          <a href="#top" className="text-2xl italic tracking-tight">
-            {identity.name}<span className="text-[#a8341f]">{identity.brandDot}</span>
-          </a>
-          <div className="hidden md:flex items-center gap-8 text-sm uppercase tracking-[0.2em] font-sans">
-            <a href="#services">Practice</a>
-            <a href="#experience">Chronicle</a>
-            <a href="#skills">Arsenal</a>
-            <a href="#work">Case Files</a>
-            <a href="#contact">Correspond</a>
-          </div>
-          <a href={links.book} className="text-sm italic underline underline-offset-4 decoration-[#a8341f]">Request audience</a>
-        </nav>
-      </header>
-
-      <main>
-        <section id="top" className="mx-auto max-w-5xl px-8 py-32 text-center">
-          <div className="text-xs uppercase tracking-[0.4em] text-[#a8341f] font-sans">— {hero.badge} —</div>
-          <h1 className="mt-10 text-6xl md:text-8xl leading-[0.95] italic">
-            {hero.headingLead}<br />
-            <span className="text-[#a8341f]">{hero.headingAccent}</span><br />
-            <span className="not-italic">{hero.headingTail}</span>
-          </h1>
-          <p className="mt-10 text-xl text-[#1a1613]/70 max-w-2xl mx-auto leading-relaxed">{hero.sub}</p>
-          <div className="mt-12 flex justify-center gap-4 font-sans text-sm">
-            <a href={links.book} className="border border-[#1a1613] bg-[#1a1613] text-[#f7f3ec] px-6 py-3 uppercase tracking-widest hover:bg-[#a8341f] hover:border-[#a8341f]">Book a call</a>
-            <a href="#work" className="border border-[#1a1613] px-6 py-3 uppercase tracking-widest hover:bg-[#1a1613] hover:text-[#f7f3ec]">Read work</a>
-          </div>
-        </section>
-
-        <section id="services" className="border-t border-[#1a1613]/20">
-          <div className="mx-auto max-w-6xl px-8 py-24">
-            <div className="grid md:grid-cols-[1fr_2fr] gap-12">
-              <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter I</div>
-                <h2 className="mt-4 text-5xl italic">The Practice</h2>
-              </div>
-              <div className="divide-y divide-[#1a1613]/20">
-                {services.map((s, i) => (
-                  <article key={s.title} className="py-6 first:pt-0">
-                    <div className="flex items-baseline gap-4">
-                      <span className="text-[#a8341f] italic text-xl">{String(i + 1).padStart(2, "0")}.</span>
-                      <h3 className="text-2xl">{s.title}</h3>
-                    </div>
-                    <p className="mt-2 pl-10 text-[#1a1613]/70 leading-relaxed">{s.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="results" className="border-t border-[#1a1613]/20 bg-[#1a1613] text-[#f7f3ec]">
-          <div className="mx-auto max-w-6xl px-8 py-20 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-6xl italic text-[#e8b466]">{s.value}</div>
-                <div className="mt-3 text-sm uppercase tracking-[0.2em] font-sans text-[#f7f3ec]/60">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="work" className="border-t border-[#1a1613]/20">
-          <div className="mx-auto max-w-6xl px-8 py-24">
-            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter II</div>
-            <h2 className="mt-4 text-5xl italic">Case Files</h2>
-            <div className="mt-12 grid md:grid-cols-2 gap-x-16 gap-y-12">
-              {projects.map((p, i) => (
-                <a key={p.title} href="#" className="group border-t border-[#1a1613]/30 pt-6">
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-xs uppercase tracking-[0.3em] font-sans text-[#a8341f]">{p.tag}</span>
-                    <span className="italic text-[#1a1613]/40">№ {String(i + 1).padStart(3, "0")}</span>
-                  </div>
-                  <h3 className="mt-4 text-3xl italic group-hover:text-[#a8341f] transition-colors">{p.title}</h3>
-                  <p className="mt-3 text-[#1a1613]/70">{p.outcome}</p>
-                  <ArrowUpRight className="mt-4 h-5 w-5 text-[#a8341f]" />
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-t border-[#1a1613]/20 bg-[#efe7d8]">
-          <div className="mx-auto max-w-6xl px-8 py-24">
-            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter III</div>
-            <h2 className="mt-4 text-5xl italic">Why the pen chose you</h2>
-            <div className="mt-12 grid md:grid-cols-3 gap-10">
-              {why.map((w) => (
-                <div key={w.title}>
-                  <h3 className="text-2xl italic">{w.title}</h3>
-                  <p className="mt-3 text-[#1a1613]/70 leading-relaxed">{w.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="experience" className="border-t border-[#1a1613]/20">
-          <div className="mx-auto max-w-6xl px-8 py-24">
-            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter IV</div>
-            <h2 className="mt-4 text-5xl italic">The Chronicle</h2>
-            <div className="mt-12 divide-y divide-[#1a1613]/20">
-              {experience.map((exp: any, i: number) => (
-                <article key={exp.id} className="py-8 first:pt-0 grid md:grid-cols-4 gap-8">
-                  <div className="font-sans text-xs uppercase tracking-[0.2em] text-[#a8341f]">
-                    {exp.startDate} – {exp.endDate || "Present"}
-                  </div>
-                  <div className="md:col-span-3">
-                    <h3 className="text-3xl italic">{exp.role}</h3>
-                    <div className="text-sm font-sans uppercase tracking-[0.2em] mt-2 text-[#1a1613]/60">{exp.company}</div>
-                    <p className="mt-4 text-[#1a1613]/70 leading-relaxed max-w-2xl">{exp.summary}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="skills" className="border-t border-[#1a1613]/20">
-          <div className="mx-auto max-w-6xl px-8 py-24">
-            <div className="text-xs uppercase tracking-[0.3em] text-[#a8341f] font-sans">Chapter V</div>
-            <h2 className="mt-4 text-5xl italic">The Arsenal</h2>
-            <div className="mt-12 flex flex-wrap gap-3">
-              {skills.map((skill: any) => (
-                <div key={skill.id} className="border border-[#1a1613]/30 px-5 py-2 font-sans text-sm uppercase tracking-widest text-[#1a1613]/80 hover:bg-[#1a1613] hover:text-[#f7f3ec] transition-colors cursor-default">
-                  {skill.name}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="contact" className="border-t border-[#1a1613]/20 bg-[#1a1613] text-[#f7f3ec]">
-          <div className="mx-auto max-w-4xl px-8 py-28 text-center">
-            <div className="text-xs uppercase tracking-[0.4em] text-[#e8b466] font-sans">— {contact.badge} —</div>
-            <h2 className="mt-8 text-6xl italic">
-              {contact.headingLead} <span className="text-[#e8b466]">{contact.headingAccent}</span>.
-            </h2>
-            <p className="mt-6 text-lg text-[#f7f3ec]/70 max-w-xl mx-auto">{contact.sub}</p>
-            <div className="mt-10 flex justify-center gap-4 font-sans text-sm">
-              <a href={links.book} className="bg-[#e8b466] text-[#1a1613] px-6 py-3 uppercase tracking-widest">Book a call</a>
-              <a href={links.email} className="border border-[#f7f3ec]/40 px-6 py-3 uppercase tracking-widest">Write a letter</a>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-[#1a1613]/20 py-8 bg-[#f7f3ec]">
-        <div className="mx-auto max-w-6xl px-8 flex items-center justify-between text-sm">
-          <div className="italic">— Est. {new Date().getFullYear()} · {identity.name} —</div>
-          <div className="flex items-center gap-4">
-            <a href={links.twitter}><Twitter className="h-4 w-4" /></a>
-            <a href={links.linkedin}><Linkedin className="h-4 w-4" /></a>
-            <a href={links.github}><Github className="h-4 w-4" /></a>
-            <a href={links.email}><Mail className="h-4 w-4" /></a>
+    <div className="min-h-screen bg-[#1A120B] text-[#E5D9C5] font-serif p-6 sm:p-12 flex flex-col justify-between selection:bg-[#8B5A2B] selection:text-[#FFF]">
+      <header className="border-b border-[#4A3525] pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Lamp className="h-5 w-5 text-[#D4AF37]" />
+          <div>
+            <h1 className="text-lg font-bold text-[#F5EBE1]">THE PRIVATE READING ROOM</h1>
+            <p className="text-xs text-[#A68A68]">MAHOGANY SHELVES · ARCHIVAL VELLUM · {candidateName}</p>
           </div>
         </div>
+        <span className="text-xs text-[#D4AF37] font-mono">[WARM DESK LAMP: ON]</span>
+      </header>
+
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs text-[#D4AF37] uppercase tracking-widest font-mono">FOLIO VOLUMES</span>
+          <h2 className="text-3xl sm:text-5xl text-[#F5EBE1] italic">Selected Writings &amp; Treatises</h2>
+        </div>
+
+        {/* Physical Leather Book Spread */}
+        <div className="p-8 sm:p-12 rounded-xl border border-[#4A3525] bg-[#241A10] shadow-[0_20px_50px_rgba(0,0,0,0.8)] space-y-6 relative">
+          <div className="flex justify-between items-center text-xs text-[#A68A68] border-b border-[#4A3525] pb-3 font-mono">
+            <span>{books[activeBook].pages}</span>
+            <span className="text-[#D4AF37]">LEATHER BOUND FOLIO</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-3xl text-[#F5EBE1] font-bold leading-snug">{books[activeBook].title}</h3>
+          <p className="text-base text-[#D4C5B0] leading-relaxed italic">{books[activeBook].desc || books[activeBook].description}</p>
+
+          <div className="pt-6 border-t border-[#4A3525] flex justify-between items-center text-xs text-[#A68A68]">
+            <span>AUTHOR: {candidateName.toUpperCase()}</span>
+            <span className="text-[#D4AF37]">CHAPTER APPROVED</span>
+          </div>
+        </div>
+
+        {/* Book Shelf Switcher */}
+        <div className="flex justify-between items-center">
+          <Button
+            onClick={() => setActiveBook((b) => (b > 0 ? b - 1 : books.length - 1))}
+            variant="outline"
+            className="border-[#4A3525] bg-[#241A10] text-[#E5D9C5] hover:bg-[#4A3525] text-xs h-10 px-6 font-serif"
+          >
+            ← Previous Volume
+          </Button>
+
+          <span className="text-xs text-[#A68A68] font-mono">VOLUME {activeBook + 1} OF {books.length}</span>
+
+          <Button
+            onClick={() => setActiveBook((b) => (b < books.length - 1 ? b + 1 : 0))}
+            variant="outline"
+            className="border-[#4A3525] bg-[#241A10] text-[#E5D9C5] hover:bg-[#4A3525] text-xs h-10 px-6 font-serif"
+          >
+            Next Volume →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t border-[#4A3525] pt-4 text-center text-xs text-[#A68A68]">
+        <span>CURATED AT THE ATHENAEUM · ALL VOLUMES PRESERVED</span>
       </footer>
     </div>
   );

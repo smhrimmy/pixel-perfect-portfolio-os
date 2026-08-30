@@ -1,177 +1,70 @@
-import { ArrowUpRight, Github, Linkedin, Mail, Twitter } from "lucide-react";
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { Flame, Sparkles, RotateCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function SunsetPaper({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
-  
-  const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
-  const hero = { 
-    badge: "Available for work", 
-    headingLead: "I build", 
-    headingAccent: "bold", 
-    headingTail: "things", 
-    sub: profile?.bio || "A creative developer.", 
-    industries: ["Tech", "Design"] 
-  };
-  const services = [{title: "Design", body: "Visual identities."}, {title: "Development", body: "Full-stack apps."}];
-  const stats = [{value: projects?.length || 0, label: "Projects"}];
-  const why = [{title: "Speed", body: "Fast"}];
-  const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
-  const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
-  
-  const experience = (rawExperience || []).map(e => ({ 
-    ...e, 
-    startDate: e.start_date ? e.start_date.substring(0, 7) : "", 
-    endDate: e.end_date ? e.end_date.substring(0, 7) : null, 
-    role: e.position,
-    summary: e.description
-  }));
+export default function ThePottersStudio({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
+
+  const vessels = (projects && projects.length > 0 ? projects : [
+    { title: "TERRACOTTA AMPHORA · DISTRIBUTED CORE", glaze: "Iron Oxide Wash", desc: "Coiled and wheel-thrown clay vessel designed to hold continuous streaming data." },
+    { title: "CELADON PORCELAIN VASE · SHADER RUNTIME", glaze: "Crackled Celadon", desc: "High-fired porcelain fired at 1300°C in an authentic wood-fired kiln." },
+    { title: "STONEWARE BOWL · AUTONOMOUS AGENTS", glaze: "Matte Ash Glaze", desc: "Hand-pinched organic stoneware built for extreme resilience." },
+  ]);
+
+  const [activeVessel, setActiveVessel] = useState(0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fef3ec] via-[#fde4d1] to-[#f9c8b0] text-[#3b1f14] font-sans">
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#fef3ec]/70 border-b border-[#3b1f14]/10">
-        <nav className="mx-auto max-w-5xl px-6 h-16 flex items-center justify-between">
-          <a href="#top" className="font-semibold text-lg tracking-tight">
-            {identity.name}<span className="text-[#e85d3c]">{identity.brandDot}</span>
-          </a>
-          <div className="hidden md:flex items-center gap-8 text-sm text-[#3b1f14]/70">
-            <a href="#services" className="hover:text-[#e85d3c]">Services</a>
-            <a href="#experience" className="hover:text-[#e85d3c]">Experience</a>
-            <a href="#skills" className="hover:text-[#e85d3c]">Skills</a>
-            <a href="#work" className="hover:text-[#e85d3c]">Work</a>
-            <a href="#contact" className="hover:text-[#e85d3c]">Contact</a>
-          </div>
-          <a href={links.book} className="rounded-full bg-[#3b1f14] text-[#fef3ec] px-4 py-2 text-sm hover:bg-[#e85d3c]">
-            Book →
-          </a>
-        </nav>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-6">
-        <section id="top" className="py-28">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/60 backdrop-blur border border-[#e85d3c]/30 px-4 py-1.5 text-xs">
-            <span className="h-2 w-2 rounded-full bg-[#e85d3c]" />
-            {hero.badge}
-          </div>
-          <h1 className="mt-8 text-5xl md:text-7xl font-semibold leading-[1.05] tracking-tight">
-            {hero.headingLead}{" "}
-            <span className="bg-gradient-to-r from-[#e85d3c] via-[#f39c3b] to-[#e85d3c] bg-clip-text text-transparent italic">
-              {hero.headingAccent}
-            </span>{" "}
-            {hero.headingTail}
-          </h1>
-          <p className="mt-6 text-lg text-[#3b1f14]/70 max-w-2xl">{hero.sub}</p>
-          <div className="mt-10 flex gap-3">
-            <a href={links.book} className="inline-flex items-center gap-1 rounded-full bg-[#e85d3c] text-white px-6 py-3 text-sm shadow-lg shadow-[#e85d3c]/30">
-              Book a call <ArrowUpRight className="h-4 w-4" />
-            </a>
-            <a href="#work" className="rounded-full bg-white/70 border border-[#3b1f14]/20 px-6 py-3 text-sm">See work</a>
-          </div>
-        </section>
-
-        <section id="services" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Services</div>
-          <div className="mt-8 grid md:grid-cols-3 gap-4">
-            {services.map((s) => (
-              <div key={s.title} className="rounded-3xl bg-white/60 backdrop-blur-sm border border-white p-6 shadow-sm">
-                <h3 className="text-lg font-medium">{s.title}</h3>
-                <p className="mt-3 text-sm text-[#3b1f14]/70">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="experience" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Experience</div>
-          <div className="mt-8 space-y-4">
-            {experience.map((exp: any) => (
-              <div key={exp.id} className="rounded-3xl bg-white/60 backdrop-blur-sm border border-white p-6 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-semibold">{exp.role}</h3>
-                  <div className="mt-1 text-sm font-medium text-[#e85d3c]">{exp.company}</div>
-                  <p className="mt-3 text-sm text-[#3b1f14]/70 max-w-2xl">{exp.summary}</p>
-                </div>
-                <div className="shrink-0 rounded-full bg-white border border-[#3b1f14]/10 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-[#3b1f14]/60">
-                  {exp.startDate} – {exp.endDate || "Present"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="skills" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Skills</div>
-          <div className="mt-8 flex flex-wrap gap-3">
-            {skills.map((skill: any) => (
-              <div key={skill.id} className="rounded-full bg-white/70 backdrop-blur-sm border border-white px-5 py-2.5 text-sm font-medium shadow-sm hover:bg-white transition-colors cursor-default">
-                {skill.name}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="results" className="py-16">
-          <div className="rounded-3xl bg-[#3b1f14] text-[#fef3ec] p-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-5xl font-semibold text-[#f39c3b]">{s.value}</div>
-                <div className="mt-2 text-xs uppercase tracking-widest text-[#fef3ec]/60">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="work" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Selected work</div>
-          <div className="mt-8 grid md:grid-cols-2 gap-4">
-            {projects.map((p) => (
-              <a key={p.title} href="#" className="group rounded-3xl bg-white/70 backdrop-blur-sm border border-white p-8 hover:bg-white transition-colors">
-                <div className="text-xs uppercase tracking-widest text-[#e85d3c]">{p.tag}</div>
-                <h3 className="mt-3 text-2xl font-semibold">{p.title}</h3>
-                <p className="mt-6 text-sm text-[#3b1f14]/70">{p.outcome}</p>
-                <ArrowUpRight className="mt-4 h-4 w-4 text-[#e85d3c]" />
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-[#e85d3c]">Why me</div>
-          <div className="mt-8 grid md:grid-cols-3 gap-4">
-            {why.map((w) => (
-              <div key={w.title} className="rounded-3xl bg-white/60 backdrop-blur-sm p-6">
-                <h3 className="text-lg font-medium">{w.title}</h3>
-                <p className="mt-3 text-sm text-[#3b1f14]/70">{w.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="contact" className="py-24">
-          <div className="rounded-3xl bg-gradient-to-br from-[#e85d3c] to-[#f39c3b] p-14 text-center text-white">
-            <div className="text-xs uppercase tracking-[0.24em] text-white/80">{contact.badge}</div>
-            <h2 className="mt-6 text-4xl md:text-6xl font-semibold tracking-tight">
-              {contact.headingLead} <span className="italic">{contact.headingAccent}</span>.
-            </h2>
-            <p className="mt-4 text-white/90 max-w-xl mx-auto">{contact.sub}</p>
-            <div className="mt-8 flex justify-center gap-3">
-              <a href={links.book} className="rounded-full bg-white text-[#e85d3c] px-6 py-3 text-sm font-medium">Book a call</a>
-              <a href={links.email} className="rounded-full border border-white/50 px-6 py-3 text-sm">Email</a>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-[#3b1f14]/10 py-8">
-        <div className="mx-auto max-w-5xl px-6 flex items-center justify-between text-sm text-[#3b1f14]/60">
-          <div>© {new Date().getFullYear()} {identity.name}</div>
-          <div className="flex items-center gap-4">
-            <a href={links.twitter}><Twitter className="h-4 w-4" /></a>
-            <a href={links.linkedin}><Linkedin className="h-4 w-4" /></a>
-            <a href={links.github}><Github className="h-4 w-4" /></a>
-            <a href={links.email}><Mail className="h-4 w-4" /></a>
+    <div className="min-h-screen bg-[#2E1810] text-[#F3E5D8] font-serif p-6 sm:p-12 flex flex-col justify-between selection:bg-[#C85A32] selection:text-white">
+      <header className="border-b border-[#6E3B27] pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Flame className="h-6 w-6 text-[#C85A32]" />
+          <div>
+            <h1 className="text-base font-bold text-[#F3E5D8] uppercase tracking-wider">THE POTTER'S WHEEL &amp; KILN</h1>
+            <p className="text-[11px] text-[#A66E53]">TERRACOTTA · WOOD KILN 1300°C · {candidateName}</p>
           </div>
         </div>
+        <div className="text-xs font-mono text-[#C85A32]">
+          KILN TEMPERATURE: 1280°C
+        </div>
+      </header>
+
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs text-[#C85A32] uppercase tracking-widest font-mono">WHEEL-THROWN CERAMICS</span>
+          <h2 className="text-3xl sm:text-5xl text-[#F3E5D8] italic">Molding Raw Earth Into Code</h2>
+        </div>
+
+        {/* Physical Glazed Clay Vessel Card */}
+        <div className="p-8 sm:p-12 rounded-3xl border-2 border-[#6E3B27] bg-[#432317] shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-6">
+          <div className="flex justify-between items-center text-xs font-mono text-[#A66E53] border-b border-[#6E3B27] pb-3">
+            <span>GLAZE: {vessels[activeVessel].glaze}</span>
+            <span className="text-[#C85A32]">WOOD-FIRED CERAMIC</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-4xl text-[#F3E5D8] font-bold">{vessels[activeVessel].title}</h3>
+          <p className="text-sm text-[#D4B89B] leading-relaxed italic">{vessels[activeVessel].desc || vessels[activeVessel].description}</p>
+
+          <div className="pt-6 border-t border-[#6E3B27] flex justify-between items-center text-xs font-mono">
+            <span>MASTER POTTER: {candidateName.toUpperCase()}</span>
+            <span className="text-[#C85A32]">FIRED &amp; WATERPROOF</span>
+          </div>
+        </div>
+
+        {/* Spin Pottery Wheel Button */}
+        <div className="flex justify-center">
+          <Button
+            onClick={() => setActiveVessel((v) => (v + 1) % vessels.length)}
+            className="bg-[#C85A32] text-[#2E1810] hover:bg-[#C85A32]/90 font-bold text-xs h-11 px-8 rounded-full shadow-xl"
+          >
+            <RotateCw className="h-4 w-4 mr-2" /> Spin Wheel: Throw Next Clay Form →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t border-[#6E3B27] pt-4 text-center text-xs text-[#A66E53]">
+        <span>THE EARTHEN STUDIO · NATURAL ASH &amp; SLIP CERAMICS</span>
       </footer>
     </div>
   );

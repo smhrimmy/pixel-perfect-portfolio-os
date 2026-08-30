@@ -1,208 +1,68 @@
-import { ArrowUpRight, Github, Linkedin, Mail, Twitter, Zap } from "lucide-react";
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { Printer, ArrowDown, RotateCcw, Layers } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function BrutalistNeon({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience, socialLinks } = data;
+export default function ThePrintShop({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
 
-  // Safe defaults
-  const name = profile?.name || "YOUR NAME";
-  const email = profile?.email || "hello@example.com";
-  
-  const heroBadge = "Available for work";
-  const heroHeadingLead = "I build";
-  const heroHeadingAccent = "bold";
-  const heroHeadingTail = "digital experiences.";
-  const heroSub = profile?.bio || "A creative developer making the web a more interesting place.";
-  const industries = ["Tech", "Design", "E-Commerce", "Web3"];
+  const prints = (projects && projects.length > 0 ? projects : [
+    { title: "WOODBLOCK EDITION 01 · SYSTEM ARCHITECTURE", type: "Heavy Letterpress", desc: "Hand-set lead type on 300gsm cotton rag paper." },
+    { title: "SERIGRAPH EDITION 02 · REALTIME WEBGL", type: "Two-Color Screenprint", desc: "Layered oil-based vermilion ink on industrial chipboard." },
+    { title: "MONOTYPE EDITION 03 · DISTRIBUTED POSTGRES", type: "Relief Print", desc: "Single impression pulled on an antique Heidelberg cylinder press." },
+  ]);
 
-  const stats = [
-    { value: projects?.length || 0, label: "Projects" },
-    { value: experience?.length || 0, label: "Roles" },
-    { value: skills?.length || 0, label: "Skills" },
-    { value: "24/7", label: "Hustle" },
-  ];
-
-  const services = [
-    { title: "Design", body: "Bold, unignorable visual identities." },
-    { title: "Development", body: "High-performance full-stack applications." },
-    { title: "Strategy", body: "Technical architecture that scales." }
-  ];
-
-  const why = [
-    { title: "Speed", body: "I ship fast without breaking things." },
-    { title: "Quality", body: "Pixel-perfect implementation every time." },
-    { title: "Impact", body: "Building products that move the needle." }
-  ];
+  const [pulledIndex, setPulledIndex] = useState(0);
 
   return (
-    <div className="min-h-screen bg-[#f4f1ea] text-black font-sans">
-      <header className="border-b-4 border-black bg-[#f4f1ea]">
-        <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <a href="#top" className="text-xl font-black uppercase tracking-tight">
-            {name}<span className="text-[#ff3b00]">.</span>
-          </a>
-          <div className="hidden md:flex items-center gap-6 text-sm font-bold uppercase">
-            <a href="#services">Services</a>
-            <a href="#experience">Experience</a>
-            <a href="#skills">Skills</a>
-            <a href="#work">Work</a>
-            <a href="#contact">Contact</a>
-          </div>
-          <a href={`mailto:${email}`} className="border-4 border-black bg-[#c4ff3d] px-4 py-2 text-sm font-black uppercase shadow-[4px_4px_0_0_#000]">
-            Book →
-          </a>
-        </nav>
+    <div className="min-h-screen bg-[#E5E0D8] text-[#1A1816] font-mono p-6 sm:p-12 flex flex-col justify-between selection:bg-[#B22222] selection:text-white">
+      <header className="border-b-4 border-[#1A1816] pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <div>
+          <h1 className="font-black text-xl tracking-tight text-[#1A1816] uppercase">THE LETTERPRESS PRINT SHOP</h1>
+          <p className="text-xs text-[#5C554D]">MANUAL CYLINDER PRESS · LEAD TYPE · {candidateName.toUpperCase()}</p>
+        </div>
+        <div className="text-xs font-bold px-3 py-1 bg-[#B22222] text-white">
+          PROOF NO. {pulledIndex + 1}
+        </div>
       </header>
 
-      <main>
-        <section id="top" className="border-b-4 border-black">
-          <div className="mx-auto max-w-6xl px-6 py-24 grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <div className="inline-block border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase">
-                {heroBadge}
-              </div>
-              <h1 className="mt-6 text-6xl md:text-8xl font-black uppercase leading-[0.9] tracking-tighter">
-                {heroHeadingLead}{" "}
-                <span className="bg-[#ff3b00] text-white px-2 -rotate-1 inline-block">{heroHeadingAccent}</span>{" "}
-                {heroHeadingTail}
-              </h1>
-              <p className="mt-8 text-lg font-medium max-w-xl">{heroSub}</p>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <a href={`mailto:${email}`} className="border-4 border-black bg-[#c4ff3d] px-6 py-3 font-black uppercase shadow-[6px_6px_0_0_#000] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-                  Book a call
-                </a>
-                <a href="#work" className="border-4 border-black bg-white px-6 py-3 font-black uppercase shadow-[6px_6px_0_0_#000] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
-                  See work
-                </a>
-              </div>
-            </div>
-            <div className="border-4 border-black bg-[#c4ff3d] p-6 shadow-[8px_8px_0_0_#000]">
-              <Zap className="h-8 w-8" />
-              <div className="mt-4 text-xs font-black uppercase">Industries</div>
-              <ul className="mt-3 space-y-2">
-                {industries.map((i) => (
-                  <li key={i} className="font-black text-lg uppercase border-b-2 border-black pb-1">{i}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-bold text-[#B22222] tracking-widest">[MANUAL PRESS LEVER]</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-[#1A1816]">PULL A FRESH PROOF</h2>
+          <p className="text-xs text-[#5C554D]">Pull the manual press lever to press ink into heavy cotton rag paper.</p>
+        </div>
 
-        <section id="services" className="border-b-4 border-black bg-white">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <h2 className="text-4xl md:text-6xl font-black uppercase">What I do<span className="text-[#ff3b00]">.</span></h2>
-            <div className="mt-12 grid md:grid-cols-3 gap-6">
-              {services.map((s, i) => (
-                <div key={s.title} className={`border-4 border-black p-6 shadow-[6px_6px_0_0_#000] ${i % 2 === 0 ? "bg-[#c4ff3d]" : "bg-white"}`}>
-                  <div className="text-xs font-black uppercase">0{i + 1}</div>
-                  <h3 className="mt-3 text-2xl font-black uppercase">{s.title}</h3>
-                  <p className="mt-3 text-sm font-medium">{s.body}</p>
-                </div>
-              ))}
-            </div>
+        {/* Physical Print Sheet */}
+        <div className="p-8 sm:p-12 rounded-none border-4 border-[#1A1816] bg-[#FAF8F5] shadow-[12px_12px_0px_#1A1816] space-y-6">
+          <div className="flex justify-between items-center text-xs font-bold border-b-2 border-[#1A1816] pb-3">
+            <span className="text-[#B22222]">{prints[pulledIndex].type}</span>
+            <span>PRESS: HEIDELBERG 1952</span>
           </div>
-        </section>
 
-        <section id="experience" className="border-b-4 border-black bg-[#f4f1ea]">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <h2 className="text-4xl md:text-6xl font-black uppercase">Experience<span className="text-[#ff3b00]">.</span></h2>
-            <div className="mt-12 space-y-8">
-              {(experience || []).map((exp) => (
-                <div key={exp.id} className="border-4 border-black bg-white p-6 shadow-[8px_8px_0_0_#000] relative">
-                  <div className="absolute top-0 right-0 bg-[#c4ff3d] border-b-4 border-l-4 border-black px-4 py-1 font-black uppercase text-sm hidden sm:block">
-                    {exp.start_date?.substring(0, 7)} - {exp.end_date ? exp.end_date.substring(0, 7) : "Present"}
-                  </div>
-                  <h3 className="text-3xl font-black uppercase mt-4 sm:mt-0">{exp.position}</h3>
-                  <div className="text-lg font-bold uppercase mt-1 text-[#ff3b00]">{exp.company}</div>
-                  <p className="mt-4 font-medium">{exp.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+          <h3 className="text-2xl sm:text-4xl font-black text-[#1A1816]">{prints[pulledIndex].title}</h3>
+          <p className="text-sm text-[#33302C] leading-relaxed">{prints[pulledIndex].desc || prints[pulledIndex].description}</p>
 
-        <section id="skills" className="border-b-4 border-black bg-[#c4ff3d]">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <h2 className="text-4xl md:text-6xl font-black uppercase">Skills<span className="text-[#ff3b00]">.</span></h2>
-            <div className="mt-12 flex flex-wrap gap-4">
-              {(skills || []).map((skill) => (
-                <div key={skill.id} className="border-4 border-black bg-white px-4 py-2 font-black uppercase text-sm shadow-[4px_4px_0_0_#000] hover:bg-black hover:text-[#c4ff3d] transition-colors cursor-default">
-                  {skill.name}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="results" className="border-b-4 border-black bg-[#ff3b00] text-white">
-          <div className="mx-auto max-w-6xl px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-5xl md:text-6xl font-black">{s.value}</div>
-                <div className="mt-2 font-black uppercase text-sm">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="work" className="border-b-4 border-black">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <h2 className="text-4xl md:text-6xl font-black uppercase">Work<span className="text-[#ff3b00]">.</span></h2>
-            <div className="mt-12 grid md:grid-cols-2 gap-6">
-              {(projects || []).map((p) => (
-                <a key={p.id} href={p.live_demo_url || "#"} target="_blank" rel="noreferrer" className="group border-4 border-black bg-white p-8 shadow-[8px_8px_0_0_#000] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all block">
-                  <div className="text-xs font-black uppercase">{Array.isArray(p.technologies) ? p.technologies[0] : ""}</div>
-                  <h3 className="mt-3 text-3xl font-black uppercase">{p.title}</h3>
-                  <p className="mt-6 font-medium">{p.description}</p>
-                  <ArrowUpRight className="mt-4 h-6 w-6" />
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b-4 border-black bg-white">
-          <div className="mx-auto max-w-6xl px-6 py-20">
-            <h2 className="text-4xl md:text-6xl font-black uppercase">Why<span className="text-[#ff3b00]">.</span></h2>
-            <div className="mt-12 grid md:grid-cols-3 gap-6">
-              {why.map((w, i) => (
-                <div key={w.title} className="border-4 border-black p-6">
-                  <div className="text-4xl font-black">0{i + 1}</div>
-                  <h3 className="mt-3 text-xl font-black uppercase">{w.title}</h3>
-                  <p className="mt-3 text-sm font-medium">{w.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="contact" className="bg-[#c4ff3d]">
-          <div className="mx-auto max-w-4xl px-6 py-24 text-center">
-            <div className="inline-block border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase">
-              Let's talk
-            </div>
-            <h2 className="mt-6 text-5xl md:text-7xl font-black uppercase leading-[0.9]">
-              Start a <span className="bg-black text-[#c4ff3d] px-2">Project</span>
-            </h2>
-            <p className="mt-6 font-medium max-w-xl mx-auto">Ready to build something bold?</p>
-            <div className="mt-8 flex justify-center gap-4">
-              <a href={`mailto:${email}`} className="border-4 border-black bg-white px-6 py-3 font-black uppercase shadow-[6px_6px_0_0_#000]">Book a call</a>
-              <a href={`mailto:${email}`} className="border-4 border-black bg-[#ff3b00] text-white px-6 py-3 font-black uppercase shadow-[6px_6px_0_0_#000]">Email</a>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t-4 border-black bg-black text-white py-8">
-        <div className="mx-auto max-w-6xl px-6 flex items-center justify-between text-sm font-black uppercase">
-          <div>© {new Date().getFullYear()} {name}</div>
-          <div className="flex items-center gap-4">
-            {socialLinks?.twitter && <a href={socialLinks.twitter} target="_blank" rel="noreferrer"><Twitter className="h-4 w-4 hover:text-[#c4ff3d]" /></a>}
-            {socialLinks?.linkedin && <a href={socialLinks.linkedin} target="_blank" rel="noreferrer"><Linkedin className="h-4 w-4 hover:text-[#c4ff3d]" /></a>}
-            {socialLinks?.github && <a href={socialLinks.github} target="_blank" rel="noreferrer"><Github className="h-4 w-4 hover:text-[#c4ff3d]" /></a>}
-            {email && <a href={`mailto:${email}`}><Mail className="h-4 w-4 hover:text-[#c4ff3d]" /></a>}
+          <div className="pt-6 border-t-2 border-[#1A1816] flex justify-between items-center text-xs">
+            <span>INK: PIGMENT CARBON BLACK &amp; VERMILION</span>
+            <span className="font-bold text-[#B22222]">APPROVED FOR PRINT</span>
           </div>
         </div>
+
+        {/* Lever Pull Control */}
+        <div className="flex justify-center pt-4">
+          <Button
+            onClick={() => setPulledIndex((i) => (i + 1) % prints.length)}
+            className="bg-[#1A1816] text-[#FAF8F5] hover:bg-[#B22222] font-black text-sm h-12 px-8 rounded-none border-2 border-[#1A1816] shadow-[6px_6px_0px_#B22222] transition-all"
+          >
+            Pull Next Print Lever →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t-4 border-[#1A1816] pt-4 text-center text-xs text-[#5C554D]">
+        <span>WORKSHOP LOCATION: HEAVY INK &amp; PAPER STUDIO · EST. 1928</span>
       </footer>
     </div>
   );

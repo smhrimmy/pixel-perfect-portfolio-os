@@ -23,7 +23,7 @@
     ],
     "primaryColor": "#00ffff",
     "accentColor": "#0b0b0d",
-    "activeWebsiteTheme": "prajwal-premium",
+    "activeWebsiteTheme": "macos-desktop",
     "activeBlogTheme": "editorial-longform",
     "seo": {
       "defaultOgImage": null,
@@ -33,6 +33,6 @@
     "featureFlags": {},
     "resumeUrl": null,
     "createdAt": "2026-07-26T00:00:00.000Z",
-    "updatedAt": "2026-07-26T00:00:00.000Z"
+    "updatedAt": "2026-08-30T11:02:02.320Z"
   }
 ]

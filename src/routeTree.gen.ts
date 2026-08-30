@@ -11,19 +11,31 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as CertificationsRouteImport } from './routes/certifications'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ExperienceRouteImport } from './routes/experience'
+import { Route as LabRouteImport } from './routes/lab'
+import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as RecruiterRouteImport } from './routes/recruiter'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SkillsRouteImport } from './routes/skills'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as LabSlugRouteImport } from './routes/lab.$slug'
+import { Route as ProjectsSlugRouteImport } from './routes/projects.$slug'
 import { Route as AuthenticatedStudioIndexRouteImport } from './routes/_authenticated/studio.index'
 import { Route as AuthenticatedStudioAiRouteImport } from './routes/_authenticated/studio.ai'
 import { Route as AuthenticatedStudioAnalyticsRouteImport } from './routes/_authenticated/studio.analytics'
 import { Route as AuthenticatedStudioArticlesRouteImport } from './routes/_authenticated/studio.articles'
+import { Route as AuthenticatedStudioAutomationsRouteImport } from './routes/_authenticated/studio.automations'
 import { Route as AuthenticatedStudioContentRouteImport } from './routes/_authenticated/studio.content'
 import { Route as AuthenticatedStudioDeveloperRouteImport } from './routes/_authenticated/studio.developer'
 import { Route as AuthenticatedStudioExperienceRouteImport } from './routes/_authenticated/studio.experience'
 import { Route as AuthenticatedStudioHqTerminalRouteImport } from './routes/_authenticated/studio.hq-terminal'
+import { Route as AuthenticatedStudioInsightsRouteImport } from './routes/_authenticated/studio.insights'
 import { Route as AuthenticatedStudioMediaRouteImport } from './routes/_authenticated/studio.media'
 import { Route as AuthenticatedStudioProjectsRouteImport } from './routes/_authenticated/studio.projects'
 import { Route as AuthenticatedStudioSeoRouteImport } from './routes/_authenticated/studio.seo'
@@ -39,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -49,9 +66,44 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CertificationsRoute = CertificationsRouteImport.update({
+  id: '/certifications',
+  path: '/certifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperienceRoute = ExperienceRouteImport.update({
+  id: '/experience',
+  path: '/experience',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LabRoute = LabRouteImport.update({
+  id: '/lab',
+  path: '/lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecruiterRoute = RecruiterRouteImport.update({
   id: '/recruiter',
   path: '/recruiter',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
@@ -63,6 +115,16 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => BlogRoute,
+} as any)
+const LabSlugRoute = LabSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LabRoute,
+} as any)
+const ProjectsSlugRoute = ProjectsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ProjectsRoute,
 } as any)
 const AuthenticatedStudioIndexRoute =
   AuthenticatedStudioIndexRouteImport.update({
@@ -87,6 +149,12 @@ const AuthenticatedStudioArticlesRoute =
     path: '/articles',
     getParentRoute: () => AuthenticatedStudioRoute,
   } as any)
+const AuthenticatedStudioAutomationsRoute =
+  AuthenticatedStudioAutomationsRouteImport.update({
+    id: '/automations',
+    path: '/automations',
+    getParentRoute: () => AuthenticatedStudioRoute,
+  } as any)
 const AuthenticatedStudioContentRoute =
   AuthenticatedStudioContentRouteImport.update({
     id: '/content',
@@ -109,6 +177,12 @@ const AuthenticatedStudioHqTerminalRoute =
   AuthenticatedStudioHqTerminalRouteImport.update({
     id: '/hq-terminal',
     path: '/hq-terminal',
+    getParentRoute: () => AuthenticatedStudioRoute,
+  } as any)
+const AuthenticatedStudioInsightsRoute =
+  AuthenticatedStudioInsightsRouteImport.update({
+    id: '/insights',
+    path: '/insights',
     getParentRoute: () => AuthenticatedStudioRoute,
   } as any)
 const AuthenticatedStudioMediaRoute =
@@ -143,18 +217,30 @@ const AuthenticatedStudioSkillsRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
+  '/certifications': typeof CertificationsRoute
+  '/contact': typeof ContactRoute
+  '/experience': typeof ExperienceRoute
+  '/lab': typeof LabRouteWithChildren
+  '/projects': typeof ProjectsRouteWithChildren
   '/recruiter': typeof RecruiterRoute
+  '/search': typeof SearchRoute
+  '/skills': typeof SkillsRoute
   '/studio': typeof AuthenticatedStudioRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/lab/$slug': typeof LabSlugRoute
+  '/projects/$slug': typeof ProjectsSlugRoute
   '/studio/ai': typeof AuthenticatedStudioAiRoute
   '/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/studio/automations': typeof AuthenticatedStudioAutomationsRoute
   '/studio/content': typeof AuthenticatedStudioContentRoute
   '/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
+  '/studio/insights': typeof AuthenticatedStudioInsightsRoute
   '/studio/media': typeof AuthenticatedStudioMediaRoute
   '/studio/projects': typeof AuthenticatedStudioProjectsRoute
   '/studio/seo': typeof AuthenticatedStudioSeoRoute
@@ -164,17 +250,29 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
+  '/certifications': typeof CertificationsRoute
+  '/contact': typeof ContactRoute
+  '/experience': typeof ExperienceRoute
+  '/lab': typeof LabRouteWithChildren
+  '/projects': typeof ProjectsRouteWithChildren
   '/recruiter': typeof RecruiterRoute
+  '/search': typeof SearchRoute
+  '/skills': typeof SkillsRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/lab/$slug': typeof LabSlugRoute
+  '/projects/$slug': typeof ProjectsSlugRoute
   '/studio/ai': typeof AuthenticatedStudioAiRoute
   '/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/studio/automations': typeof AuthenticatedStudioAutomationsRoute
   '/studio/content': typeof AuthenticatedStudioContentRoute
   '/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
+  '/studio/insights': typeof AuthenticatedStudioInsightsRoute
   '/studio/media': typeof AuthenticatedStudioMediaRoute
   '/studio/projects': typeof AuthenticatedStudioProjectsRoute
   '/studio/seo': typeof AuthenticatedStudioSeoRoute
@@ -186,18 +284,30 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
   '/blog': typeof BlogRouteWithChildren
+  '/certifications': typeof CertificationsRoute
+  '/contact': typeof ContactRoute
+  '/experience': typeof ExperienceRoute
+  '/lab': typeof LabRouteWithChildren
+  '/projects': typeof ProjectsRouteWithChildren
   '/recruiter': typeof RecruiterRoute
+  '/search': typeof SearchRoute
+  '/skills': typeof SkillsRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/lab/$slug': typeof LabSlugRoute
+  '/projects/$slug': typeof ProjectsSlugRoute
   '/_authenticated/studio/ai': typeof AuthenticatedStudioAiRoute
   '/_authenticated/studio/analytics': typeof AuthenticatedStudioAnalyticsRoute
   '/_authenticated/studio/articles': typeof AuthenticatedStudioArticlesRoute
+  '/_authenticated/studio/automations': typeof AuthenticatedStudioAutomationsRoute
   '/_authenticated/studio/content': typeof AuthenticatedStudioContentRoute
   '/_authenticated/studio/developer': typeof AuthenticatedStudioDeveloperRoute
   '/_authenticated/studio/experience': typeof AuthenticatedStudioExperienceRoute
   '/_authenticated/studio/hq-terminal': typeof AuthenticatedStudioHqTerminalRoute
+  '/_authenticated/studio/insights': typeof AuthenticatedStudioInsightsRoute
   '/_authenticated/studio/media': typeof AuthenticatedStudioMediaRoute
   '/_authenticated/studio/projects': typeof AuthenticatedStudioProjectsRoute
   '/_authenticated/studio/seo': typeof AuthenticatedStudioSeoRoute
@@ -209,18 +319,30 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/auth'
     | '/blog'
+    | '/certifications'
+    | '/contact'
+    | '/experience'
+    | '/lab'
+    | '/projects'
     | '/recruiter'
+    | '/search'
+    | '/skills'
     | '/studio'
     | '/blog/$slug'
+    | '/lab/$slug'
+    | '/projects/$slug'
     | '/studio/ai'
     | '/studio/analytics'
     | '/studio/articles'
+    | '/studio/automations'
     | '/studio/content'
     | '/studio/developer'
     | '/studio/experience'
     | '/studio/hq-terminal'
+    | '/studio/insights'
     | '/studio/media'
     | '/studio/projects'
     | '/studio/seo'
@@ -230,17 +352,29 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/auth'
     | '/blog'
+    | '/certifications'
+    | '/contact'
+    | '/experience'
+    | '/lab'
+    | '/projects'
     | '/recruiter'
+    | '/search'
+    | '/skills'
     | '/blog/$slug'
+    | '/lab/$slug'
+    | '/projects/$slug'
     | '/studio/ai'
     | '/studio/analytics'
     | '/studio/articles'
+    | '/studio/automations'
     | '/studio/content'
     | '/studio/developer'
     | '/studio/experience'
     | '/studio/hq-terminal'
+    | '/studio/insights'
     | '/studio/media'
     | '/studio/projects'
     | '/studio/seo'
@@ -251,18 +385,30 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/auth'
     | '/blog'
+    | '/certifications'
+    | '/contact'
+    | '/experience'
+    | '/lab'
+    | '/projects'
     | '/recruiter'
+    | '/search'
+    | '/skills'
     | '/_authenticated/studio'
     | '/blog/$slug'
+    | '/lab/$slug'
+    | '/projects/$slug'
     | '/_authenticated/studio/ai'
     | '/_authenticated/studio/analytics'
     | '/_authenticated/studio/articles'
+    | '/_authenticated/studio/automations'
     | '/_authenticated/studio/content'
     | '/_authenticated/studio/developer'
     | '/_authenticated/studio/experience'
     | '/_authenticated/studio/hq-terminal'
+    | '/_authenticated/studio/insights'
     | '/_authenticated/studio/media'
     | '/_authenticated/studio/projects'
     | '/_authenticated/studio/seo'
@@ -274,9 +420,17 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
   BlogRoute: typeof BlogRouteWithChildren
+  CertificationsRoute: typeof CertificationsRoute
+  ContactRoute: typeof ContactRoute
+  ExperienceRoute: typeof ExperienceRoute
+  LabRoute: typeof LabRouteWithChildren
+  ProjectsRoute: typeof ProjectsRouteWithChildren
   RecruiterRoute: typeof RecruiterRoute
+  SearchRoute: typeof SearchRoute
+  SkillsRoute: typeof SkillsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -295,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -309,11 +470,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/certifications': {
+      id: '/certifications'
+      path: '/certifications'
+      fullPath: '/certifications'
+      preLoaderRoute: typeof CertificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experience': {
+      id: '/experience'
+      path: '/experience'
+      fullPath: '/experience'
+      preLoaderRoute: typeof ExperienceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lab': {
+      id: '/lab'
+      path: '/lab'
+      fullPath: '/lab'
+      preLoaderRoute: typeof LabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/recruiter': {
       id: '/recruiter'
       path: '/recruiter'
       fullPath: '/recruiter'
       preLoaderRoute: typeof RecruiterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/studio': {
@@ -329,6 +539,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
+    }
+    '/lab/$slug': {
+      id: '/lab/$slug'
+      path: '/$slug'
+      fullPath: '/lab/$slug'
+      preLoaderRoute: typeof LabSlugRouteImport
+      parentRoute: typeof LabRoute
+    }
+    '/projects/$slug': {
+      id: '/projects/$slug'
+      path: '/$slug'
+      fullPath: '/projects/$slug'
+      preLoaderRoute: typeof ProjectsSlugRouteImport
+      parentRoute: typeof ProjectsRoute
     }
     '/_authenticated/studio/': {
       id: '/_authenticated/studio/'
@@ -358,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStudioArticlesRouteImport
       parentRoute: typeof AuthenticatedStudioRoute
     }
+    '/_authenticated/studio/automations': {
+      id: '/_authenticated/studio/automations'
+      path: '/automations'
+      fullPath: '/studio/automations'
+      preLoaderRoute: typeof AuthenticatedStudioAutomationsRouteImport
+      parentRoute: typeof AuthenticatedStudioRoute
+    }
     '/_authenticated/studio/content': {
       id: '/_authenticated/studio/content'
       path: '/content'
@@ -384,6 +615,13 @@ declare module '@tanstack/react-router' {
       path: '/hq-terminal'
       fullPath: '/studio/hq-terminal'
       preLoaderRoute: typeof AuthenticatedStudioHqTerminalRouteImport
+      parentRoute: typeof AuthenticatedStudioRoute
+    }
+    '/_authenticated/studio/insights': {
+      id: '/_authenticated/studio/insights'
+      path: '/insights'
+      fullPath: '/studio/insights'
+      preLoaderRoute: typeof AuthenticatedStudioInsightsRouteImport
       parentRoute: typeof AuthenticatedStudioRoute
     }
     '/_authenticated/studio/media': {
@@ -428,10 +666,12 @@ interface AuthenticatedStudioRouteChildren {
   AuthenticatedStudioAiRoute: typeof AuthenticatedStudioAiRoute
   AuthenticatedStudioAnalyticsRoute: typeof AuthenticatedStudioAnalyticsRoute
   AuthenticatedStudioArticlesRoute: typeof AuthenticatedStudioArticlesRoute
+  AuthenticatedStudioAutomationsRoute: typeof AuthenticatedStudioAutomationsRoute
   AuthenticatedStudioContentRoute: typeof AuthenticatedStudioContentRoute
   AuthenticatedStudioDeveloperRoute: typeof AuthenticatedStudioDeveloperRoute
   AuthenticatedStudioExperienceRoute: typeof AuthenticatedStudioExperienceRoute
   AuthenticatedStudioHqTerminalRoute: typeof AuthenticatedStudioHqTerminalRoute
+  AuthenticatedStudioInsightsRoute: typeof AuthenticatedStudioInsightsRoute
   AuthenticatedStudioMediaRoute: typeof AuthenticatedStudioMediaRoute
   AuthenticatedStudioProjectsRoute: typeof AuthenticatedStudioProjectsRoute
   AuthenticatedStudioSeoRoute: typeof AuthenticatedStudioSeoRoute
@@ -444,10 +684,12 @@ const AuthenticatedStudioRouteChildren: AuthenticatedStudioRouteChildren = {
   AuthenticatedStudioAiRoute: AuthenticatedStudioAiRoute,
   AuthenticatedStudioAnalyticsRoute: AuthenticatedStudioAnalyticsRoute,
   AuthenticatedStudioArticlesRoute: AuthenticatedStudioArticlesRoute,
+  AuthenticatedStudioAutomationsRoute: AuthenticatedStudioAutomationsRoute,
   AuthenticatedStudioContentRoute: AuthenticatedStudioContentRoute,
   AuthenticatedStudioDeveloperRoute: AuthenticatedStudioDeveloperRoute,
   AuthenticatedStudioExperienceRoute: AuthenticatedStudioExperienceRoute,
   AuthenticatedStudioHqTerminalRoute: AuthenticatedStudioHqTerminalRoute,
+  AuthenticatedStudioInsightsRoute: AuthenticatedStudioInsightsRoute,
   AuthenticatedStudioMediaRoute: AuthenticatedStudioMediaRoute,
   AuthenticatedStudioProjectsRoute: AuthenticatedStudioProjectsRoute,
   AuthenticatedStudioSeoRoute: AuthenticatedStudioSeoRoute,
@@ -480,12 +722,42 @@ const BlogRouteChildren: BlogRouteChildren = {
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
+interface LabRouteChildren {
+  LabSlugRoute: typeof LabSlugRoute
+}
+
+const LabRouteChildren: LabRouteChildren = {
+  LabSlugRoute: LabSlugRoute,
+}
+
+const LabRouteWithChildren = LabRoute._addFileChildren(LabRouteChildren)
+
+interface ProjectsRouteChildren {
+  ProjectsSlugRoute: typeof ProjectsSlugRoute
+}
+
+const ProjectsRouteChildren: ProjectsRouteChildren = {
+  ProjectsSlugRoute: ProjectsSlugRoute,
+}
+
+const ProjectsRouteWithChildren = ProjectsRoute._addFileChildren(
+  ProjectsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
   BlogRoute: BlogRouteWithChildren,
+  CertificationsRoute: CertificationsRoute,
+  ContactRoute: ContactRoute,
+  ExperienceRoute: ExperienceRoute,
+  LabRoute: LabRouteWithChildren,
+  ProjectsRoute: ProjectsRouteWithChildren,
   RecruiterRoute: RecruiterRoute,
+  SearchRoute: SearchRoute,
+  SkillsRoute: SkillsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

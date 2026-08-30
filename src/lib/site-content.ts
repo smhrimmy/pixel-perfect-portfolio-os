@@ -33,6 +33,8 @@ export type SiteContent = {
   skills?: any[];
   articles?: any[];
   cmsProjects?: any[];
+  certifications?: any[];
+  experiments?: any[];
 };
 
 export type FeatureFlagValue = string | number | boolean | null;

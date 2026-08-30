@@ -24,6 +24,8 @@ import { websiteThemes } from "@/themes/website/registry";
 import { blogTemplates } from "@/themes/blog/registry";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -135,6 +137,75 @@ function ThemesView({
   const historyFn = useServerFn(listHistory);
 
   const [note, setNote] = useState("");
+  const [visitorSwitcher, setVisitorSwitcher] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("portfolio_visitor_theme_switcher_enabled") === "true";
+    }
+    return false;
+  });
+
+  const [archivedThemes, setArchivedThemes] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("portfolio_archived_themes");
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+    return [];
+  });
+
+  const [allowedVisitorThemes, setAllowedVisitorThemes] = useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("portfolio_visitor_allowed_themes");
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+    return Object.keys(websiteThemes);
+  });
+
+  const toggleVisitorSwitcher = (enabled: boolean) => {
+    setVisitorSwitcher(enabled);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("portfolio_visitor_theme_switcher_enabled", String(enabled));
+    }
+  };
+
+  const toggleArchiveTheme = (themeId: string) => {
+    const next = archivedThemes.includes(themeId)
+      ? archivedThemes.filter((id) => id !== themeId)
+      : [...archivedThemes, themeId];
+    setArchivedThemes(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("portfolio_archived_themes", JSON.stringify(next));
+    }
+  };
+
+  const toggleAllowedVisitorTheme = (themeId: string) => {
+    const next = allowedVisitorThemes.includes(themeId)
+      ? allowedVisitorThemes.filter((id) => id !== themeId)
+      : [...allowedVisitorThemes, themeId];
+    setAllowedVisitorThemes(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("portfolio_visitor_allowed_themes", JSON.stringify(next));
+    }
+  };
+
+  const selectAllVisitorThemes = () => {
+    const all = Object.keys(websiteThemes);
+    setAllowedVisitorThemes(all);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("portfolio_visitor_allowed_themes", JSON.stringify(all));
+    }
+  };
+
+  const deselectAllVisitorThemes = () => {
+    setAllowedVisitorThemes([]);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("portfolio_visitor_allowed_themes", JSON.stringify([]));
+    }
+  };
+
   const history = useQuery({ queryKey: ["admin", "history"], queryFn: () => historyFn() });
   const dirty = data.draft.website_theme !== data.live.website_theme;
 
@@ -168,105 +239,261 @@ function ThemesView({
     [data.draft.website_theme],
   );
 
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-4 min-w-0">
-      <div className="space-y-3 min-w-0">
-        <section className="rounded-lg border border-border/60 bg-surface/60 p-4">
-          <PanelHeader icon={Palette} title="Website theme" />
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {Object.values(websiteThemes).map((t) => {
-              const isDraft = data.draft.website_theme === t.id;
-              const isLive = data.live.website_theme === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => update.mutate(t.id)}
-                  className={`text-left rounded-md border p-3 transition-colors ${
-                    isDraft ? "border-primary bg-primary/5" : "border-border/60 hover:border-border"
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    {isDraft ? <CheckCircle2 className="h-4 w-4 text-primary" /> : <Circle className="h-4 w-4 text-muted-foreground/60" />}
-                    <span className="font-medium">{t.name}</span>
-                  </div>
-                  <div className="mt-1 flex gap-1.5 text-[10px] uppercase tracking-wider">
-                    {isDraft && <Tag>draft</Tag>}
-                    {isLive && <Tag tone="live">live</Tag>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+  // Filter unique themes
+  const uniqueThemes = useMemo(() => {
+    const map = new Map<string, typeof websiteThemes[string]>();
+    Object.values(websiteThemes).forEach((t) => {
+      if (!map.has(t.name)) {
+        map.set(t.name, t);
+      }
+    });
+    return Array.from(map.values());
+  }, []);
 
-        <section className="rounded-lg border border-border/60 bg-surface/60 p-4">
-          <PanelHeader
-            icon={Radio}
-            title="Sandbox preview"
-            right={
-              <span className="text-xs text-muted-foreground">
-                Draft: <span className="text-foreground">{data.draft.website_theme}</span>
-              </span>
-            }
-          />
-          <div className="mt-3 rounded-md border border-border/40 overflow-hidden bg-background">
-            <iframe key={previewUrl} src={previewUrl} title="preview" className="w-full h-[520px]" />
+  const activeThemeList = uniqueThemes.filter((t) => !archivedThemes.includes(t.id));
+  const archivedThemeList = uniqueThemes.filter((t) => archivedThemes.includes(t.id));
+
+  const currentThemeObj = websiteThemes[data.live.website_theme] || { name: data.live.website_theme, category: "Modern · Minimal" };
+
+  return (
+    <div className="space-y-6">
+      {/* 1. Header Metrics & Stage Summary */}
+      <div className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#00E6C3]/10 text-[#00E6C3] border border-[#00E6C3]/30">
+            <Palette className="h-6 w-6" />
           </div>
-        </section>
+          <div>
+            <h3 className="font-bold text-base text-[#E6F1FF]">Theme Management &amp; Visitor Permissions</h3>
+            <p className="text-xs text-[#9AA6B2]">
+              Live: <span className="text-white font-semibold">{currentThemeObj.name}</span> · Active Draft:{" "}
+              <span className="text-[#00E6C3] font-semibold">{websiteThemes[data.draft.website_theme]?.name || data.draft.website_theme}</span>
+            </p>
+          </div>
+        </div>
+
+        {dirty && (
+          <Button onClick={() => publish.mutate()} disabled={publish.isPending} className="bg-[#00E6C3] text-black hover:bg-[#00E6C3]/90 font-bold text-xs h-9 px-4">
+            <Upload className="h-4 w-4 mr-1.5" /> Publish Staged Theme
+          </Button>
+        )}
       </div>
 
-      <aside className="space-y-3">
-        <section className="rounded-lg border border-border/60 bg-surface/60 p-4">
-          <PanelHeader icon={Terminal} title="Deploy" />
-          <dl className="mt-3 space-y-2 text-sm">
-            <Row k="Live" v={data.live.website_theme} tone="live" />
-            <Row k="Draft" v={data.draft.website_theme} tone="draft" />
-            <Row k="Status" v={dirty ? "unpublished changes" : "in sync"} tone={dirty ? "warn" : "ok"} />
-          </dl>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Publish note (optional)"
-            rows={2}
-            className="mt-3 w-full rounded-md bg-background border border-border/60 p-2 text-sm outline-none focus:border-primary"
-          />
-          <Button disabled={!dirty || publish.isPending} onClick={() => publish.mutate()} className="mt-2 w-full">
-            <Upload className="h-4 w-4 mr-1" />
-            {publish.isPending ? "Publishing…" : "Publish to live"}
-          </Button>
-        </section>
+      {/* 2. Main Grid: Theme Selection + Preview + Controls */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] xl:grid-cols-[1fr_360px] gap-6 min-w-0 w-full max-w-full">
+        {/* Left Column: Active Themes Palette + Visitor Whitelist Manager + Archived Drawer */}
+        <div className="space-y-6 min-w-0">
+          {/* Active Themes Grid */}
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <PanelHeader icon={Palette} title={`Active Website Architectures (${activeThemeList.length})`} />
+              <span className="text-xs text-[#9AA6B2] font-mono">Click to stage draft</span>
+            </div>
 
-        <section className="rounded-lg border border-border/60 bg-surface/60 p-4">
-          <PanelHeader icon={History} title="History" />
-          <div className="mt-3 space-y-2 max-h-[280px] overflow-y-auto pr-1">
-            {history.isLoading && <div className="text-xs text-muted-foreground">Loading…</div>}
-            {(history.data ?? []).map((h) => {
-              const snap = h.snapshot as { kind?: string; new_live?: { website_theme?: string } };
-              return (
-                <div key={h.id} className="rounded-md border border-border/40 p-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {new Date(h.created_at).toLocaleString()}
-                    </span>
-                    <Tag tone={snap.kind === "rollback" ? "warn" : "live"}>{snap.kind ?? "publish"}</Tag>
-                  </div>
-                  <div className="mt-1 text-foreground/90">→ {snap.new_live?.website_theme ?? "?"}</div>
-                  {h.note && <div className="mt-1 text-muted-foreground italic">"{h.note}"</div>}
-                  <button
-                    className="mt-2 inline-flex items-center gap-1 text-primary hover:underline"
-                    onClick={() => rollback.mutate(h.id)}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {activeThemeList.map((t) => {
+                const isDraft = data.draft.website_theme === t.id;
+                const isLive = data.live.website_theme === t.id;
+                const isAllowedForVisitor = allowedVisitorThemes.includes(t.id);
+
+                return (
+                  <div
+                    key={t.id}
+                    className={`rounded-2xl border p-4 transition-all flex flex-col justify-between ${
+                      isDraft ? "border-[#00E6C3] bg-[#00E6C3]/10 shadow-md" : "border-[#1E2630] bg-[#0B0F14]/60 hover:border-white/20"
+                    }`}
                   >
-                    <RotateCcw className="h-3 w-3" /> Rollback
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-sm text-[#E6F1FF]">{t.name}</span>
+                        {isDraft ? <CheckCircle2 className="h-4 w-4 text-[#00E6C3]" /> : <Circle className="h-4 w-4 text-[#9AA6B2]" />}
+                      </div>
+                      <p className="text-[11px] text-[#9AA6B2] line-clamp-2">{t.category || "Interactive physical theme"}</p>
+                    </div>
+
+                    <div className="pt-3 mt-3 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
+                      <div className="flex gap-1.5">
+                        {isDraft && <Tag>DRAFT</Tag>}
+                        {isLive && <Tag tone="live">LIVE</Tag>}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => update.mutate(t.id)}
+                          className="px-2 py-1 rounded bg-[#00E6C3]/20 text-[#00E6C3] hover:bg-[#00E6C3]/30 font-bold transition"
+                        >
+                          Select
+                        </button>
+                        <button
+                          onClick={() => toggleArchiveTheme(t.id)}
+                          className="px-2 py-1 rounded bg-white/5 text-[#9AA6B2] hover:text-amber-400 hover:bg-white/10 transition"
+                          title="Archive Theme"
+                        >
+                          Archive
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Visitor Allowed Themes Manager */}
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#1E2630]">
+              <div>
+                <h4 className="font-bold text-sm text-[#E6F1FF]">Public Visitor Allowed Themes Whitelist</h4>
+                <p className="text-xs text-[#9AA6B2] mt-0.5">
+                  Choose exactly which themes visitors can preview when the Visitor Theme Switcher is enabled.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={selectAllVisitorThemes} className="border-[#1E2630] text-[11px] h-7 px-2.5">
+                  Select All
+                </Button>
+                <Button size="sm" variant="outline" onClick={deselectAllVisitorThemes} className="border-[#1E2630] text-[11px] h-7 px-2.5">
+                  Clear All
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+              {uniqueThemes.map((t) => {
+                const isChecked = allowedVisitorThemes.includes(t.id);
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => toggleAllowedVisitorTheme(t.id)}
+                    className={`p-2.5 rounded-xl border text-left text-xs flex items-center justify-between transition ${
+                      isChecked
+                        ? "border-[#00E6C3]/50 bg-[#00E6C3]/10 text-[#00E6C3] font-semibold"
+                        : "border-[#1E2630] bg-[#0B0F14]/40 text-[#9AA6B2] hover:border-white/20"
+                    }`}
+                  >
+                    <span className="truncate">{t.name}</span>
+                    <div className={`h-4 w-4 rounded border flex items-center justify-center ${
+                      isChecked ? "border-[#00E6C3] bg-[#00E6C3] text-black" : "border-white/20"
+                    }`}>
+                      {isChecked && <CheckCircle2 className="h-3 w-3" />}
+                    </div>
                   </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Archived Themes Section */}
+          {archivedThemeList.length > 0 && (
+            <section className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 space-y-3">
+              <h4 className="font-bold text-sm text-amber-300">Archived Themes ({archivedThemeList.length})</h4>
+              <p className="text-xs text-[#9AA6B2]">
+                These themes are hidden from the active selection palette. You can restore them to active status anytime.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {archivedThemeList.map((t) => (
+                  <div key={t.id} className="p-3 rounded-xl border border-amber-500/20 bg-[#11161D] flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-xs text-white">{t.name}</span>
+                      <span className="text-[10px] text-[#9AA6B2] block">{t.category}</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => toggleArchiveTheme(t.id)}
+                      className="bg-amber-400 text-black hover:bg-amber-400/90 text-xs h-7 px-3 font-semibold"
+                    >
+                      Restore
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Live Preview Iframe */}
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5">
+            <PanelHeader
+              icon={Radio}
+              title="Interactive Workbench Live Sandbox"
+              right={
+                <span className="text-xs text-[#9AA6B2]">
+                  Draft: <span className="text-[#00E6C3] font-mono font-semibold">{data.draft.website_theme}</span>
+                </span>
+              }
+            />
+            <div className="mt-4 rounded-xl border border-[#1E2630] overflow-hidden bg-black shadow-2xl">
+              <iframe key={previewUrl} src={previewUrl} title="preview" className="w-full h-[540px]" />
+            </div>
+          </section>
+        </div>
+
+        {/* Right Sidebar Controls */}
+        <aside className="space-y-4">
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-[#00E6C3]" />
+                <span className="text-xs font-bold text-white">Visitor Theme Switcher</span>
+              </div>
+              <Switch checked={visitorSwitcher} onCheckedChange={toggleVisitorSwitcher} />
+            </div>
+            <p className="text-[11px] text-[#9AA6B2] leading-relaxed">
+              {visitorSwitcher
+                ? `Enabled. Visitors can switch between your ${allowedVisitorThemes.length} whitelisted themes.`
+                : "Disabled. Visitors will only see your live published theme without any floating switcher."}
+            </p>
+          </section>
+
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5">
+            <PanelHeader icon={Terminal} title="Deploy Release" />
+            <dl className="mt-4 space-y-2 text-xs">
+              <Row k="Live Theme" v={data.live.website_theme} tone="live" />
+              <Row k="Draft Staged" v={data.draft.website_theme} tone="draft" />
+              <Row k="Status" v={dirty ? "Unpublished changes" : "In sync"} tone={dirty ? "warn" : "ok"} />
+            </dl>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Release notes (e.g. Switch to The Workshop 3D theme)..."
+              rows={2}
+              className="mt-3 w-full rounded-xl bg-[#0B0F14] border border-[#1E2630] p-2.5 text-xs text-white outline-none focus:border-[#00E6C3]"
+            />
+            <Button
+              disabled={!dirty || publish.isPending}
+              onClick={() => publish.mutate()}
+              className="mt-3 w-full bg-[#00E6C3] text-black hover:bg-[#00E6C3]/90 font-semibold text-xs h-9"
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Publish Live Release
+            </Button>
+          </section>
+
+          {/* Audit History */}
+          <section className="rounded-2xl border border-[#1E2630] bg-[#11161D] p-5">
+            <PanelHeader icon={History} title="Release History" />
+            <div className="mt-4 space-y-2 max-h-60 overflow-y-auto text-xs">
+              {(history.data || []).slice(0, 5).map((h) => (
+                <div key={h.id} className="p-2.5 rounded-xl border border-white/5 bg-[#0B0F14] flex justify-between items-center">
+                  <div>
+                    <span className="font-mono text-[11px] text-white font-bold">{h.website_theme}</span>
+                    <span className="text-[10px] text-[#9AA6B2] block">{new Date(h.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => rollback.mutate(h.id)}
+                    className="text-[#00E6C3] text-[10px] h-6 px-2 hover:bg-[#00E6C3]/10"
+                  >
+                    Rollback
+                  </Button>
                 </div>
-              );
-            })}
-            {(history.data ?? []).length === 0 && !history.isLoading && (
-              <div className="text-xs text-muted-foreground">No publishes yet.</div>
-            )}
-          </div>
-        </section>
-      </aside>
+              ))}
+            </div>
+          </section>
+        </aside>
+      </div>
     </div>
   );
 }

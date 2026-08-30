@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cert-1",
+    "name": "Full Stack Web Development Specialist",
+    "issuer": "Vitvara Technologies",
+    "description": "Comprehensive specialization covering modern frontend frameworks, scalable backend APIs, database design, and cloud deployments.",
+    "issueDate": "2024-05",
+    "expirationDate": null,
+    "credentialId": "VIT-FS-2024",
+    "url": "https://vitvara.com",
+    "skills": ["React.js", "JavaScript", "HTML/CSS", "REST APIs"],
+    "order": 1,
+    "createdAt": "2026-08-17T09:01:33.000Z",
+    "updatedAt": "2026-08-17T09:01:33.000Z"
+  },
+  {
+    "id": "cert-2",
+    "name": "Hosting & Server Infrastructure Administration",
+    "issuer": "Glowtouch Technologies",
+    "description": "Certified in DNS routing, Web Server troubleshooting (Apache/Nginx), SSL certificate provisioning, and database optimizations.",
+    "issueDate": "2024-12",
+    "expirationDate": null,
+    "credentialId": "GT-HOST-092",
+    "url": "https://glowtouch.com",
+    "skills": ["DNS", "WordPress", "MySQL", "Server Infrastructure"],
+    "order": 2,
+    "createdAt": "2026-08-17T09:01:33.000Z",
+    "updatedAt": "2026-08-17T09:01:33.000Z"
+  }
+]

@@ -18,6 +18,20 @@ export interface ProjectProps {
   status: ProjectStatus;
   featured: boolean;
   order: number;
+  category?: string;
+  technologies?: string[];
+  techStack?: any;
+  role?: string;
+  duration?: string;
+  problem?: string;
+  goals?: string[];
+  constraints?: string[];
+  architecture?: string;
+  challenges?: any[];
+  solutions?: any[];
+  results?: string[];
+  lessons?: string[];
+  threeConfig?: any;
   createdAt: string;
   updatedAt: string;
 }

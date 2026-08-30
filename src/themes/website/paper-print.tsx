@@ -1,66 +1,72 @@
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { PenTool, Ruler, Compass } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function PaperPrint({ data }: ThemeRendererProps) {
-  const c = content;
+export default function TheDraftingTable({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
+
+  const blueprints = (projects && projects.length > 0 ? projects : [
+    { title: "SHEET A-101 · STRUCTURAL ELEVATIONS", scale: "1/4\" = 1'-0\"", desc: "Schematic structural blueprint for high-concurrency microservices and load balancers." },
+    { title: "SHEET A-102 · SPATIAL 3D SECTION VIEW", scale: "1/2\" = 1'-0\"", desc: "Orthographic cross-section revealing GPU buffer allocation and vertex transformation pipelines." },
+    { title: "SHEET A-103 · FOUNDATION & POSTGRES FOOTINGS", scale: "1\" = 1'-0\"", desc: "Reinforced database footings with point-in-time recovery shear walls." },
+  ]);
+
+  const [activeSheet, setActiveSheet] = useState(0);
+
   return (
-    <main className="min-h-screen bg-[#f5f1e8] text-neutral-900 font-serif">
-      <div className="mx-auto max-w-3xl px-6 py-24">
-        <div className="border-b-4 border-double border-neutral-900 pb-6">
-          <div className="text-[11px] uppercase tracking-[0.4em] text-neutral-500">
-            The {c.identity?.name?.split(" ")[0] || "Daily"} Chronicle
+    <div className="min-h-screen bg-[#0E2841] text-[#EAF2F8] font-mono p-6 sm:p-12 flex flex-col justify-between selection:bg-[#FFFFFF] selection:text-[#0E2841]">
+      <header className="border-b-2 border-white/20 pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Ruler className="h-6 w-6 text-cyan-300" />
+          <div>
+            <h1 className="text-base font-bold text-[#EAF2F8] uppercase tracking-wider">THE ARCHITECT'S DRAFTING TABLE</h1>
+            <p className="text-[11px] text-cyan-300">CYANOTYPE BLUEPRINT · T-SQUARE ALIGNED · {candidateName}</p>
           </div>
-          <h1 className="mt-4 text-6xl md:text-7xl font-black tracking-tight leading-none">
-            {[c.hero?.headingLead, c.hero?.headingAccent, c.hero?.headingTail].filter(Boolean).join(" ") || c.identity?.name || "Portfolio"}
-          </h1>
-          <p className="mt-4 text-lg italic text-neutral-700">{c.hero?.sub}</p>
+        </div>
+        <span className="text-xs text-cyan-300 border border-cyan-300/40 px-2 py-0.5 rounded">
+          T-SQUARE: LOCKED 90°
+        </span>
+      </header>
+
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs text-cyan-300 uppercase tracking-widest">[WHITE INK ON BLUEPRINT SHEET]</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-[#EAF2F8]">STRUCTURAL BLUEPRINTS</h2>
         </div>
 
-        <section className="mt-10 columns-1 md:columns-2 gap-8 [&>*]:break-inside-avoid">
-          {(c.services ?? []).map((s) => (
-            <article key={s.title} className="mb-8">
-              <h3 className="text-xl font-bold uppercase tracking-wide">{s.title}</h3>
-              <div className="mt-1 h-px w-10 bg-neutral-900" />
-              <p className="mt-3 text-sm leading-relaxed text-neutral-800">{s.body}</p>
-            </article>
-          ))}
-        </section>
+        {/* Physical Blueprint Sheet Card */}
+        <div className="p-8 sm:p-12 rounded-none border-2 border-white bg-[#0A1F33] shadow-[10px_10px_0px_#05121E] space-y-6 relative">
+          {/* Blueprint Grid Lines Background */}
+          <div className="flex justify-between items-center text-xs text-cyan-300 border-b border-white/20 pb-3">
+            <span>SCALE: {blueprints[activeSheet].scale}</span>
+            <span>REVISION: DELTA-4</span>
+          </div>
 
-        {(c.experience && c.experience.length > 0) && (
-          <section className="mt-10 pt-10 border-t-2 border-neutral-900">
-            <h2 className="text-3xl font-black uppercase tracking-tight mb-8">Professional Record</h2>
-            <div className="columns-1 md:columns-2 gap-8 [&>*]:break-inside-avoid">
-              {c.experience.map((exp: any) => (
-                <article key={exp.id} className="mb-8">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-neutral-500 mb-1">
-                    {exp.startDate} — {exp.endDate || "Present"}
-                  </div>
-                  <h3 className="text-xl font-bold italic">{exp.role}</h3>
-                  <div className="text-sm font-bold uppercase tracking-wider text-neutral-900 mb-2">{exp.company}</div>
-                  <p className="text-sm leading-relaxed text-neutral-800">{exp.summary}</p>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
+          <h3 className="text-2xl sm:text-4xl font-bold text-[#EAF2F8]">{blueprints[activeSheet].title}</h3>
+          <p className="text-sm text-[#BBD5EB] leading-relaxed">{blueprints[activeSheet].desc || blueprints[activeSheet].description}</p>
 
-        {(c.skills && c.skills.length > 0) && (
-          <section className="mt-10 pt-10 border-t-2 border-neutral-900">
-            <h2 className="text-3xl font-black uppercase tracking-tight mb-8">Technical Expertise</h2>
-            <div className="flex flex-wrap gap-2">
-              {c.skills.map((skill: any) => (
-                <div key={skill.id} className="border border-neutral-400 px-3 py-1 text-sm font-bold uppercase tracking-wider bg-white">
-                  {skill.name}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+          <div className="pt-6 border-t border-white/20 flex justify-between items-center text-xs text-cyan-300">
+            <span>LEAD ARCHITECT: {candidateName.toUpperCase()}</span>
+            <span className="text-white font-bold">STAMPED &amp; SEALED</span>
+          </div>
+        </div>
 
-        <footer className="mt-16 pt-6 border-t border-neutral-400 text-xs text-neutral-500 flex justify-between">
-          <span>Vol. {new Date().getFullYear()}</span>
-          <span>{c.identity?.name}</span>
-        </footer>
-      </div>
-    </main>
+        {/* Blueprint Sheet Switcher */}
+        <div className="flex justify-center">
+          <Button
+            onClick={() => setActiveSheet((s) => (s + 1) % blueprints.length)}
+            className="bg-white text-[#0E2841] hover:bg-cyan-100 font-bold text-xs h-11 px-8 rounded-none border-2 border-white shadow-[4px_4px_0px_#05121E]"
+          >
+            Slide T-Square: Next Blueprint Sheet →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t-2 border-white/20 pt-4 text-center text-xs text-cyan-300">
+        <span>BUREAU OF ARCHITECTURAL &amp; SYSTEM PLANNING · DRAWING APPROVED</span>
+      </footer>
+    </div>
   );
 }

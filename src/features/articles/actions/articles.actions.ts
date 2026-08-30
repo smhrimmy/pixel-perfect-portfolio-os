@@ -7,8 +7,9 @@ import { articleCreateSchema, articleUpdateSchema } from "../schemas/article.sch
 export const listPublishedArticlesJson = createServerFn({ method: "GET" }).handler(async () =>
   articlesService().queries.listPublished(),
 );
+export const listPublishedArticles = listPublishedArticlesJson;
 export const getArticleBySlugJson = createServerFn({ method: "GET" })
-  .inputValidator((slug: string) => z.string().min(1).parse(slug))
+  .validator((slug: string) => z.string().min(1).parse(slug))
   .handler(async ({ data }) => articlesService().queries.findBySlug(data));
 
 export const listAllArticlesJson = createServerFn({ method: "GET" })

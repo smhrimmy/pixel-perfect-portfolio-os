@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, Sparkles, Wand2, Loader2 } from "lucide-react";
 import type { z } from "zod";
 
 import { qk } from "@/providers/query.provider";
@@ -17,6 +17,7 @@ import {
 } from "@/actions";
 import { articleCreateSchema } from "@/features/articles/schemas/article.schema";
 import { Slug } from "@/domain/shared/value-objects";
+import { runAiTool } from "@/lib/ai-workspace.functions";
 
 import { EntityWorkbench } from "@/components/studio/entity-workbench";
 import { EditorShell } from "@/components/studio/editor-shell";
@@ -67,6 +68,8 @@ function ArticlesPage() {
   const { data, isLoading } = useQuery({ queryKey: qk.articles.all, queryFn: () => listFn() });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tagsText, setTagsText] = useState("");
+  const [aiTopic, setAiTopic] = useState("");
+  const [isAiOpen, setIsAiOpen] = useState(false);
   const selected = useMemo(() => data?.find((a) => a.id === selectedId) ?? null, [data, selectedId]);
   const isNew = selectedId === "__new__";
 
@@ -74,6 +77,26 @@ function ArticlesPage() {
     resolver: zodResolver(articleCreateSchema),
     defaultValues: defaults(),
     mode: "onChange",
+  });
+
+  const aiGenMut = useMutation({
+    mutationFn: async ({ tool, input }: { tool: any; input: string }) => {
+      return await runAiTool({ data: { tool, input } });
+    },
+    onSuccess: (res, vars) => {
+      if (vars.tool === "blog-draft") {
+        form.setValue("markdown", res.output, { shouldDirty: true });
+        if (!form.getValues("excerpt")) {
+          form.setValue("excerpt", res.output.slice(0, 160).replace(/[#*]/g, "") + "...", { shouldDirty: true });
+        }
+        toast.success("AI draft generated and populated in editor!");
+      } else if (vars.tool === "blog-outline") {
+        form.setValue("markdown", res.output + "\n\n" + form.getValues("markdown"), { shouldDirty: true });
+        toast.success("AI outline inserted!");
+      }
+      setIsAiOpen(false);
+    },
+    onError: (e) => toast.error((e as Error).message),
   });
 
   useEffect(() => {
@@ -139,14 +162,59 @@ function ArticlesPage() {
       onSave={(v) => save(v, false)}
       onPublish={(v) => save(v, true)}
       actionsSlot={
-        !isNew && selected ? (
-          <Button size="sm" variant="ghost" onClick={() => confirm(`Delete "${selected.title}"?`) && deleteMut.mutate(selected.id)}>
-            <Trash2 className="mr-1 h-4 w-4" /> Delete
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsAiOpen(!isAiOpen)}
+            className="border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary text-xs"
+          >
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" /> AI Assistant
           </Button>
-        ) : null
+          {!isNew && selected && (
+            <Button size="sm" variant="ghost" onClick={() => confirm(`Delete "${selected.title}"?`) && deleteMut.mutate(selected.id)}>
+              <Trash2 className="mr-1 h-4 w-4" /> Delete
+            </Button>
+          )}
+        </div>
       }
       renderForm={() => (
         <div className="space-y-4">
+          {isAiOpen && (
+            <div className="p-4 rounded-xl border border-primary/30 bg-primary/5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                  <Wand2 className="h-4 w-4" /> AI Blog Generator
+                </div>
+                <Badge variant="outline" className="text-[10px] text-muted-foreground">Draft Mode Only</Badge>
+              </div>
+              <Input
+                placeholder="Topic or project title (e.g. Distributed WebSocket Pipelines)..."
+                value={aiTopic || form.watch("title")}
+                onChange={(e) => setAiTopic(e.target.value)}
+                className="bg-background text-sm"
+              />
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  size="sm"
+                  disabled={aiGenMut.isPending || (!aiTopic && !form.watch("title"))}
+                  onClick={() => aiGenMut.mutate({ tool: "blog-draft", input: aiTopic || form.watch("title") })}
+                >
+                  {aiGenMut.isPending ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 mr-1.5" />}
+                  Generate Full Draft
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={aiGenMut.isPending || (!aiTopic && !form.watch("title"))}
+                  onClick={() => aiGenMut.mutate({ tool: "blog-outline", input: aiTopic || form.watch("title") })}
+                >
+                  Insert Outline
+                </Button>
+              </div>
+            </div>
+          )}
+
           <F label="Title" err={form.formState.errors.title?.message}><Input {...form.register("title")} /></F>
           <F label="Slug" err={form.formState.errors.slug?.message}><Input {...form.register("slug")} /></F>
           <F label="Excerpt"><Textarea rows={2} {...form.register("excerpt")} /></F>

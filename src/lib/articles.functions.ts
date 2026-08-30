@@ -4,20 +4,27 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
+import { articlesService } from "@/features/articles/application/articles.service";
+
 function serverPublic() {
-  const url = process.env.SUPABASE_URL!;
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient<Database>(url, key, {
-    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  if (!url || !key) return null;
+  try {
+    return createClient<Database>(url, key, {
+      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const h = new Headers(init?.headers);
+          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+          h.set("apikey", key);
+          return fetch(input, { ...init, headers: h });
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return null;
+  }
 }
 
 export type ArticleRow = {
@@ -40,28 +47,50 @@ export type ArticleRow = {
 export const listPublishedArticles = createServerFn({ method: "GET" }).handler(
   async (): Promise<ArticleRow[]> => {
     const supabase = serverPublic();
-    const { data, error } = await supabase
-      .from("articles")
-      .select("*")
-      .eq("status", "published")
-      .order("published_at", { ascending: false, nullsFirst: false });
-    if (error) throw error;
-    return (data ?? []) as ArticleRow[];
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("status", "published")
+          .order("published_at", { ascending: false, nullsFirst: false });
+        if (!error && data) return data as ArticleRow[];
+      } catch (err) {
+        console.warn("[listPublishedArticles] Supabase query failed:", err);
+      }
+    }
+    try {
+      const local = await articlesService().queries.listPublished();
+      return (local ?? []) as unknown as ArticleRow[];
+    } catch {
+      return [];
+    }
   },
 );
 
 export const getPublishedArticle = createServerFn({ method: "GET" })
-  .inputValidator((slug: string) => z.string().min(1).parse(slug))
+  .validator((slug: string) => z.string().min(1).parse(slug))
   .handler(async ({ data }): Promise<ArticleRow | null> => {
     const supabase = serverPublic();
-    const { data: row, error } = await supabase
-      .from("articles")
-      .select("*")
-      .eq("slug", data)
-      .eq("status", "published")
-      .maybeSingle();
-    if (error) throw error;
-    return (row as ArticleRow) ?? null;
+    if (supabase) {
+      try {
+        const { data: row, error } = await supabase
+          .from("articles")
+          .select("*")
+          .eq("slug", data)
+          .eq("status", "published")
+          .maybeSingle();
+        if (!error && row) return row as ArticleRow;
+      } catch (err) {
+        console.warn("[getPublishedArticle] Supabase query failed:", err);
+      }
+    }
+    try {
+      const local = await articlesService().queries.findBySlug(data);
+      return (local ?? null) as unknown as ArticleRow | null;
+    } catch {
+      return null;
+    }
   });
 
 /* -------- Admin CRUD -------- */

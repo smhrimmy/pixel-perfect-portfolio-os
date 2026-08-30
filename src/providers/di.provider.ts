@@ -34,12 +34,16 @@ export const DI_TOKENS = {
   ExperienceRepo: "repo.experience",
   ArticlesRepo: "repo.articles",
   SettingsRepo: "repo.settings",
+  CertificationsRepo: "repo.certifications",
+  ExperimentsRepo: "repo.experiments",
 
   ProjectsService: "svc.projects",
   SkillsService: "svc.skills",
   ExperienceService: "svc.experience",
   ArticlesService: "svc.articles",
   SettingsService: "svc.settings",
+  CertificationsService: "svc.certifications",
+  ExperimentsService: "svc.experiments",
 
   Search: "svc.search",
   Media: "svc.media",

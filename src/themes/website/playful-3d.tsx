@@ -1,202 +1,183 @@
-import { ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Box,
+  Sparkles,
+  Eye,
+  ArrowUpRight,
+  Mail,
+  ChevronRight,
+  X,
+  Package,
+} from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import { Button } from "@/components/ui/button";
 
-export default function Playful3D({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
-  
-  const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
-  const hero = { 
-    badge: "Available for work", 
-    headingLead: "I build", 
-    headingAccent: "bold", 
-    headingTail: "things", 
-    sub: profile?.bio || "A creative developer.", 
-    industries: ["Tech", "Design"] 
-  };
-  const services = [{title: "Design", body: "Visual identities."}, {title: "Development", body: "Full-stack apps."}];
-  const stats = [{value: projects?.length || 0, label: "Projects"}];
-  const why = [{title: "Speed", body: "Fast"}];
-  const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
-  const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
-  
-  const experience = (rawExperience || []).map(e => ({ 
-    ...e, 
-    startDate: e.start_date ? e.start_date.substring(0, 7) : "", 
-    endDate: e.end_date ? e.end_date.substring(0, 7) : null, 
-    role: e.position,
-    summary: e.description
-  }));
+export default function TheToyChest({ data }: ThemeRendererProps) {
+  const { profile, projects, experience: rawExperience } = data;
+  const candidateName = profile?.name || "Jack";
+  const bio = profile?.bio || "Crafting hand-made miniature dioramas, mechanical puppet physics, and playful spatial interactions.";
+  const email = profile?.email || "jack@toychest.craft";
+
+  const [chestOpen, setChestOpen] = useState(false);
+  const [selectedDiorama, setSelectedDiorama] = useState<any | null>(null);
+
+  const dioramas = (projects && projects.length > 0 ? projects : [
+    {
+      id: "1",
+      title: "THE WOODEN AIRSHIP CRUISE",
+      desc: "Stop-motion animated balsa wood zeppelin floating over miniature cardboard clouds with mechanical gear propellers.",
+      material: "Carved Pine & Brass Wire",
+      year: "1924 Model",
+    },
+    {
+      id: "2",
+      title: "MECHANICAL CLOCKWORK CASTLE",
+      desc: "Intricate shoebox diorama with turning wooden cogs, lowering drawbridges, and paper-cutout knights.",
+      material: "Birch Plywood & String",
+      year: "Limited Edition",
+    },
+    {
+      id: "3",
+      title: "THE AUTOMATON CAROUSEL",
+      desc: "Hand-painted porcelain carousel horses dancing on stop-motion wooden pistons with music box tunes.",
+      material: "Hand-Painted Ceramic",
+      year: "Masterpiece",
+    },
+  ]);
+
   return (
-    <div className="min-h-screen bg-[#f6c445] text-[#1a1a1a] font-sans overflow-hidden relative">
-      {/* Floating blobs */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#ff5b5b] blur-3xl opacity-70" />
-        <div className="absolute top-1/3 -right-32 h-96 w-96 rounded-full bg-[#3b7dff] blur-3xl opacity-60" />
-        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-[#22c55e] blur-3xl opacity-60" />
-      </div>
-
-      <header className="relative z-10">
-        <nav className="mx-auto max-w-6xl px-6 h-20 flex items-center justify-between">
-          <a href="#top" className="flex items-center gap-2 font-black text-xl">
-            <span className="inline-block h-8 w-8 rounded-md bg-[#1a1a1a] rotate-6" />
-            {identity.name}
-          </a>
-          <div className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <a href="#services">Services</a>
-            <a href="#experience">Experience</a>
-            <a href="#skills">Skills</a>
-            <a href="#work">Playground</a>
-            <a href="#contact">Say hi</a>
+    <div className="min-h-screen bg-[#2A1810] text-[#F3E5D8] font-sans overflow-x-hidden selection:bg-[#D97706] selection:text-white">
+      {/* 1. CEDAR WOOD HEADER */}
+      <header className="border-b border-[#5C3A21] bg-[#1F110B]/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-lg bg-[#8B4513] border border-[#D97706]/40 flex items-center justify-center text-[#F3E5D8]">
+              <Package className="h-4 w-4" />
+            </div>
+            <div>
+              <span className="font-black text-sm tracking-wider text-[#F3E5D8] uppercase">THE TOY CHEST</span>
+              <span className="text-[10px] text-[#D97706] block font-mono -mt-0.5">HAND-CRAFTED DIORAMAS · {candidateName}</span>
+            </div>
           </div>
-          <a
-            href={links.book}
-            className="rounded-full bg-[#1a1a1a] text-white px-5 py-2.5 text-sm font-semibold shadow-[6px_6px_0_#ff5b5b] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[3px_3px_0_#ff5b5b] transition-all"
+
+          <Button
+            onClick={() => setChestOpen((o) => !o)}
+            size="sm"
+            className="bg-[#D97706] text-black hover:bg-[#D97706]/90 font-bold text-xs h-8 rounded-full"
           >
-            Let&apos;s play →
-          </a>
-        </nav>
+            {chestOpen ? "Close Toy Chest Lid" : "Open Toy Chest Lid"}
+          </Button>
+        </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-6xl px-6">
-        <section id="top" className="py-24">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white border-2 border-[#1a1a1a] px-4 py-1.5 text-xs font-bold shadow-[4px_4px_0_#1a1a1a]">
-            <span className="h-2 w-2 rounded-full bg-[#22c55e] animate-pulse" />
-            {hero.badge}
+      {/* 2. HERO SHOEBOX THEATER ENTRY */}
+      <section className="py-20 px-6 max-w-5xl mx-auto text-center space-y-8">
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+          className="p-8 sm:p-12 rounded-3xl border-4 border-[#8B4513] bg-gradient-to-b from-[#3D2314] to-[#1F110B] shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-6 relative overflow-hidden"
+        >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#8B4513]/40 border border-[#D97706]/40 text-xs font-mono text-[#D97706]">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>STOP-MOTION SHOEBOX DIORAMA ENGINE</span>
           </div>
-          <h1 className="mt-8 text-6xl md:text-8xl font-black leading-[0.95] tracking-tighter">
-            {hero.headingLead}{" "}
-            <span className="inline-block rotate-[-2deg] bg-[#1a1a1a] text-[#f6c445] px-3 rounded-lg">
-              {hero.headingAccent}
-            </span>{" "}
-            {hero.headingTail}
+
+          <h1 className="text-4xl sm:text-6xl font-black uppercase text-[#F3E5D8] tracking-tight">
+            HAND-CRAFTED <br />
+            <span className="text-[#D97706]">MINIATURE REALITIES</span>
           </h1>
-          <p className="mt-8 text-xl max-w-2xl font-medium">{hero.sub}</p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <a href={links.book} className="rounded-full bg-[#ff5b5b] text-white px-8 py-4 font-bold shadow-[8px_8px_0_#1a1a1a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0_#1a1a1a] transition-all">
-              Book a call →
-            </a>
-            <a href="#work" className="rounded-full bg-white text-[#1a1a1a] px-8 py-4 font-bold border-2 border-[#1a1a1a] shadow-[8px_8px_0_#1a1a1a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0_#1a1a1a] transition-all">
-              Explore
-            </a>
-          </div>
-        </section>
 
-        <section id="services" className="py-16 grid md:grid-cols-3 gap-6">
-          {services.map((s, i) => (
-            <div
-              key={s.title}
-              className="rounded-3xl bg-white border-2 border-[#1a1a1a] p-8 shadow-[8px_8px_0_#1a1a1a] hover:rotate-1 transition-transform"
-              style={{ transform: `rotate(${(i - 1) * 1.5}deg)` }}
+          <p className="text-sm sm:text-base text-[#D4B89B] max-w-xl mx-auto">
+            {bio}
+          </p>
+
+          <div className="pt-4 flex justify-center gap-4">
+            <Button
+              onClick={() => setChestOpen(true)}
+              className="bg-[#D97706] text-black hover:bg-[#D97706]/90 font-bold text-xs h-11 px-8 rounded-full shadow-lg"
             >
-              <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl text-white text-xl font-black ${["bg-[#ff5b5b]", "bg-[#3b7dff]", "bg-[#22c55e]"][i % 3]}`}>
-                {i + 1}
+              Peer Into The Dioramas →
+            </Button>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* 3. DIORAMA CARDS GRID */}
+      <section className="py-16 px-6 max-w-6xl mx-auto space-y-8">
+        <div className="flex items-center justify-between border-b border-[#5C3A21] pb-4">
+          <h2 className="text-2xl font-black text-[#F3E5D8]">Peep-Show Dioramas ({dioramas.length})</h2>
+          <span className="text-xs text-[#D97706] font-mono">Warm Wood &amp; Stage Lighting</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {dioramas.map((d: any, idx: number) => (
+            <motion.div
+              key={d.id || idx}
+              whileHover={{ y: -6, rotateZ: idx % 2 === 0 ? 1 : -1 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setSelectedDiorama(d)}
+              className="p-6 rounded-2xl border-2 border-[#8B4513] bg-[#3D2314] cursor-pointer space-y-4 hover:border-[#D97706] shadow-xl group"
+            >
+              <div className="h-44 w-full rounded-xl bg-[#1F110B] border border-[#5C3A21] flex items-center justify-center relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(217,119,6,0.3)] transition">
+                <Box className="h-12 w-12 text-[#D97706] group-hover:scale-110 transition-transform" />
+                <span className="absolute bottom-2 left-2 text-[10px] font-mono text-[#D97706]">DIORAMA NO. {idx + 1}</span>
               </div>
-              <h3 className="mt-4 text-2xl font-black">{s.title}</h3>
-              <p className="mt-3 text-sm">{s.body}</p>
-            </div>
+
+              <div>
+                <span className="text-[10px] font-mono text-[#D97706] font-bold uppercase">{d.material || "CARVED WOOD"}</span>
+                <h3 className="text-lg font-bold text-[#F3E5D8] mt-0.5">{d.title}</h3>
+                <p className="text-xs text-[#D4B89B] mt-2 line-clamp-2">{d.desc || d.description}</p>
+              </div>
+
+              <div className="pt-2 flex justify-between items-center text-xs font-mono text-[#D97706]">
+                <span>Inspect Diorama</span>
+                <ChevronRight className="h-4 w-4" />
+              </div>
+            </motion.div>
           ))}
-        </section>
+        </div>
+      </section>
 
-        <section className="py-16">
-          <div className="rounded-3xl bg-[#1a1a1a] text-white p-10 grid grid-cols-2 md:grid-cols-4 gap-8 shadow-[12px_12px_0_#ff5b5b]">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-5xl font-black text-[#f6c445]">{s.value}</div>
-                <div className="mt-2 text-xs uppercase tracking-widest text-white/60">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* 4. FOOTER */}
+      <footer className="py-12 px-6 border-t border-[#5C3A21] bg-[#1F110B] text-center space-y-4">
+        <h4 className="text-lg font-bold text-[#F3E5D8]">Commission a Handcrafted Toy Chest Build</h4>
+        <p className="text-xs text-[#D4B89B]">Available for spatial toy physics, stop-motion animations, and bespoke web dioramas.</p>
+        <Button asChild className="bg-[#D97706] text-black hover:bg-[#D97706]/90 font-bold text-xs h-9 rounded-full px-6">
+          <a href={`mailto:${email}`}>
+            <Mail className="h-4 w-4 mr-1.5" /> Send Workshop Letter
+          </a>
+        </Button>
+      </footer>
 
-        <section id="experience" className="py-16">
-          <div className="text-xs uppercase tracking-[0.3em] font-bold">Resume</div>
-          <div className="mt-8 space-y-6">
-            {experience.map((exp: any, i: number) => (
-              <div
-                key={exp.id}
-                className="rounded-3xl bg-white border-2 border-[#1a1a1a] p-8 shadow-[8px_8px_0_#1a1a1a] hover:-translate-y-1 hover:shadow-[12px_12px_0_#1a1a1a] transition-all flex flex-col md:flex-row gap-6 justify-between items-start"
-                style={{ transform: `rotate(${(i % 2 === 0 ? 1 : -1) * 0.5}deg)` }}
+      {/* Diorama Modal */}
+      <AnimatePresence>
+        {selectedDiorama && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+            <div className="max-w-lg w-full rounded-3xl border-4 border-[#8B4513] bg-[#2A1810] p-8 text-[#F3E5D8] space-y-6 relative shadow-2xl">
+              <button
+                onClick={() => setSelectedDiorama(null)}
+                className="absolute top-5 right-5 h-8 w-8 rounded-full border border-[#8B4513] text-[#D97706] flex items-center justify-center hover:bg-[#8B4513]"
               >
-                <div>
-                  <h3 className="text-2xl font-black">{exp.role}</h3>
-                  <div className={`mt-2 inline-block px-3 py-1 rounded-full text-white text-sm font-bold ${["bg-[#ff5b5b]", "bg-[#3b7dff]", "bg-[#22c55e]"][i % 3]}`}>
-                    {exp.company}
-                  </div>
-                  <p className="mt-4 text-sm max-w-2xl font-medium">{exp.summary}</p>
-                </div>
-                <div className="shrink-0 rounded-full border-2 border-[#1a1a1a] px-4 py-1.5 text-xs font-bold uppercase shadow-[4px_4px_0_#1a1a1a]">
-                  {exp.startDate} – {exp.endDate || "Present"}
-                </div>
+                <X className="h-4 w-4" />
+              </button>
+
+              <h2 className="text-2xl font-black text-[#F3E5D8]">{selectedDiorama.title}</h2>
+              <p className="text-xs text-[#D4B89B] leading-relaxed">{selectedDiorama.desc || selectedDiorama.description}</p>
+
+              <div className="p-4 rounded-xl border border-[#5C3A21] bg-[#1F110B] text-xs font-mono space-y-1 text-[#D97706]">
+                <div>CRAFT: {selectedDiorama.material || "Hand-Carved Balsa & Wire"}</div>
+                <div>SCALE: 1:24 Miniature Stage</div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        <section id="skills" className="py-16">
-          <div className="text-xs uppercase tracking-[0.3em] font-bold">Skills</div>
-          <div className="mt-8 flex flex-wrap gap-4">
-            {skills.map((skill: any, i: number) => (
-              <div
-                key={skill.id}
-                className="rounded-full bg-white border-2 border-[#1a1a1a] px-5 py-2.5 font-bold shadow-[4px_4px_0_#1a1a1a] hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#1a1a1a] transition-all cursor-default"
-                style={{ transform: `rotate(${(i % 3 - 1) * 2}deg)` }}
-              >
-                {skill.name}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="work" className="py-16">
-          <div className="text-xs uppercase tracking-[0.3em] font-bold">Playground</div>
-          <div className="mt-8 grid md:grid-cols-2 gap-6">
-            {projects.map((p, i) => (
-              <a
-                key={p.title}
-                href="#"
-                className="group rounded-3xl border-2 border-[#1a1a1a] p-8 shadow-[8px_8px_0_#1a1a1a] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0_#1a1a1a] transition-all"
-                style={{ background: ["#ffe4a3", "#c8e0ff", "#c8ffd4", "#ffd6e0"][i % 4] }}
-              >
-                <div className="text-xs uppercase tracking-widest font-bold">{p.tag}</div>
-                <h3 className="mt-3 text-3xl font-black">{p.title}</h3>
-                <p className="mt-4 text-sm">{p.outcome}</p>
-                <ArrowUpRight className="mt-6 h-6 w-6" />
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="text-xs uppercase tracking-[0.3em] font-bold">Why me</div>
-          <div className="mt-8 grid md:grid-cols-3 gap-6">
-            {why.map((w, i) => (
-              <div key={w.title} className="rounded-2xl bg-white border-2 border-[#1a1a1a] p-6 shadow-[6px_6px_0_#3b7dff]" style={{ transform: `rotate(${(i - 1) * -1}deg)` }}>
-                <h3 className="text-lg font-black">{w.title}</h3>
-                <p className="mt-2 text-sm">{w.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="contact" className="py-24">
-          <div className="rounded-3xl bg-[#1a1a1a] p-14 text-center text-white shadow-[12px_12px_0_#22c55e]">
-            <div className="text-xs uppercase tracking-[0.3em] font-bold text-[#f6c445]">{contact.badge}</div>
-            <h2 className="mt-6 text-5xl md:text-7xl font-black tracking-tighter">
-              {contact.headingLead}{" "}
-              <span className="text-[#f6c445]">{contact.headingAccent}</span>.
-            </h2>
-            <p className="mt-4 text-white/80 max-w-xl mx-auto">{contact.sub}</p>
-            <div className="mt-8 flex justify-center gap-4">
-              <a href={links.book} className="rounded-full bg-[#f6c445] text-[#1a1a1a] px-8 py-4 font-bold shadow-[6px_6px_0_#ff5b5b]">Book a call</a>
-              <a href={links.email} className="rounded-full border-2 border-white px-8 py-4 font-bold">Email</a>
+              <Button size="sm" onClick={() => setSelectedDiorama(null)} className="bg-[#D97706] text-black font-bold text-xs w-full">
+                Close Diorama Case
+              </Button>
             </div>
           </div>
-        </section>
-      </main>
-
-      <footer className="relative z-10 mx-auto max-w-6xl px-6 py-8 text-sm font-medium">
-        © {new Date().getFullYear()} {identity.name} — made with vibes
-      </footer>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,76 +1,69 @@
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { Leaf, Bookmark, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function AuroraMint({ data }: ThemeRendererProps) {
-  const c = content;
+export default function TheHerbarium({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
+
+  const specimens = (projects && projects.length > 0 ? projects : [
+    { title: "FOLIUM ALGORITHMICA · TAXONOMY 01", latin: "Rosa systematica Linnaeus", desc: "Pressed wild flora specimen catalogued for computational resiliency and fault tolerance." },
+    { title: "RADIX DISTRIBUTA · TAXONOMY 02", latin: "Filix webglica Mirbel", desc: "Botanical roots harvested from deep mathematical shader forests." },
+    { title: "FLOS INTELLIGENTIA · TAXONOMY 03", latin: "Orchis automatica Smith", desc: "Rare perennial blossom blooming in autonomous multi-agent environments." },
+  ]);
+
+  const [activeSpecimen, setActiveSpecimen] = useState(0);
+
   return (
-    <main className="min-h-screen bg-[#04120f] text-emerald-50 overflow-hidden relative">
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 opacity-70"
-        style={{
-          background:
-            "radial-gradient(60% 60% at 20% 10%, rgba(52,211,153,0.35), transparent 70%), radial-gradient(50% 50% at 80% 30%, rgba(34,211,238,0.25), transparent 70%), radial-gradient(80% 60% at 50% 100%, rgba(16,185,129,0.2), transparent 70%)",
-        }}
-      />
-      <div className="mx-auto max-w-5xl px-6 py-24">
-        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/30 bg-emerald-300/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-emerald-200">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
-          {c.hero?.badge ?? "available"}
+    <div className="min-h-screen bg-[#F4F1EA] text-[#2D312E] font-serif p-6 sm:p-12 flex flex-col justify-between selection:bg-[#588157] selection:text-white">
+      <header className="border-b border-[#CCD5AE] pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Leaf className="h-6 w-6 text-[#588157]" />
+          <div>
+            <h1 className="text-base font-bold text-[#2D312E] uppercase tracking-wider">THE PRESSED HERBARIUM</h1>
+            <p className="text-[11px] text-[#588157]">BOTANICAL SPECIMEN FOLIO · {candidateName}</p>
+          </div>
         </div>
-        <h1 className="mt-6 font-display text-5xl md:text-7xl font-black tracking-tight leading-[1.02]">
-          {[c.hero?.headingLead, c.hero?.headingAccent, c.hero?.headingTail].filter(Boolean).join(" ") || c.identity?.name}
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-emerald-100/70">{c.hero?.sub}</p>
+        <span className="text-xs font-mono text-[#588157]">SPECIMEN {activeSpecimen + 1} OF {specimens.length}</span>
+      </header>
 
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(c.services ?? []).map((s) => (
-            <div
-              key={s.title}
-              className="rounded-2xl border border-emerald-300/15 bg-emerald-950/40 backdrop-blur p-5"
-            >
-              <div className="text-xs uppercase tracking-widest text-emerald-300/80">{s.title}</div>
-              <p className="mt-2 text-sm text-emerald-50/80">{s.body}</p>
-            </div>
-          ))}
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs text-[#588157] uppercase tracking-widest font-mono">HERBARIUM CLASSIFICATION</span>
+          <h2 className="text-3xl sm:text-5xl text-[#2D312E] italic">Preserved Botanical Folios</h2>
         </div>
 
-        {(c.experience && c.experience.length > 0) && (
-          <div className="mt-16 pt-16 border-t border-emerald-300/15">
-            <div className="text-xs uppercase tracking-[0.24em] text-emerald-300/80 mb-6">Experience</div>
-            <div className="space-y-4">
-              {c.experience.map((exp: any) => (
-                <div key={exp.id} className="rounded-2xl border border-emerald-300/15 bg-emerald-950/40 backdrop-blur p-6 flex flex-col md:flex-row gap-6 justify-between items-start">
-                  <div>
-                    <h3 className="text-xl font-bold text-emerald-50">{exp.role}</h3>
-                    <div className="text-sm font-medium text-emerald-300 mt-1">{exp.company}</div>
-                    <p className="mt-3 text-sm text-emerald-100/70">{exp.summary}</p>
-                  </div>
-                  <div className="shrink-0 text-xs uppercase tracking-widest text-emerald-300/60">
-                    {exp.startDate} - {exp.endDate || "Present"}
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Physical Specimen Mounting Card */}
+        <div className="p-8 sm:p-12 rounded-2xl border border-[#CCD5AE] bg-[#FCFAF5] shadow-[8px_8px_0px_#CCD5AE] space-y-6">
+          <div className="flex justify-between items-center text-xs font-mono text-[#588157] border-b border-[#CCD5AE] pb-3">
+            <span className="italic">{specimens[activeSpecimen].latin}</span>
+            <span>HERBARIUM REGISTERED</span>
           </div>
-        )}
 
-        {(c.skills && c.skills.length > 0) && (
-          <div className="mt-16 pt-16 border-t border-emerald-300/15">
-            <div className="text-xs uppercase tracking-[0.24em] text-emerald-300/80 mb-6">Skills</div>
-            <div className="flex flex-wrap gap-2">
-              {c.skills.map((skill: any) => (
-                <div key={skill.id} className="rounded-full border border-emerald-300/20 bg-emerald-900/30 px-4 py-2 text-sm text-emerald-100/90 hover:bg-emerald-800/40 transition-colors cursor-default">
-                  {skill.name}
-                </div>
-              ))}
-            </div>
+          <h3 className="text-2xl sm:text-3xl text-[#2D312E] font-bold">{specimens[activeSpecimen].title}</h3>
+          <p className="text-sm text-[#4F5D53] leading-relaxed italic">{specimens[activeSpecimen].desc || specimens[activeSpecimen].description}</p>
+
+          <div className="pt-6 border-t border-[#CCD5AE] flex justify-between items-center text-xs font-mono text-[#588157]">
+            <span>COLLECTED BY: {candidateName.toUpperCase()}</span>
+            <span>DRIED UNDER GLASS</span>
           </div>
-        )}
+        </div>
 
-        <footer className="mt-24 text-xs text-emerald-100/50">
-          © {new Date().getFullYear()} {c.identity?.name}
-        </footer>
-      </div>
-    </main>
+        {/* Turn Botanical Page */}
+        <div className="flex justify-center">
+          <Button
+            onClick={() => setActiveSpecimen((s) => (s + 1) % specimens.length)}
+            className="bg-[#588157] text-[#FCFAF5] hover:bg-[#588157]/90 font-bold text-xs h-11 px-8 rounded-full shadow-md"
+          >
+            Turn Herbarium Page: Next Specimen →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t border-[#CCD5AE] pt-4 text-center text-xs text-[#588157]">
+        <span>DEPARTMENT OF BOTANY &amp; SYSTEMS ARCHITECTURE · PRESERVED IN PERPETUITY</span>
+      </footer>
+    </div>
   );
 }

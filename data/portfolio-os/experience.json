@@ -1,5 +1,6 @@
 [
   {
+    "id": "exp-1",
     "company": "Unifycx",
     "role": "Web Advisor",
     "type": "full-time",
@@ -14,46 +15,50 @@
     "tech": [
       "WordPress",
       "DNS",
-      "Email Configuration"
+      "Email Configuration",
+      "Server Infrastructure"
     ],
     "order": 1,
-    "id": "d94426a6-75d5-438e-af7f-686e5e2caaf6",
     "createdAt": "2026-07-26T15:35:30.876Z",
     "updatedAt": "2026-07-26T15:35:30.876Z"
   },
   {
+    "id": "exp-2",
     "company": "Freelancer",
-    "role": "Freelancer",
+    "role": "Full Stack Developer & Designer",
     "type": "freelance",
-    "location": "MANGALORE",
+    "location": "Mangalore / Remote",
     "startDate": "2024-12-01",
     "endDate": "2025-06-01",
     "summary": "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements.",
     "highlights": [
-      "Delivered responsive, performance-focused, and user-friendly solutions while improving applications through user feedback and continuous enhancements."
+      "Delivered responsive, performance-focused, and user-friendly solutions while improving applications through user feedback and continuous enhancements.",
+      "Architected custom interactive web systems with React, TypeScript, and Tailwind CSS."
     ],
     "tech": [
       "React.js",
-      "Frontend Development",
+      "TypeScript",
+      "Tailwind CSS",
+      "Node.js",
       "UI/UX Design"
     ],
     "order": 2,
-    "id": "409025eb-6eb0-4610-973c-a778ed25ff12",
     "createdAt": "2026-07-26T15:35:30.892Z",
     "updatedAt": "2026-07-26T15:35:30.892Z"
   },
   {
+    "id": "exp-3",
     "company": "Glowtouch Technologies",
     "role": "Junior Support Engineer",
     "type": "full-time",
-    "location": "MANGALORE",
+    "location": "Mangalore",
     "startDate": "2024-08-01",
     "endDate": "2024-12-01",
     "summary": "Provided live chat support for hosting, domain, and website-related issues.",
     "highlights": [
       "Troubleshot WordPress, PHP, MySQL, server, DNS, email, and website migration issues.",
       "Assisted customers with technical configurations and ensured smooth issue resolution.",
-      "Documented common issues and collaborated with teams to improve support efficiency and customer satisfaction."
+      "Documented common issues and collaborated with teams to improve support efficiency."
     ],
     "tech": [
       "WordPress",
@@ -63,11 +68,11 @@
       "Server Management"
     ],
     "order": 3,
-    "id": "12561291-8470-4ad7-b405-0110a848a69c",
     "createdAt": "2026-07-26T15:35:30.908Z",
     "updatedAt": "2026-07-26T15:35:30.908Z"
   },
   {
+    "id": "exp-4",
     "company": "Vitvara Technologies",
     "role": "Web Developer Intern",
     "type": "internship",
@@ -76,9 +81,9 @@
     "endDate": "2024-05-01",
     "summary": "Engineered and developed responsive, user-centric web applications.",
     "highlights": [
-      "Engineered and developed responsive, user-centric web applications using HTML, CSS, JavaScript, and React.js, adhering to modern development best practices and standards.",
-      "Designed and implemented scalable API functionalities, meticulously optimizing code for enhanced performance, maintainability, and security.",
-      "Systematically debugged and tested applications, leading to a reduction in reported bugs and a significant enhancement in software reliability and user experience."
+      "Engineered and developed responsive, user-centric web applications using HTML, CSS, JavaScript, and React.js, adhering to modern development best practices.",
+      "Designed and implemented scalable API functionalities, optimizing code for enhanced performance, maintainability, and security.",
+      "Systematically debugged and tested applications, enhancing software reliability."
     ],
     "tech": [
       "HTML",
@@ -87,7 +92,6 @@
       "React.js"
     ],
     "order": 4,
-    "id": "c400ec38-b4f9-421f-8a63-83ebca052964",
     "createdAt": "2026-07-26T15:35:30.933Z",
     "updatedAt": "2026-07-26T15:35:30.933Z"
   }

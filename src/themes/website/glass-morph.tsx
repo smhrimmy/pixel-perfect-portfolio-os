@@ -1,184 +1,71 @@
-import { ArrowUpRight, Github, Linkedin, Mail, Twitter, Sparkles } from "lucide-react";
+import { useState } from "react";
 import type { ThemeRendererProps } from "../types";
+import { Flower2, Sun, Droplets } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export default function GlassMorph({ data }: ThemeRendererProps) {
-  const { profile, projects, skills, experience: rawExperience, socialLinks } = data;
-  
-  const identity = { name: profile?.name || "YOUR NAME", brandDot: "." };
-  const hero = { 
-    badge: "Available for work", 
-    headingLead: "I build", 
-    headingAccent: "bold", 
-    headingTail: "things", 
-    sub: profile?.bio || "A creative developer.", 
-    industries: ["Tech", "Design"] 
-  };
-  const services = [{title: "Design", body: "Visual identities."}, {title: "Development", body: "Full-stack apps."}];
-  const stats = [{value: projects?.length || 0, label: "Projects"}];
-  const why = [{title: "Speed", body: "Fast"}];
-  const contact = { badge: "Contact", headingLead: "Let's talk", headingAccent: "now", sub: "Ready to work." };
-  const links = { book: "#", email: profile?.email || "", linkedin: socialLinks?.linkedin || "", github: socialLinks?.github || "", twitter: socialLinks?.twitter || "" };
-  
-  const experience = (rawExperience || []).map(e => ({ 
-    ...e, 
-    startDate: e.start_date ? e.start_date.substring(0, 7) : "", 
-    endDate: e.end_date ? e.end_date.substring(0, 7) : null, 
-    role: e.position,
-    summary: e.description
-  }));
+export default function TheGreenhouse({ data }: ThemeRendererProps) {
+  const { profile, projects } = data;
+  const candidateName = profile?.name || "Prajwal DL";
+
+  const plants = (projects && projects.length > 0 ? projects : [
+    { title: "ORCHID SPECIMEN · AUTONOMOUS CLUSTER", bloom: "In Full Bloom", desc: "A rare generative system nourished by real-time telemetry inputs." },
+    { title: "FERN SPECIMEN · 3D PROCEDURAL SHADER", bloom: "Sprouting Vigorously", desc: "Mathematical fractal foliage rendered with real-time chlorophyll dispersion." },
+    { title: "BOTANICAL SPECIMEN · EDGE CACHE ENGINE", bloom: "Perennial Growth", desc: "Deep-rooted PostgreSQL replication resistant to cold-start droughts." },
+  ]);
+
+  const [activePlant, setActivePlant] = useState(0);
 
   return (
-    <div className="min-h-screen text-white font-sans relative overflow-hidden bg-slate-950">
-      {/* Aurora background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-fuchsia-500/40 rounded-full blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 w-[700px] h-[700px] bg-cyan-400/40 rounded-full blur-[140px]" />
-        <div className="absolute bottom-0 left-1/3 w-[500px] h-[500px] bg-violet-500/40 rounded-full blur-[120px]" />
-      </div>
-
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/5 border-b border-white/10">
-        <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <a href="#top" className="font-semibold tracking-tight flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-cyan-300" />
-            {identity.name}<span className="text-cyan-300">{identity.brandDot}</span>
-          </a>
-          <div className="hidden md:flex items-center gap-8 text-sm text-white/70">
-            <a href="#services" className="hover:text-white">Services</a>
-            <a href="#experience" className="hover:text-white">Experience</a>
-            <a href="#skills" className="hover:text-white">Skills</a>
-            <a href="#work" className="hover:text-white">Work</a>
-            <a href="#contact" className="hover:text-white">Contact</a>
-          </div>
-          <a href={links.book} className="rounded-full backdrop-blur-md bg-white/10 border border-white/20 px-4 py-2 text-sm hover:bg-white/20">Book →</a>
-        </nav>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6">
-        <section id="top" className="py-28 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full backdrop-blur-xl bg-white/10 border border-white/20 px-4 py-1.5 text-xs">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            {hero.badge}
-          </div>
-          <h1 className="mt-8 text-5xl md:text-7xl font-semibold leading-[1.05] tracking-tight">
-            {hero.headingLead}{" "}
-            <span className="bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent">
-              {hero.headingAccent}
-            </span>{" "}
-            {hero.headingTail}
-          </h1>
-          <p className="mt-6 text-lg text-white/70 max-w-2xl mx-auto">{hero.sub}</p>
-          <div className="mt-10 flex justify-center gap-3">
-            <a href={links.book} className="rounded-full bg-white text-slate-900 px-6 py-3 text-sm font-medium hover:bg-white/90">Book a call</a>
-            <a href="#work" className="rounded-full backdrop-blur-xl bg-white/10 border border-white/20 px-6 py-3 text-sm hover:bg-white/20">See work</a>
-          </div>
-        </section>
-
-        <section id="services" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Services</div>
-          <div className="mt-8 grid md:grid-cols-3 gap-4">
-            {services.map((s) => (
-              <div key={s.title} className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-6 hover:bg-white/10 transition-colors">
-                <h3 className="text-lg font-medium">{s.title}</h3>
-                <p className="mt-3 text-sm text-white/70">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="experience" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Experience</div>
-          <div className="mt-8 space-y-4">
-            {experience.map((exp: any) => (
-              <div key={exp.id} className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-8 hover:bg-white/10 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start">
-                <div>
-                  <h3 className="text-xl font-semibold">{exp.role}</h3>
-                  <div className="mt-2 text-cyan-300">{exp.company}</div>
-                  <p className="mt-4 text-sm text-white/70">{exp.summary}</p>
-                </div>
-                <div className="shrink-0 rounded-full backdrop-blur-md bg-white/10 border border-white/20 px-4 py-1.5 text-xs text-white/80">
-                  {exp.startDate} – {exp.endDate || "Present"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="skills" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Skills</div>
-          <div className="mt-8 flex flex-wrap gap-3">
-            {skills.map((skill: any) => (
-              <div key={skill.id} className="rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 px-5 py-2.5 text-sm hover:bg-white/10 hover:border-cyan-400/50 transition-all cursor-default text-white/90">
-                {skill.name}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="results" className="py-16">
-          <div className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="text-4xl md:text-5xl font-semibold bg-gradient-to-b from-white to-white/40 bg-clip-text text-transparent">{s.value}</div>
-                <div className="mt-2 text-xs uppercase tracking-widest text-white/50">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="work" className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Selected work</div>
-          <div className="mt-8 grid md:grid-cols-2 gap-4">
-            {projects.map((p) => (
-              <a key={p.title} href="#" className="group rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-8 hover:bg-white/10 transition-colors">
-                <div className="text-xs uppercase tracking-widest text-cyan-300">{p.tag}</div>
-                <h3 className="mt-3 text-2xl font-semibold">{p.title}</h3>
-                <p className="mt-6 text-sm text-white/70">{p.outcome}</p>
-                <ArrowUpRight className="mt-4 h-4 w-4 text-white/40 group-hover:text-white" />
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/50">Why me</div>
-          <div className="mt-8 grid md:grid-cols-3 gap-4">
-            {why.map((w) => (
-              <div key={w.title} className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-6">
-                <h3 className="text-lg font-medium">{w.title}</h3>
-                <p className="mt-3 text-sm text-white/70">{w.body}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="contact" className="py-24">
-          <div className="rounded-3xl backdrop-blur-xl bg-white/5 border border-white/10 p-16 text-center">
-            <div className="text-xs uppercase tracking-[0.24em] text-white/50">{contact.badge}</div>
-            <h2 className="mt-6 text-4xl md:text-6xl font-semibold tracking-tight">
-              {contact.headingLead}{" "}
-              <span className="bg-gradient-to-r from-cyan-300 via-fuchsia-300 to-violet-300 bg-clip-text text-transparent">
-                {contact.headingAccent}
-              </span>.
-            </h2>
-            <p className="mt-4 text-white/70 max-w-xl mx-auto">{contact.sub}</p>
-            <div className="mt-8 flex justify-center gap-3">
-              <a href={links.book} className="rounded-full bg-white text-slate-900 px-6 py-3 text-sm font-medium">Book a call</a>
-              <a href={links.email} className="rounded-full backdrop-blur-xl bg-white/10 border border-white/20 px-6 py-3 text-sm">Email</a>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t border-white/10 py-8 backdrop-blur-xl bg-white/5">
-        <div className="mx-auto max-w-6xl px-6 flex items-center justify-between text-sm text-white/50">
-          <div>© {new Date().getFullYear()} {identity.name}</div>
-          <div className="flex items-center gap-4">
-            <a href={links.twitter}><Twitter className="h-4 w-4" /></a>
-            <a href={links.linkedin}><Linkedin className="h-4 w-4" /></a>
-            <a href={links.github}><Github className="h-4 w-4" /></a>
-            <a href={links.email}><Mail className="h-4 w-4" /></a>
+    <div className="min-h-screen bg-[#0C1A14] text-[#E2F0D9] font-sans p-6 sm:p-12 flex flex-col justify-between selection:bg-[#2D6A4F] selection:text-white">
+      <header className="border-b border-[#1B4332] pb-4 flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          <Flower2 className="h-6 w-6 text-[#52B788]" />
+          <div>
+            <h1 className="text-base font-bold text-[#E2F0D9] uppercase tracking-wider">THE BOTANICAL GREENHOUSE</h1>
+            <p className="text-[11px] text-[#74C69D]">GLASSHOUSE CONSERVATORY · HUMIDITY 88% · {candidateName}</p>
           </div>
         </div>
+        <div className="flex items-center gap-2 text-xs font-mono text-[#52B788]">
+          <Droplets className="h-4 w-4" />
+          <span>CONDENSATION SHADER ACTIVE</span>
+        </div>
+      </header>
+
+      <main className="my-12 max-w-4xl mx-auto w-full space-y-8">
+        <div className="text-center space-y-2">
+          <span className="text-xs text-[#52B788] uppercase tracking-widest font-mono">CONSERVATORY SPECIMENS</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-[#E2F0D9]">Living Digital Flora</h2>
+        </div>
+
+        {/* Real Glass Greenhouse Pane Card */}
+        <div className="p-8 sm:p-12 rounded-3xl border-2 border-[#2D6A4F] bg-[#11271E]/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] space-y-6">
+          <div className="flex justify-between items-center text-xs font-mono text-[#74C69D] border-b border-[#1B4332] pb-3">
+            <span>{plants[activePlant].bloom}</span>
+            <span className="text-[#52B788]">PHOTOSYNTHESIS ACTIVE</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-4xl font-black text-[#E2F0D9]">{plants[activePlant].title}</h3>
+          <p className="text-sm text-[#B7E4C7] leading-relaxed">{plants[activePlant].desc || plants[activePlant].description}</p>
+
+          <div className="pt-6 border-t border-[#1B4332] flex justify-between items-center text-xs font-mono">
+            <span>BOTANIST: {candidateName.toUpperCase()}</span>
+            <span className="text-[#52B788]">HARDY PERENNIAL</span>
+          </div>
+        </div>
+
+        {/* Plant Switcher */}
+        <div className="flex justify-center gap-4">
+          <Button
+            onClick={() => setActivePlant((p) => (p + 1) % plants.length)}
+            className="bg-[#52B788] text-[#081C15] hover:bg-[#52B788]/90 font-bold text-xs h-11 px-8 rounded-full shadow-lg"
+          >
+            Inspect Next Living Specimen →
+          </Button>
+        </div>
+      </main>
+
+      <footer className="border-t border-[#1B4332] pt-4 text-center text-xs text-[#74C69D]">
+        <span>THE ROYAL BOTANIC CONSERVATORY · ALL SPECIMENS FLOURISHING</span>
       </footer>
     </div>
   );

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "exp-lab-1",
+    "slug": "webgl-physics-core",
+    "title": "WebGL 3D Physics Core",
+    "description": "Interactive rigid-body physical simulation running Three.js + Cannon in an unblocked requestAnimationFrame loop.",
+    "content": "A high performance browser simulation exploring gravitational vectors, dynamic collision resolution, and custom shader materials.",
+    "category": "Graphics & Simulation",
+    "techStack": ["Three.js", "Cannon.js", "GLSL Shaders", "TypeScript"],
+    "githubUrl": "https://github.com/prajwaldl",
+    "demoUrl": "/lab/webgl-physics-core",
+    "featured": true,
+    "order": 1,
+    "createdAt": "2026-08-17T09:01:33.000Z",
+    "updatedAt": "2026-08-17T09:01:33.000Z"
+  },
+  {
+    "id": "exp-lab-2",
+    "slug": "shader-aurora-field",
+    "title": "Perlin Noise Aurora Field",
+    "description": "Procedural noise distortion and chromatic aberration shaders rendered on fullscreen canvas.",
+    "content": "Explores GPU fragment computation for organic, ambient background motion effects that consume < 2% CPU.",
+    "category": "Creative Coding",
+    "techStack": ["GLSL", "Three.js", "Vite", "Web Audio"],
+    "githubUrl": "https://github.com/prajwaldl",
+    "demoUrl": "/lab/shader-aurora-field",
+    "featured": true,
+    "order": 2,
+    "createdAt": "2026-08-17T09:01:33.000Z",
+    "updatedAt": "2026-08-17T09:01:33.000Z"
+  }
+]
