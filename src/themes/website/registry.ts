@@ -7,9 +7,65 @@ export type ThemeEntry = {
   component: ComponentType<ThemeRendererProps | any>;
 };
 
+// ============================================================
+// 3D WORLD THEMES (New immersive portfolio worlds)
+// ============================================================
+const worldThemeIds = [
+  "the-workshop",
+  "the-observatory",
+  "the-toy-chest",
+  "the-reservoir",
+  "the-ledger",
+  "the-switchboard",
+  "the-print-shop",
+  "the-reading-room",
+  "the-greenhouse",
+  "the-arcade",
+  "the-pottery-studio",
+  "trade-globe",
+  "the-herbarium",
+  "the-drafting-table",
+  "the-gem-cutter",
+  "the-trophy-room",
+  "the-mechanics-garage",
+  "the-architects-study",
+  "the-projection-room",
+  "prajwal-premium-3d",
+] as const;
+
+// Lazy-load the PortfolioWorld wrapper for all 3D themes
+const PortfolioWorldLazy = lazy(() =>
+  import("../../engine/components/PortfolioWorld").then((m) => ({
+    default: m.PortfolioWorld,
+  }))
+);
+
+// Create theme entries for all 3D worlds
+const worldThemeEntries: Record<string, ThemeEntry> = Object.fromEntries(
+  worldThemeIds.map((id) => [
+    id,
+    {
+      id,
+      name: id
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" "),
+      component: PortfolioWorldLazy,
+    },
+  ])
+);
+
+// ============================================================
+// LEGACY THEMES (existing 2D themes)
+// ============================================================
+
 // Registry maps theme id -> lazily-loaded component.
 // Only the active theme's chunk ships to visitors.
 export const websiteThemes: Record<string, ThemeEntry> = {
+  // --- 3D World Themes ---
+  ...worldThemeEntries,
+
+  // --- Legacy 2D Themes ---
   "noir-aurora": {
     id: "noir-aurora",
     name: "Noir Aurora",
@@ -106,6 +162,21 @@ export const websiteThemes: Record<string, ThemeEntry> = {
     component: lazy(() => import("./cinematic-dark/Theme")),
   },
 };
+
+// ============================================================
+// EXPORTS
+// ============================================================
+
+/** All theme IDs */
+export const allThemeIds = Object.keys(websiteThemes);
+
+/** All 3D world theme IDs */
+export const worldThemeIdsList = worldThemeIds;
+
+/** Check if a theme is a 3D world theme */
+export function isWorldTheme(id: string): boolean {
+  return worldThemeIds.includes(id as any);
+}
 
 export function resolveWebsiteTheme(id: string): ThemeEntry {
   return websiteThemes[id] ?? websiteThemes["noir-aurora"];
