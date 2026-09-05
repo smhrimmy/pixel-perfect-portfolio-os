@@ -61,7 +61,7 @@ function SettingsPage() {
       ],
       primaryColor: "#00E6C3",
       accentColor: "#E85D26",
-      activeWebsiteTheme: "the-reading-room",
+      activeWebsiteTheme: "prajwal-premium",
       activeBlogTheme: "editorial-longform",
       resumeUrl: "https://praxel.space/",
     },

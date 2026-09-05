@@ -161,7 +161,7 @@ function ThemesView({
         if (raw) return JSON.parse(raw);
       } catch {}
     }
-    return Object.keys(websiteThemes);
+    return websiteThemes.map((t) => t.id);
   });
 
   const toggleVisitorSwitcher = (enabled: boolean) => {
@@ -192,7 +192,7 @@ function ThemesView({
   };
 
   const selectAllVisitorThemes = () => {
-    const all = Object.keys(websiteThemes);
+    const all = websiteThemes.map((t) => t.id);
     setAllowedVisitorThemes(all);
     if (typeof window !== "undefined") {
       localStorage.setItem("portfolio_visitor_allowed_themes", JSON.stringify(all));
@@ -241,19 +241,13 @@ function ThemesView({
 
   // Filter unique themes
   const uniqueThemes = useMemo(() => {
-    const map = new Map<string, typeof websiteThemes[string]>();
-    Object.values(websiteThemes).forEach((t) => {
-      if (!map.has(t.name)) {
-        map.set(t.name, t);
-      }
-    });
-    return Array.from(map.values());
+    return websiteThemes;
   }, []);
 
   const activeThemeList = uniqueThemes.filter((t) => !archivedThemes.includes(t.id));
   const archivedThemeList = uniqueThemes.filter((t) => archivedThemes.includes(t.id));
 
-  const currentThemeObj = websiteThemes[data.live.website_theme] || { name: data.live.website_theme, category: "Modern · Minimal" };
+  const currentThemeObj = websiteThemes.find((t) => t.id === data.live.website_theme) || websiteThemes[0];
 
   return (
     <div className="space-y-6">
@@ -267,7 +261,7 @@ function ThemesView({
             <h3 className="font-bold text-base text-[#E6F1FF]">Theme Management &amp; Visitor Permissions</h3>
             <p className="text-xs text-[#9AA6B2]">
               Live: <span className="text-white font-semibold">{currentThemeObj.name}</span> · Active Draft:{" "}
-              <span className="text-[#00E6C3] font-semibold">{websiteThemes[data.draft.website_theme]?.name || data.draft.website_theme}</span>
+              <span className="text-[#00E6C3] font-semibold">{websiteThemes.find((t) => t.id === data.draft.website_theme)?.name || data.draft.website_theme}</span>
             </p>
           </div>
         </div>

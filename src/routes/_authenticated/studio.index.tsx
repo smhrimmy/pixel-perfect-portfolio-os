@@ -79,9 +79,9 @@ function StudioDashboard() {
     projectCount: projects?.length || 14,
   });
 
-  const activeThemeId = settings?.activeWebsiteTheme || "the-hypercube";
+  const activeThemeId = settings?.activeWebsiteTheme || "prajwal-premium";
   const activeThemeObj = websiteThemes.find((t) => t.id === activeThemeId) || websiteThemes[0];
-  const activeThemeName = activeThemeObj?.name || "The 4D Hypercube";
+  const activeThemeName = activeThemeObj?.name || "Prajwal Premium";
 
   const totalProjects = projects?.length || 14;
   const publishedProjects = (projects || []).filter((p: any) => p.published).length || 8;
