@@ -187,9 +187,9 @@ export default function GlassMorphTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#A7F3D0] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>11 THE GREENHOUSE</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#10B981]/20 text-[#34D399] border border-[#10B981]/40 font-mono">
-                CONSERVATORY
+                Living Portfolio Ecosystem
               </span>
             </h1>
             <p className="text-[10px] text-emerald-300/70 font-mono">
@@ -249,7 +249,7 @@ export default function GlassMorphTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-black tracking-tight text-[#A7F3D0] drop-shadow-[0_2px_30px_rgba(16,185,129,0.3)]"
           >
-            The Glasshouse <span className="text-[#34D399] italic">Flora</span>
+            Grow · Explore · <span className="text-[#34D399] italic">Collaborate</span>
           </motion.h2>
 
           <motion.p

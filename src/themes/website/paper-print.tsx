@@ -184,9 +184,9 @@ export default function PaperPrintTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#E0F2FE] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>16 THE DRAFTING TABLE</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#38BDF8]/20 text-[#38BDF8] border border-[#38BDF8]/40">
-                DRAFTING TABLE
+                Architectural Blueprint Interface
               </span>
             </h1>
             <p className="text-[10px] text-sky-300/70">
@@ -237,7 +237,7 @@ export default function PaperPrintTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-black tracking-tight text-[#E0F2FE] drop-shadow-[0_2px_35px_rgba(56,189,248,0.4)] uppercase"
           >
-            The Drafting <span className="text-[#38BDF8] underline decoration-[#0284C7]">Table</span>
+            Plan · Design · <span className="text-[#38BDF8] underline decoration-[#0284C7]">Construct</span>
           </motion.h2>
 
           <motion.p

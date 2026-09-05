@@ -162,9 +162,9 @@ export default function MacOSDesktopTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#FEF3C7] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>20 THE ARCHITECT'S STUDY</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#D97706]/20 text-[#FBBF24] border border-[#D97706]/40 font-mono">
-                ROLLTOP DESK
+                Strategic Thinking Space
               </span>
             </h1>
             <p className="text-[10px] text-amber-300/70 font-mono">

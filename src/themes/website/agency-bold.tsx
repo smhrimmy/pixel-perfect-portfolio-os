@@ -162,9 +162,9 @@ export default function AgencyBoldTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#FEF08A] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>18 THE TROPHY ROOM</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EAB308]/20 text-[#FACC15] border border-[#EAB308]/40 font-mono">
-                GRAND VITRINE
+                Achievement Gallery
               </span>
             </h1>
             <p className="text-[10px] text-yellow-300/70 font-mono">
@@ -215,7 +215,7 @@ export default function AgencyBoldTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-bold tracking-tight text-[#FEF08A] drop-shadow-[0_2px_35px_rgba(234,179,8,0.4)]"
           >
-            The Grand <span className="text-[#FACC15] italic">Vitrine</span>
+            Celebrate · Learn · <span className="text-[#FACC15] italic">Move Forward</span>
           </motion.h2>
 
           <motion.p

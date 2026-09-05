@@ -162,9 +162,9 @@ export default function DevShowcaseTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#FEE2E2] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>19 THE MECHANIC'S GARAGE</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] border border-[#EF4444]/40">
-                SERVICE BAY
+                Engineering Deep Dive
               </span>
             </h1>
             <p className="text-[10px] text-red-300/70">

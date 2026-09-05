@@ -173,9 +173,9 @@ export default function HolographicTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#F3E8FF] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>17 THE GEM CUTTER'S TABLE</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C084FC]/20 text-[#E9D5FF] border border-[#C084FC]/40 font-mono">
-                LAPIDARY RIG
+                Precision & Detail Showcase
               </span>
             </h1>
             <p className="text-[10px] text-purple-300/70 font-mono">

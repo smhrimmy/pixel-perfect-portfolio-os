@@ -393,9 +393,9 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-white uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>01 THE HEIGHTFIELD MATRIX</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 font-mono">
-                HIGGSFIELD AI MCF
+                Topographic 3D Terrain Portfolio
               </span>
             </h1>
             <p className="text-[10px] text-slate-400">
@@ -573,7 +573,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-black tracking-tight text-white drop-shadow-[0_2px_30px_rgba(0,245,212,0.45)] uppercase"
           >
-            Topographical <span className="text-[#00F5D4]">Precision</span>
+            Scaling Ideas <span className="text-[#00F5D4]">· Building Real Impact</span>
           </motion.h2>
 
           <motion.p

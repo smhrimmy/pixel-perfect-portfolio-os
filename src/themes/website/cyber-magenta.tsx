@@ -178,9 +178,9 @@ export default function CyberMagentaTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#FDF2F8] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>12 THE ARCADE</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#EC4899]/20 text-[#F472B6] border border-[#EC4899]/50 animate-pulse">
-                INSERT COIN
+                Retro Gaming Portfolio
               </span>
             </h1>
             <p className="text-[10px] text-pink-300/70">
@@ -230,9 +230,9 @@ export default function CyberMagentaTheme({ data }: ThemeRendererProps) {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-7xl font-black tracking-tight text-[#FDF2F8] drop-shadow-[0_2px_35px_rgba(236,72,153,0.6)] uppercase"
+            className="text-3xl sm:text-6xl font-black tracking-tight text-[#FDF2F8] drop-shadow-[0_2px_35px_rgba(236,72,153,0.6)] uppercase"
           >
-            The Cyber <span className="text-[#EC4899] underline decoration-[#F472B6]">Arcade</span>
+            Good Developers <span className="text-[#EC4899] underline decoration-[#F472B6]">Never Stop Playing</span>
           </motion.h2>
 
           <motion.p

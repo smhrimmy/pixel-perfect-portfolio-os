@@ -170,9 +170,9 @@ export default function SunsetPaperTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#FFEDD5] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>13 THE POTTER'S STUDIO</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#EA580C]/20 text-[#FB923C] border border-[#EA580C]/40 font-mono">
-                ATELIER TERRE
+                Creative Clay Workshop
               </span>
             </h1>
             <p className="text-[10px] text-orange-300/70 font-mono">

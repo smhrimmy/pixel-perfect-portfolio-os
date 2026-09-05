@@ -182,9 +182,9 @@ export default function GalaxyGlobeTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#E0F2FE] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>14 THE TRADE ROUTE GLOBE</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#0284C7]/20 text-[#38BDF8] border border-[#0284C7]/40">
-                TRADE ROUTE
+                Global Exploration Interface
               </span>
             </h1>
             <p className="text-[10px] text-sky-300/70">
@@ -235,7 +235,7 @@ export default function GalaxyGlobeTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-black tracking-tight text-[#E0F2FE] drop-shadow-[0_2px_35px_rgba(2,132,199,0.5)] uppercase"
           >
-            The Trade Route <span className="text-[#38BDF8] underline decoration-[#0284C7]">Globe</span>
+            Explore · Connect · <span className="text-[#38BDF8] underline decoration-[#0284C7]">Build</span>
           </motion.h2>
 
           <motion.p

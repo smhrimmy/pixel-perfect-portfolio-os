@@ -167,9 +167,9 @@ export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#FFE4E6] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>21 THE PROJECTION ROOM</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/40">
-                PROJECTION BOOTH
+                Cinematic Storytelling Interface
               </span>
             </h1>
             <p className="text-[10px] text-rose-300/70">
@@ -220,7 +220,7 @@ export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-black tracking-tight text-[#FFE4E6] drop-shadow-[0_2px_35px_rgba(244,63,94,0.5)] uppercase"
           >
-            The Projection <span className="text-[#F43F5E] underline decoration-[#BE123C]">Booth</span>
+            Play · Project · <span className="text-[#F43F5E] underline decoration-[#BE123C]">Inspire</span>
           </motion.h2>
 
           <motion.p

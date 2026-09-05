@@ -167,9 +167,9 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#CCFBF1] uppercase flex items-center gap-2">
-              <span>{candidateName}</span>
+              <span>15 THE HERBARIUM</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40 font-mono">
-                HERBARIUM
+                Botanical Knowledge Archive
               </span>
             </h1>
             <p className="text-[10px] text-teal-300/70 font-mono">
@@ -220,7 +220,7 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
             transition={{ delay: 0.1 }}
             className="text-4xl sm:text-7xl font-bold tracking-tight text-[#CCFBF1] drop-shadow-[0_2px_30px_rgba(45,212,191,0.35)]"
           >
-            The Botanical <span className="text-[#2DD4BF] italic">Herbarium</span>
+            Explore · Learn · <span className="text-[#2DD4BF] italic">Preserve</span>
           </motion.h2>
 
           <motion.p
