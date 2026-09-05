@@ -13,22 +13,35 @@ import {
   Activity,
   Layers,
   Sliders,
-  Cpu,
-  Globe,
-  Radio,
-  Maximize2,
-  Minimize2,
+  Video,
+  Play,
+  Pause,
+  Compass,
+  Zap,
+  Camera,
   RotateCw,
-  Terminal,
-  Compass
+  Eye,
+  Film,
+  User,
+  Radio,
+  Cpu,
+  RefreshCw,
+  Maximize2
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  HIGGSFIELD_STYLE_PRESETS,
+  HIGGSFIELD_CHARACTERS,
+  higgsfieldClient,
+  type HiggsfieldMotionPreset,
+  type HiggsfieldJobStatus
+} from "@/integrations/higgsfield";
 
-// Matrix Tokens provided by User
-export const HEIGHTFIELD_MCF_HASH = "62c6a3a1589ba8bccec8146718383f9c11771545c2d689e95688ce31c41ca48b";
-export const HEIGHTFIELD_CLUSTER_UUID = "528257c1-f95b-48bd-8401-de6d8edbf47f";
-
-function playHeightfieldAudio(type: 'radar' | 'chime' | 'pulse' | 'laser', isMuted: boolean) {
+// Synthesized Web Audio Sound Engine
+function playHeightfieldAudio(type: 'radar' | 'chime' | 'pulse' | 'laser' | 'shutter' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -48,6 +61,22 @@ function playHeightfieldAudio(type: 'radar' | 'chime' | 'pulse' | 'laser', isMut
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
       osc.start(now);
       osc.stop(now + 0.6);
+    } else if (type === 'shutter') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(1400, now);
+      osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.start(now);
+      osc.stop(now + 0.1);
+    } else if (type === 'warp') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(880, now + 0.4);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
     } else if (type === 'chime') {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(523.25, now);
@@ -80,7 +109,7 @@ function playHeightfieldAudio(type: 'radar' | 'chime' | 'pulse' | 'laser', isMut
 export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Full Stack Developer & Topographical Systems Architect shaping high-density 3D WebGL heightfields, automated cloud telemetry, and sub-100ms resilient platforms.";
+  const bio = profile?.bio || "Full Stack Developer & Systems Architect shaping high-density 3D WebGL heightfields, automated cloud telemetry, and sub-100ms resilient platforms.";
   const email = profile?.email || "pdlkpt@gmail.com";
   const phone = profile?.phone || "+91 8105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
@@ -91,14 +120,22 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
   const [isMuted, setIsMuted] = useState(true);
   const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [elevationAmplitude, setElevationAmplitude] = useState<number>(1.2);
-  const [meshDensity, setMeshDensity] = useState<number>(32);
+  const [meshDensity, setMeshDensity] = useState<number>(36);
   const [wireframeOnly, setWireframeOnly] = useState<boolean>(false);
   const [formSent, setFormSent] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
+  // Higgsfield AI MCP State
+  const [selectedMotion, setSelectedMotion] = useState<HiggsfieldMotionPreset>(HIGGSFIELD_MOTION_PRESETS[0]);
+  const [isDoPActive, setIsDoPActive] = useState<boolean>(true);
+  const [promptText, setPromptText] = useState<string>("Cinematic 3D topographical terrain of Mangalore tech hub with teal neon contour isolines");
+  const [generationJob, setGenerationJob] = useState<HiggsfieldJobStatus | null>(null);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [showDoPStudio, setShowDoPStudio] = useState<boolean>(false);
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Procedural Heightfield Topographical Canvas Engine
+  // 3D Procedural Heightfield & DoP Camera Motion Engine
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -126,11 +163,35 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
 
     const render = () => {
       time += 0.015;
-      ctx.fillStyle = '#030712'; // Deep Obsidian Void
+      ctx.fillStyle = '#030712'; // Obsidian Void
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.46;
+      // Camera center with DoP motion offset
+      let dopOffsetX = 0;
+      let dopOffsetY = 0;
+      let dopTilt = 0;
+
+      if (isDoPActive && selectedMotion) {
+        const speed = selectedMotion.motionStrength;
+        if (selectedMotion.name.includes("Orbital")) {
+          dopOffsetX = Math.sin(time * speed) * 80;
+          dopOffsetY = Math.cos(time * speed) * 35;
+          dopTilt = Math.sin(time * speed * 0.5) * 8;
+        } else if (selectedMotion.name.includes("Flythrough")) {
+          dopOffsetY = (Math.sin(time * speed * 2) * 40);
+          dopTilt = Math.cos(time * speed) * 12;
+        } else if (selectedMotion.name.includes("Dolly")) {
+          dopOffsetX = Math.sin(time * speed * 1.5) * 20;
+          dopOffsetY = Math.cos(time * speed * 1.5) * 20;
+        } else if (selectedMotion.name.includes("Scanner")) {
+          dopOffsetX = ((time * 60 * speed) % canvas.width) - canvas.width / 2;
+        } else if (selectedMotion.name.includes("Shockwave")) {
+          dopTilt = Math.sin(time * 6) * 14;
+        }
+      }
+
+      const cx = (canvas.width / 2) + dopOffsetX;
+      const cy = (canvas.height * 0.46) + dopOffsetY;
 
       const cols = meshDensity;
       const rows = Math.floor(meshDensity * 0.7);
@@ -140,7 +201,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
       const mouseNormX = (cursorPos.x - cx) / canvas.width;
       const mouseNormY = (cursorPos.y - cy) / canvas.height;
 
-      // 3D Heightfield Isometric Projection Matrix
+      // 3D Heightfield Isometric Projection Grid
       const gridPoints: { x: number; y: number; z: number; elev: number }[][] = [];
 
       for (let r = 0; r < rows; r++) {
@@ -149,7 +210,6 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
           const offsetX = (c - cols / 2) * spacingX;
           const offsetY = (r - rows / 2) * spacingY;
 
-          // Multi-frequency harmonic elevation formula with mouse interaction
           const distToCenter = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
           const distToMouse = Math.sqrt(
             Math.pow(offsetX - mouseNormX * 300, 2) +
@@ -163,15 +223,15 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
 
           const elevation = (wave1 + wave2 + ripple + mouseWarp) * elevationAmplitude;
 
-          // 3D Isometric Projection Tilt
-          const isoX = cx + (offsetX - offsetY * 0.8);
-          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+          // 3D Isometric Projection Tilt with DoP Dynamic Angle
+          const isoX = cx + (offsetX - offsetY * 0.8) + (dopTilt * 2);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation + dopTilt;
 
           gridPoints[r][c] = { x: isoX, y: isoY, z: elevation, elev: elevation };
         }
       }
 
-      // Render 3D Heightfield Polygons / Wireframe
+      // Render 3D Heightfield Polygons & Contour Lines
       for (let r = 0; r < rows - 1; r++) {
         for (let c = 0; c < cols - 1; c++) {
           const p1 = gridPoints[r][c];
@@ -191,12 +251,12 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
             ctx.lineTo(p4.x, p4.y);
             ctx.closePath();
 
-            const hue = 160 + normalizedElev * 80; // Teal (#00f5d4) to Cyan & Indigo
+            const hue = 160 + normalizedElev * 80; // Emerald (#00F5D4) to Cyan & Indigo
             ctx.fillStyle = `hsla(${hue}, 90%, ${15 + normalizedElev * 30}%, ${0.15 + normalizedElev * 0.35})`;
             ctx.fill();
           }
 
-          // Topographical Elevation Wireframe Stroke
+          // Wireframe & Contour Stroke
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y);
@@ -204,7 +264,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
           ctx.lineTo(p4.x, p4.y);
           ctx.closePath();
 
-          ctx.strokeStyle = `hsla(170, 100%, 65%, ${0.1 + normalizedElev * 0.4})`;
+          ctx.strokeStyle = `hsla(170, 100%, 65%, ${0.12 + normalizedElev * 0.45})`;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -220,7 +280,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
       window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, [elevationAmplitude, meshDensity, wireframeOnly, cursorPos]);
+  }, [elevationAmplitude, meshDensity, wireframeOnly, cursorPos, isDoPActive, selectedMotion]);
 
   // Elevation Peak Nodes (Projects)
   const elevationNodes = [
@@ -300,6 +360,23 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
     },
   ];
 
+  // Trigger Higgsfield AI Generation Simulation
+  const handleGenerate = async () => {
+    setIsGenerating(true);
+    playHeightfieldAudio('shutter', isMuted);
+    try {
+      const result = await higgsfieldClient.generateSimulation({
+        prompt: promptText,
+        motionPresetId: selectedMotion.id,
+        quality: 'standard',
+      });
+      setGenerationJob(result);
+      playHeightfieldAudio('chime', isMuted);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#030712] text-[#F3F4F6] font-mono relative selection:bg-[#00F5D4] selection:text-black overflow-x-hidden">
       {/* 3D Heightfield Topographical Canvas */}
@@ -308,7 +385,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
       {/* Topographical Grid Isolines Overlay */}
       <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(3,7,18,0.7)_80%)]" />
 
-      {/* TOP HUD: Heightfield MCF Telemetry Header */}
+      {/* TOP HUD: Heightfield MCF & Higgsfield AI Telemetry Header */}
       <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#080E1E]/90 border-b border-[#00F5D4]/30 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#00F5D4]/15 border border-[#00F5D4] text-[#00F5D4] flex items-center justify-center shadow-[0_0_15px_rgba(0,245,212,0.4)]">
@@ -318,18 +395,30 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
             <h1 className="text-xs sm:text-sm font-bold tracking-widest text-white uppercase flex items-center gap-2">
               <span>{candidateName}</span>
               <span className="text-[10px] px-2 py-0.5 rounded bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4]/40 font-mono">
-                3D HEIGHTFIELD OS
+                HIGGSFIELD AI MCF
               </span>
             </h1>
             <p className="text-[10px] text-slate-400">
-              HASH: <span className="text-[#00F5D4]">{HEIGHTFIELD_MCF_HASH.slice(0, 12)}...</span> · CLUSTER: <span className="text-cyan-300">{HEIGHTFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+              HASH: <span className="text-[#00F5D4]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-cyan-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          {/* DoP Motion Mode Button */}
+          <button
+            onClick={() => {
+              setShowDoPStudio(!showDoPStudio);
+              playHeightfieldAudio('radar', isMuted);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-[#00F5D4]/20 border border-[#00F5D4] text-[#00F5D4] text-xs hover:bg-[#00F5D4] hover:text-black transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(0,245,212,0.3)]"
+          >
+            <Camera className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">DoP MOTION STUDIO</span>
+          </button>
+
           {/* Heightfield Amplitude Controls */}
-          <div className="hidden md:flex items-center gap-2 bg-[#0C152B] border border-[#00F5D4]/30 px-3 py-1.5 rounded-xl text-xs text-[#00F5D4]">
+          <div className="hidden lg:flex items-center gap-2 bg-[#0C152B] border border-[#00F5D4]/30 px-3 py-1.5 rounded-xl text-xs text-[#00F5D4]">
             <Sliders className="w-3.5 h-3.5" />
             <span>AMP: {elevationAmplitude.toFixed(1)}x</span>
             <button
@@ -374,6 +463,98 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
         </div>
       </header>
 
+      {/* HIGGSFIELD AI DoP MOTION STUDIO DRAWER */}
+      <AnimatePresence>
+        {showDoPStudio && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 inset-x-4 sm:inset-x-8 z-35 max-w-4xl mx-auto bg-[#080E1E]/95 border-2 border-[#00F5D4] rounded-3xl p-6 shadow-[0_10px_40px_rgba(0,245,212,0.35)] backdrop-blur-xl space-y-6"
+          >
+            <div className="flex justify-between items-center border-b border-[#00F5D4]/30 pb-3">
+              <div className="flex items-center gap-2">
+                <Film className="w-5 h-5 text-[#00F5D4]" />
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Higgsfield AI Director of Photography (DoP) Studio
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowDoPStudio(false)}
+                className="w-7 h-7 rounded-full bg-[#00F5D4]/10 text-[#00F5D4] flex items-center justify-center hover:bg-[#00F5D4] hover:text-black transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Motion Presets Grid */}
+            <div className="space-y-2">
+              <label className="text-[11px] text-[#00F5D4] font-bold">CINEMATIC MOTION PRESETS (HIGGSFIELD MCP)</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {HIGGSFIELD_MOTION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() => {
+                      setSelectedMotion(preset);
+                      playHeightfieldAudio('warp', isMuted);
+                    }}
+                    className={`p-3 rounded-xl border text-left transition text-xs space-y-1 ${
+                      selectedMotion.id === preset.id
+                        ? 'bg-[#00F5D4]/15 border-[#00F5D4] text-white shadow-[0_0_12px_rgba(0,245,212,0.4)]'
+                        : 'bg-[#030712] border-[#00F5D4]/20 text-slate-400 hover:border-[#00F5D4]/50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-[#00F5D4]">{preset.name}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#080E1E] text-slate-300">
+                        {preset.durationSeconds}s
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-300 font-sans leading-tight line-clamp-2">
+                      {preset.description}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Live Prompt Simulation Input */}
+            <div className="space-y-2">
+              <label className="text-[11px] text-[#00F5D4] font-bold">PROMPT SIMULATION (SOUL IMAGE + DoP VIDEO)</label>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-[#030712] border border-[#00F5D4]/30 text-white text-xs focus:outline-none focus:border-[#00F5D4]"
+                  placeholder="Describe your scene or camera movement..."
+                />
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating}
+                  className="px-5 py-2.5 rounded-xl bg-[#00F5D4] text-black font-bold text-xs hover:bg-[#5EEAD4] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(0,245,212,0.4)] disabled:opacity-50"
+                >
+                  {isGenerating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                  <span>{isGenerating ? "GENERATING..." : "SYNTHESIZE"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Telemetry Output */}
+            {generationJob && (
+              <div className="p-3.5 rounded-2xl bg-[#030712] border border-[#00F5D4]/30 text-xs flex flex-wrap justify-between items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00F5D4]" />
+                  <span className="text-white font-bold">JOB {generationJob.jobId}</span>
+                  <span className="text-slate-400">· STATUS: {generationJob.status.toUpperCase()}</span>
+                </div>
+                <span className="text-[10px] text-cyan-300">MCF HASH: {generationJob.mcfHash.slice(0, 16)}...</span>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* MAIN HEIGHTFIELD STAGE */}
       <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
         {/* HERO SECTION */}
@@ -383,7 +564,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00F5D4]/10 border border-[#00F5D4]/40 text-[#00F5D4] text-xs"
           >
-            <Sparkles className="w-3.5 h-3.5" /> 3D PROCEDURAL HEIGHTFIELD · TOPOGRAPHICAL MESH
+            <Sparkles className="w-3.5 h-3.5" /> HIGGSFIELD AI MCP · 3D PROCEDURAL HEIGHTFIELD MATRIX
           </motion.div>
 
           <motion.h2
@@ -413,7 +594,7 @@ export default function TheHeightfieldTheme({ data }: ThemeRendererProps) {
               <Activity className="w-3.5 h-3.5 text-emerald-400" /> SUB-100MS LCP BENCHMARK
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-[#080E1E] border border-[#00F5D4]/30 text-slate-300 flex items-center gap-1.5">
-              <Radio className="w-3.5 h-3.5 text-cyan-400" /> REAL-TIME 3D HARMONICS
+              <Radio className="w-3.5 h-3.5 text-cyan-400" /> ACTIVE DoP: {selectedMotion.name.toUpperCase()}
             </div>
           </div>
         </section>
