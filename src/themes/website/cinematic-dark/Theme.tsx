@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Film, Video, Camera, Eye, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
+  Film, Clapperboard, Sparkles, X, ArrowUpRight,
+  CheckCircle2, Send, Play, Tv
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import {
-  HIGGSFIELD_MCF_HASH,
-  HIGGSFIELD_CLUSTER_UUID,
-  HIGGSFIELD_MOTION_PRESETS,
-  type HiggsfieldMotionPreset
-} from "@/integrations/higgsfield";
+import { HIGGSFIELD_MCF_HASH, HIGGSFIELD_CLUSTER_UUID } from "@/integrations/higgsfield";
 
-function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
+function playCinemaAudio(type: 'projector' | 'ticket' | 'reel', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -23,39 +19,27 @@ function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'radar') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, now);
-      osc.frequency.exponentialRampToValueAtTime(1600, now + 0.2);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      osc.start(now);
-      osc.stop(now + 0.5);
-    } else if (type === 'chime') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.setValueAtTime(659.25, now + 0.08);
-      osc.frequency.setValueAtTime(783.99, now + 0.16);
-      osc.frequency.setValueAtTime(1046.50, now + 0.24);
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-      osc.start(now);
-      osc.stop(now + 0.45);
-    } else if (type === 'pulse') {
+    if (type === 'projector') {
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.frequency.setValueAtTime(24, now); // 24 FPS ticker
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       osc.start(now);
-      osc.stop(now + 0.3);
+      osc.stop(now + 0.35);
+    } else if (type === 'ticket') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(520, now);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.setValueAtTime(440, now);
       gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
       osc.start(now);
-      osc.stop(now + 0.06);
+      osc.stop(now + 0.08);
     }
   } catch {}
 }
@@ -63,7 +47,7 @@ function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted
 export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "35mm celluloid film projection booth with spinning film reels, anamorphic lens flares, and theater marquee boards.";
+  const bio = profile?.bio || "Celluloid Systems Cinematographer & Projection Booth Engineer spinning 35mm film reels at 24 FPS, casting carbon-arc light beams, and delivering sub-100ms resilient platforms.";
   const email = profile?.email || "pdlkpt@gmail.com";
   const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
@@ -72,13 +56,13 @@ export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
   const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+  const [selectedReel, setSelectedReel] = useState<any | null>(null);
+  const [fpsRate, setFpsRate] = useState<number>(24);
   const [formSent, setFormSent] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Procedural Heightfield Canvas Engine for The Projection Room
+  // 35mm Film Grain & Projector Light Beam Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -95,51 +79,26 @@ export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
-    const handlePointerMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    };
-    window.addEventListener('mousemove', handlePointerMove);
-
     const render = () => {
-      time += 0.015;
-      ctx.fillStyle = '#0A0A0A';
+      time += 0.02;
+      ctx.fillStyle = '#08080C';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.46;
-      const cols = 32;
-      const rows = 20;
-      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
-      const spacingY = spacingX * 0.55;
+      // Carbon Arc Projector Beam
+      const grad = ctx.createRadialGradient(
+        canvas.width / 2, 0, 30,
+        canvas.width / 2, canvas.height * 0.7, canvas.width * 0.6
+      );
+      grad.addColorStop(0, 'rgba(244, 63, 94, 0.15)');
+      grad.addColorStop(1, 'rgba(8, 8, 12, 0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const mouseNormX = (cursorPos.x - cx) / canvas.width;
-      const mouseNormY = (cursorPos.y - cy) / canvas.height;
-
-      for (let r = 0; r < rows; r++) {
-        ctx.beginPath();
-        for (let c = 0; c < cols; c++) {
-          const offsetX = (c - cols / 2) * spacingX;
-          const offsetY = (r - rows / 2) * spacingY;
-          const distToMouse = Math.sqrt(
-            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
-          );
-
-          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
-          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
-          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
-          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
-          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.3;
-
-          const isoX = cx + (offsetX - offsetY * 0.75);
-          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
-
-          if (c === 0) ctx.moveTo(isoX, isoY);
-          else ctx.lineTo(isoX, isoY);
-        }
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.28)';
-        ctx.lineWidth = 1.1;
-        ctx.stroke();
+      // 35mm Sprocket Holes
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+      for (let y = 0; y < canvas.height; y += 40) {
+        ctx.fillRect(15, y, 12, 20);
+        ctx.fillRect(canvas.width - 27, y, 12, 20);
       }
 
       animId = requestAnimationFrame(render);
@@ -148,304 +107,262 @@ export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
     render();
     return () => {
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, [cursorPos]);
+  }, [fpsRate]);
 
-  // Projects Matrix
-  const projects = [
+  const celluloidReels = [
     {
-      id: "proj-1",
-      badge: "FLAGSHIP 3D",
+      id: "reel-1",
+      reelNo: "REEL 01 · 35MM MASTER",
       title: "Portfolio OS Spatial Matrix",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP benchmark.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
       liveUrl: website,
       highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
+      runtime: "FEATURE LENGTH · 24 FPS"
     },
     {
-      id: "proj-2",
-      badge: "CLOUD PROBES",
+      id: "reel-2",
+      reelNo: "REEL 02 · CLOUD FEATURE",
       title: "Praxel Space Cloud Platform",
       desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
       highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
+      runtime: "CLOUD DOC · 100% UPTIME"
     },
     {
-      id: "proj-3",
-      badge: "WEB PLATFORM",
+      id: "reel-3",
+      reelNo: "REEL 03 · FRONTEND SHORT",
       title: "Vitvara Application Ridge",
       desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
       liveUrl: website,
       highlight: "High-throughput frontend with clean microservice integration",
+      runtime: "SUB-100MS HIGH SPEED"
     },
     {
-      id: "proj-4",
-      badge: "ENTERPRISE",
+      id: "reel-4",
+      reelNo: "REEL 04 · BESPOKE CHRONICLE",
       title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
       liveUrl: website,
       highlight: "Custom client portals tailored for high-conversion performance",
-    },
-  ];
-
-  // Career Timeline
-  const careerTimeline = [
-    {
-      period: "2025 — PRESENT",
-      role: "Web Advisor & Technical Operations",
-      company: "Unifycx · Mangalore, Karnataka",
-      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
-    },
-    {
-      period: "2024 — 2025",
-      role: "Full Stack Web Developer & Designer",
-      company: "Freelance Practice · Remote / Mangalore",
-      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
-    },
-    {
-      period: "2024",
-      role: "Junior Support Engineer",
-      company: "GlowTouch Technologies · Mangalore",
-      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
-    },
-    {
-      period: "2023 — 2024",
-      role: "Web Developer Intern",
-      company: "Vitvara Technologies",
-      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
-    },
-    {
-      period: "2021 — 2024",
-      role: "Diploma in Full Stack Development",
-      company: "Karnataka (Govt) Polytechnic, Mangalore",
-      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+      runtime: "ENTERPRISE RUN"
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#FEE2E2] font-sans relative overflow-x-hidden selection:bg-[#EF4444] selection:text-black">
+    <div className="min-h-screen bg-[#08080C] text-[#FFE4E6] font-mono relative selection:bg-[#F43F5E] selection:text-black overflow-x-hidden">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
-      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.85)_80%)]" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(8,8,12,0.85)_80%)]" />
 
-      {/* TOP HUD */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#181818]/90 border-b border-[#EF4444]/35 backdrop-blur-md">
+      {/* TOP BOOTH HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#17121C]/90 border-b border-[#F43F5E]/40 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#EF4444]/20 border border-[#EF4444] text-[#F87171] flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+          <div className="w-10 h-10 rounded-2xl bg-[#F43F5E]/20 border border-[#F43F5E] text-[#FB7185] flex items-center justify-center shadow-[0_0_20px_rgba(244,63,94,0.3)]">
             <Film className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white">
+            <h1 className="text-xs sm:text-sm font-black tracking-widest text-[#FFE4E6] uppercase flex items-center gap-2">
               <span>{candidateName}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] border border-[#EF4444]/45 font-mono">
-                HIGGSFIELD AI MCF
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/40">
+                PROJECTION BOOTH
               </span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-mono">
-              HASH: <span className="text-[#F87171]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-red-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            <p className="text-[10px] text-rose-300/70">
+              HASH: <span className="text-[#F43F5E]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · SPEED: <span className="text-rose-200">{fpsRate} FPS</span>
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setIsMuted(!isMuted);
-            playAudio('chime', !isMuted);
-          }}
-          className="w-9 h-9 rounded-xl bg-[#262626] border border-[#EF4444]/35 text-[#F87171] flex items-center justify-center hover:bg-[#EF4444] hover:text-black transition cursor-pointer"
-        >
-          <Sparkles className="w-4 h-4" />
-        </button>
+        {/* PROJECTOR SPEED & REEL */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setFpsRate((prev) => (prev >= 48 ? 24 : prev + 12));
+              playCinemaAudio('projector', isMuted);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-[#281320] border border-[#F43F5E]/40 text-[#FB7185] text-xs font-mono hover:bg-[#F43F5E] hover:text-black transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(244,63,94,0.3)]"
+          >
+            <Tv className="w-3.5 h-3.5" />
+            <span>PROJECTOR {fpsRate} FPS</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playCinemaAudio('ticket', !isMuted);
+            }}
+            className="w-9 h-9 rounded-xl bg-[#281320] border border-[#F43F5E]/30 text-[#FB7185] flex items-center justify-center hover:bg-[#F43F5E] hover:text-black transition cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
-      {/* MAIN STAGE */}
+      {/* MAIN CINEMA STAGE */}
       <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
-        {/* HERO */}
         <section className="text-center space-y-6 pt-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EF4444]/20 border border-[#EF4444]/45 text-[#F87171] text-xs font-mono"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F43F5E]/15 border border-[#F43F5E]/40 text-[#FB7185] text-xs font-bold"
           >
-            <Film className="w-3.5 h-3.5" /> 35MM PROJECTION BOOTH · HIGGSFIELD MCF
+            <Clapperboard className="w-3.5 h-3.5" /> 35MM CELLULOID PROJECTION BOOTH · 24 FPS SHUTTER
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-white drop-shadow-[0_2px_30px_rgba(239,68,68,0.4)]"
+            className="text-4xl sm:text-7xl font-black tracking-tight text-[#FFE4E6] drop-shadow-[0_2px_35px_rgba(244,63,94,0.5)] uppercase"
           >
-            Celluloid <span class="text-[#F87171] italic">Projection</span>
+            The Projection <span className="text-[#F43F5E] underline decoration-[#BE123C]">Booth</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-red-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+            className="text-sm sm:text-base text-rose-200/80 max-w-2xl mx-auto leading-relaxed"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* PROJECTS */}
-        <section className="space-y-8">
-          <div className="flex items-center justify-between border-b border-[#EF4444]/30 pb-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Film className="w-5 h-5 text-[#F87171]" /> Featured Projects & Systems
+        {/* CELLULOID REELS (PROJECTS) */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b border-[#F43F5E]/40 pb-4">
+            <h3 className="text-xl font-bold text-[#FFE4E6] flex items-center gap-2">
+              <Film className="w-5 h-5 text-[#F43F5E]" /> 35mm Celluloid Reels
             </h3>
-            <span className="text-xs text-[#F87171] font-mono">CLICK TO INSPECT</span>
+            <span className="text-xs text-[#FB7185]">ROLL REEL TO SCREEN</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((item) => (
+            {celluloidReels.map((reel) => (
               <motion.div
-                key={item.id}
-                whileHover={{ y: -4, borderColor: "#EF4444" }}
+                key={reel.id}
+                whileHover={{ y: -4, borderColor: "#F43F5E" }}
                 onClick={() => {
-                  setSelectedNode(item);
-                  playAudio('radar', isMuted);
+                  setSelectedReel(reel);
+                  playCinemaAudio('projector', isMuted);
                 }}
-                className="p-6 rounded-2xl bg-[#181818]/90 border border-[#EF4444]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
+                className="p-6 rounded-3xl bg-[#17121C]/90 border border-[#F43F5E]/30 backdrop-blur-xl cursor-pointer transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.8)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center text-[10px] text-[#F87171] font-mono mb-3">
-                  <span className="px-2 py-0.5 rounded bg-[#EF4444]/20 border border-[#EF4444]/45">{item.badge}</span>
+                <div className="flex justify-between items-center text-[10px] text-[#FB7185] font-bold mb-3">
+                  <span className="px-2.5 py-1 rounded bg-[#F43F5E]/20 border border-[#F43F5E]/40">{reel.reelNo}</span>
+                  <span className="text-rose-300/80">{reel.runtime}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-white group-hover:text-[#F87171] transition mb-2">
-                  {item.title}
+                <h4 className="text-2xl font-black text-[#FFE4E6] group-hover:text-[#F43F5E] transition mb-2">
+                  {reel.title}
                 </h4>
 
-                <p className="text-xs text-red-200/70 font-sans leading-relaxed mb-4">
-                  {item.desc}
+                <p className="text-xs text-rose-200/70 leading-relaxed mb-4">
+                  {reel.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4 font-mono">
-                  {item.tech.map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#0A0A0A] text-[#F87171] border border-[#EF4444]/20">
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {reel.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2.5 py-1 rounded bg-[#08080C] text-[#FB7185] border border-[#F43F5E]/30">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs text-[#F87171] font-mono group-hover:underline">
-                  <span>SURVEY SYSTEM NODE</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs text-[#F43F5E] font-bold group-hover:underline">
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>PROJECT REEL ON SCREEN</span>
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* EXPERIENCE */}
-        <section className="space-y-6">
-          <div className="border-b border-[#EF4444]/30 pb-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#F87171]" /> Career Journey & Telemetry
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            {careerTimeline.map((item, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-[#181818]/90 border border-[#EF4444]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
-                <div className="space-y-1">
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] font-mono border border-[#EF4444]/45">
-                    {item.period}
-                  </span>
-                  <h4 className="text-base font-bold text-white">{item.role}</h4>
-                  <p className="text-xs text-red-300 font-sans">{item.company}</p>
-                  <p className="text-xs text-red-200/70 font-sans">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* CONTACT DISPATCH */}
-        <section className="p-8 rounded-3xl bg-[#181818]/90 border border-[#EF4444]/40 shadow-[0_0_40px_rgba(239,68,68,0.4)] space-y-6">
+        {/* BOX OFFICE DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#17121C]/90 border border-[#F43F5E]/50 shadow-[0_0_50px_rgba(244,63,94,0.25)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-white">Transmit Encrypted Dispatch</h3>
-            <p className="text-xs text-red-200/70 font-sans">
-              Send dispatch directly to Prajwal DL ({email}).
+            <h3 className="text-2xl font-black text-[#FFE4E6]">Reserve VIP Box Office Pass</h3>
+            <p className="text-xs text-rose-200/80">
+              Send screening request to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-[#EF4444]/20 border border-[#EF4444]/45 text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-[#F87171] mx-auto" />
-              <p className="font-bold text-white">Dispatch Inscribed in System Grid</p>
-              <p className="text-xs text-[#F87171] font-mono">Prajwal DL will respond promptly.</p>
+            <div className="p-6 rounded-2xl bg-[#F43F5E]/20 border border-[#F43F5E] text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#F43F5E] mx-auto" />
+              <p className="font-black text-[#FFE4E6]">VIP TICKET STUB PRINTED & ADMIT ONE</p>
+              <p className="text-xs text-rose-300">Prajwal DL will queue your screening.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playAudio('chime', isMuted);
+                playCinemaAudio('ticket', isMuted);
               }}
-              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
+              className="space-y-4 max-w-xl mx-auto text-xs"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#F87171] font-mono mb-1">OPERATOR CALLSIGN</label>
-                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
+                  <label className="block text-[#FB7185] font-bold mb-1">PRODUCER CALLSIGN</label>
+                  <input required defaultValue="Executive Producer" className="w-full px-4 py-2.5 rounded-xl bg-[#08080C] border border-[#F43F5E]/40 text-[#FFE4E6] focus:outline-none focus:border-[#F43F5E]" />
                 </div>
                 <div>
-                  <label className="block text-[#F87171] font-mono mb-1">CORRESPONDENCE EMAIL</label>
-                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
+                  <label className="block text-[#FB7185] font-bold mb-1">PRODUCER EMAIL</label>
+                  <input required type="email" defaultValue="producer@cinema.space" className="w-full px-4 py-2.5 rounded-xl bg-[#08080C] border border-[#F43F5E]/40 text-[#FFE4E6] focus:outline-none focus:border-[#F43F5E]" />
                 </div>
               </div>
               <div>
-                <label className="block text-[#F87171] font-mono mb-1">DISPATCH INQUIRY</label>
-                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
+                <label className="block text-[#FB7185] font-bold mb-1">SCREENPLAY BRIEF</label>
+                <textarea rows={3} required defaultValue="Requesting 35mm cinematic full-stack architecture with high contrast and sub-100ms response." className="w-full px-4 py-2.5 rounded-xl bg-[#08080C] border border-[#F43F5E]/40 text-[#FFE4E6] focus:outline-none focus:border-[#F43F5E]" />
               </div>
-              <button type="submit" className="w-full py-3 rounded-xl bg-[#EF4444] text-white font-mono font-bold text-xs hover:bg-[#FCA5A5] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.4)]">
-                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#F43F5E] text-black font-black text-xs hover:bg-[#FB7185] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT CINEMATIC BRIEF
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-[#EF4444]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
-            <span>LOCATION: MANGALORE, INDIA · 575001</span>
+          <div className="pt-4 border-t border-[#F43F5E]/30 flex flex-wrap justify-between items-center text-[11px] text-rose-300 font-mono">
+            <span>BOOTH: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">LINKEDIN</a>
-              <a href={website} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* NODE MODAL */}
+      {/* REEL MODAL */}
       <AnimatePresence>
-        {selectedNode && (
+        {selectedReel && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#181818] border-2 border-[#EF4444] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(239,68,68,0.4)] relative space-y-6">
-              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EF4444]/20 text-[#F87171] hover:bg-[#EF4444] hover:text-black flex items-center justify-center transition cursor-pointer">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#17121C] border-2 border-[#F43F5E] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(244,63,94,0.5)] relative space-y-6">
+              <button onClick={() => { setSelectedReel(null); playCinemaAudio('ticket', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F43F5E]/20 text-[#FB7185] hover:bg-[#F43F5E] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
               <div className="space-y-1 font-mono">
-                <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] border border-[#EF4444]/45">{selectedNode.badge}</span>
-                <h3 className="text-2xl font-bold text-white font-serif">{selectedNode.title}</h3>
+                <span className="text-[10px] px-2.5 py-1 rounded bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/40">{selectedReel.reelNo}</span>
+                <h3 className="text-2xl font-black text-[#FFE4E6]">{selectedReel.title}</h3>
               </div>
-              <p className="text-sm text-red-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
-              <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/20 text-xs text-[#F87171] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <p className="text-sm text-rose-200/80 leading-relaxed">{selectedReel.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#08080C] border border-[#F43F5E]/40 text-xs text-[#FB7185]">★ HIGHLIGHT: {selectedReel.highlight}</div>
               <div className="space-y-2 font-mono">
-                <span className="text-xs text-slate-400">TECH TOKENS</span>
+                <span className="text-xs text-rose-300">CELLULOID TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedNode.tech.map((t: string) => (
-                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#0A0A0A] text-white border border-[#EF4444]/20">{t}</span>
+                  {selectedReel.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded bg-[#281320] text-[#FFE4E6] border border-[#F43F5E]/30">{t}</span>
                   ))}
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#EF4444] text-white font-bold font-mono text-xs text-center hover:bg-[#FCA5A5] transition flex items-center justify-center gap-1.5">
-                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
+                <a href={selectedReel.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#F43F5E] text-black font-black text-xs text-center hover:bg-[#FB7185] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> SCREEN CELLULOID
                 </a>
               </div>
             </motion.div>

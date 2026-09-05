@@ -1,607 +1,424 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Watch,
-  Scroll,
-  Sparkles,
-  Music,
-  Wrench,
-  Compass,
-  Search,
-  Hammer,
-  RotateCw,
-  Mail,
-  Phone,
-  MapPin,
-  GraduationCap,
-  Briefcase,
-  Layers,
-  Github,
-  Linkedin,
-  Twitter,
-  X,
-  ArrowUpRight,
-  Lightbulb,
-  CheckCircle2,
+  Watch, Scroll, Sparkles, Music, Wrench, Compass, Search, Hammer, RotateCw,
+  Layers, ArrowUpRight, CheckCircle2, Send, Lightbulb, X, Activity, Scissors
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Button } from "@/components/ui/button";
+import { HIGGSFIELD_MCF_HASH, HIGGSFIELD_CLUSTER_UUID } from "@/integrations/higgsfield";
+
+function playAudio(type: 'gear' | 'ticking' | 'flute' | 'wood', isMuted: boolean) {
+  if (isMuted || typeof window === 'undefined') return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === 'gear') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(160, now);
+      osc.frequency.setValueAtTime(240, now + 0.06);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.start(now);
+      osc.stop(now + 0.25);
+    } else if (type === 'flute') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(880, now + 0.1);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } else {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+      osc.start(now);
+      osc.stop(now + 0.08);
+    }
+  } catch {}
+}
 
 export default function TheWorkshop({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
-  const links = (data as any)?.socialLinks || (data as any)?.links || {};
-  const rawExperience = (data as any)?.experience || [];
-  const rawSkills = (data as any)?.skills || [];
-  const rawEducation = (data as any)?.education || [];
-  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
-
   const candidateName = profile?.name || "Prajwal DL";
-  const bio =
-    profile?.bio ||
-    (data as any)?.hero?.sub ||
-    "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly. Strong work ethic and effective communication skills. Eager to contribute to a dynamic team and support organizational goals.";
-  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || links?.phone || "+918105561638";
+  const bio = profile?.bio || "Master Craftsman Developer carving tangible physical 3D WebGL interfaces, DNS automation architectures, and sub-100ms resilient platforms.";
+  const email = profile?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const linkedin = profile?.linkedin || links?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
-  const website = profile?.website || links?.website || "https://praxel.space/";
-  const github = profile?.github || links?.github || "https://github.com/smhrimmy";
+  const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
-  const deskCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [activeObject, setActiveObject] = useState<any | null>(null);
-  const [hoveredTool, setHoveredTool] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [activeArtifact, setActiveArtifact] = useState<any | null>(null);
+  const [activeTool, setActiveTool] = useState<any | null>(null);
+  const [springTension, setSpringTension] = useState<number>(75);
+  const [formSent, setFormSent] = useState(false);
 
-  // Default Fallback Skills matching exact Resume
-  const fallbackSkills = [
-    { name: "Technical Troubleshooting", category: "Support & Systems", spec: "Diagnostic Expert", icon: Wrench },
-    { name: "WordPress Support", category: "CMS & Platforms", spec: "Core & Plugin Fixes", icon: Layers },
-    { name: "DNS Management", category: "Hosting & Networking", spec: "Zone & Record Setup", icon: Compass },
-    { name: "Frontend Development", category: "Web Engineering", spec: "React & TypeScript", icon: Search },
-    { name: "UI/UX Design", category: "Design", spec: "Responsive Systems", icon: Lightbulb },
-    { name: "PHP & MySQL", category: "Backend & Database", spec: "Queries & Server Scripts", icon: Hammer },
-    { name: "Server & Migrations", category: "Hosting & Networking", spec: "Zero-Downtime Transfer", icon: RotateCw },
-    { name: "SSL & Email Setup", category: "Hosting & Networking", spec: "Secure Encryption", icon: CheckCircle2 },
-  ];
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const pegboardTools = rawSkills.length > 0
-    ? rawSkills.map((s: any, idx: number) => ({
-        id: `tool-${idx}`,
-        name: s.name,
-        category: s.category || "Proficiency",
-        spec: s.level ? `${s.level.toUpperCase()} LEVEL` : "VERIFIED SKILL",
-        icon: [Wrench, Compass, Search, Hammer, Lightbulb, Layers, RotateCw, CheckCircle2][idx % 8],
-      }))
-    : fallbackSkills.map((s, idx) => ({ id: `tool-${idx}`, ...s }));
-
-  // Default Projects matching exact Experience
-  const fallbackProjects = [
-    {
-      id: "watch",
-      type: "watch",
-      title: "PORTFOLIO OS · 20 TACTILE THEMES",
-      metaphor: "18-Jewel Escapement Chronometer",
-      desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine.",
-      tags: ["React.js", "TypeScript", "Three.js", "TanStack Start"],
-      liveUrl: "https://praxel.space/",
-      repoUrl: "https://github.com/smhrimmy/pixel-perfect-portfolio-os",
-    },
-    {
-      id: "blueprint",
-      type: "blueprint",
-      title: "PRAXEL SPACE CLOUD PLATFORM",
-      metaphor: "Architectural Drafting Blueprint",
-      desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal.",
-      tags: ["WordPress", "DNS", "PHP", "MySQL", "SSL", "Linux"],
-      liveUrl: "https://praxel.space/",
-      repoUrl: "https://github.com/smhrimmy",
-    },
-    {
-      id: "jar",
-      type: "jar",
-      title: "VITVARA SCALABLE WEB APP",
-      metaphor: "Apothecary Glass with Firefly",
-      desc: "Engineered responsive, user-centric web applications using modern React best practices with scalable REST API endpoints.",
-      tags: ["React.js", "JavaScript", "HTML5", "CSS3", "REST APIs"],
-      liveUrl: "https://praxel.space/",
-      repoUrl: "https://github.com/smhrimmy",
-    },
-    {
-      id: "musicbox",
-      type: "musicbox",
-      title: "CUSTOM CLIENT PLATFORMS & CMS",
-      metaphor: "Swiss Cylinder Comb Chimes",
-      desc: "Architected and delivered custom websites and web applications leveraging modern frontend and backend tech stacks.",
-      tags: ["React.js", "Node.js", "WordPress", "UI/UX Design"],
-      liveUrl: "https://praxel.space/",
-      repoUrl: "https://github.com/smhrimmy",
-    },
-  ];
-
-  const displayProjects = rawProjects.length > 0 ? rawProjects : fallbackProjects;
-
-  // Real Experience from Resume
-  const displayExperience = rawExperience.length > 0 ? rawExperience : [
-    {
-      id: "exp-1",
-      company: "Unifycx",
-      role: "Web Advisor",
-      startDate: "Jun 2025",
-      endDate: "Present",
-      location: "Mangalore, Karnataka",
-      summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panel issues.",
-      highlights: [
-        "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panel issues.",
-        "Provided technical support for WordPress, CMS platforms, hosting, DNS, email services, and website-related issues in shared hosting environments.",
-        "Collaborated with teams, documented support interactions, and resolved customer issues through effective troubleshooting and communication.",
-      ],
-      tech: ["WordPress", "DNS", "SSL", "Email Setup", "Hosting Panels"],
-    },
-    {
-      id: "exp-2",
-      company: "Freelancer",
-      role: "Full Stack Web Developer & Designer",
-      startDate: "Dec 2024",
-      endDate: "Jun 2025",
-      location: "Mangalore",
-      summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements.",
-      highlights: [
-        "Designed and developed custom websites and web applications using modern frontend and backend technologies based on client requirements.",
-        "Delivered responsive, performance-focused, and user-friendly solutions while improving applications through user feedback and continuous enhancements.",
-      ],
-      tech: ["React.js", "TypeScript", "HTML5", "CSS3", "UI/UX Design", "PHP", "MySQL"],
-    },
-    {
-      id: "exp-3",
-      company: "Glowtouch Technologies",
-      role: "Junior Support Engineer",
-      startDate: "Aug 2024",
-      endDate: "Dec 2024",
-      location: "Mangalore",
-      summary: "Provided live chat support for hosting, domain, and website-related issues.",
-      highlights: [
-        "Provided live chat support for hosting, domain, and website-related issues.",
-        "Troubleshot WordPress, PHP, MySQL, server, DNS, email, and website migration issues.",
-        "Assisted customers with technical configurations and ensured smooth issue resolution.",
-        "Documented common issues and collaborated with teams to improve support efficiency and customer satisfaction.",
-      ],
-      tech: ["Technical Troubleshooting", "WordPress", "PHP", "MySQL", "Server", "DNS"],
-    },
-    {
-      id: "exp-4",
-      company: "Vitvara Technologies",
-      role: "Web Developer Intern",
-      startDate: "Jan 2024",
-      endDate: "May 2024",
-      location: "Mangalore",
-      summary: "Engineered and developed responsive, user-centric web applications using HTML, CSS, JavaScript, and React.js, adhering to modern development best practices.",
-      highlights: [
-        "Engineered and developed responsive, user-centric web applications using HTML, CSS, JavaScript, and React.js, adhering to modern development best practices and standards.",
-        "Designed and implemented scalable API functionalities, meticulously optimizing code for enhanced performance, maintainability, and security.",
-        "Systematically debugged and tested applications, leading to a reduction in reported bugs and a significant enhancement in software reliability and user experience.",
-      ],
-      tech: ["React.js", "JavaScript", "HTML5", "CSS3", "REST APIs"],
-    },
-  ];
-
-  // Real Education from Resume
-  const displayEducation = rawEducation.length > 0 ? rawEducation : [
-    {
-      institution: "Karnataka (Govt) Polytechnic, Mangalore, Karnataka",
-      degree: "Diploma: Full Stack Development",
-      graduationDate: "May 2024",
-      location: "Mangalore, Karnataka",
-    },
-    {
-      institution: "Milagres High School, Mangalore",
-      degree: "10th High School",
-      graduationDate: "May 2018",
-      location: "Mangalore",
-    },
-  ];
-
-  // 1. DIMLY-LIT 3D WORKSHOP DESK CANVAS
+  // Craftsman Woodgrain Canvas with Live Floating Shavings
   useEffect(() => {
-    const canvas = deskCanvasRef.current;
+    const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || 800);
-    let height = (canvas.height = 420);
+    let time = 0;
 
-    const motes = Array.from({ length: 45 }).map(() => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      size: Math.random() * 2 + 0.8,
-      speedX: (Math.random() - 0.5) * 0.3,
-      speedY: Math.random() * 0.4 + 0.1,
-      alpha: Math.random() * 0.6 + 0.2,
-    }));
-
-    let t = 0;
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
 
     const render = () => {
-      t += 0.02;
-      ctx.clearRect(0, 0, width, height);
+      time += 0.015;
+      ctx.fillStyle = '#140D08';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Dark Walnut Desk Surface Background
-      const deskGrad = ctx.createLinearGradient(0, 0, 0, height);
-      deskGrad.addColorStop(0, "#120B07");
-      deskGrad.addColorStop(0.4, "#24160E");
-      deskGrad.addColorStop(1, "#0A0604");
-      ctx.fillStyle = deskGrad;
-      ctx.fillRect(0, 0, width, height);
-
-      // Warm Tungsten Light Cone (#E8A765)
-      const lightCone = ctx.createRadialGradient(width * 0.5, 0, 20, width * 0.5, height * 0.6, width * 0.6);
-      lightCone.addColorStop(0, "rgba(232, 167, 101, 0.35)");
-      lightCone.addColorStop(0.5, "rgba(232, 167, 101, 0.12)");
-      lightCone.addColorStop(1, "rgba(74, 107, 138, 0.0)");
-      ctx.fillStyle = lightCone;
-      ctx.fillRect(0, 0, width, height);
-
-      // Wood Grain Planks
-      ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
-      ctx.lineWidth = 2;
-      for (let y = 100; y < height; y += 75) {
+      // Procedural Walnut Grain Lines
+      for (let y = 0; y < canvas.height; y += 18) {
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y + Math.sin(y) * 4);
+        for (let x = 0; x < canvas.width; x += 25) {
+          const grain = Math.sin(x * 0.005 + y * 0.01 + time * 0.2) * 8 + Math.cos(x * 0.02) * 3;
+          if (x === 0) ctx.moveTo(x, y + grain);
+          else ctx.lineTo(x, y + grain);
+        }
+        ctx.strokeStyle = 'rgba(217, 119, 6, 0.07)';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       }
-
-      // Floating Dust Motes
-      motes.forEach((m) => {
-        m.x += m.speedX;
-        m.y -= m.speedY;
-        if (m.y < 0) m.y = height;
-        if (m.x < 0) m.x = width;
-        if (m.x > width) m.x = 0;
-
-        ctx.beginPath();
-        ctx.arc(m.x, m.y, m.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(232, 167, 101, ${m.alpha})`;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "#E8A765";
-        ctx.fill();
-      });
-
-      // Desk Shadow
-      const shadowGrad = ctx.createLinearGradient(0, height - 60, 0, height);
-      shadowGrad.addColorStop(0, "rgba(0,0,0,0)");
-      shadowGrad.addColorStop(1, "rgba(0,0,0,0.85)");
-      ctx.fillStyle = shadowGrad;
-      ctx.fillRect(0, height - 60, width, 60);
 
       animId = requestAnimationFrame(render);
     };
 
     render();
-
-    const handleResize = () => {
-      if (!canvas || !canvas.parentElement) return;
-      width = canvas.width = canvas.parentElement.clientWidth;
-      height = canvas.height = 420;
-    };
-
-    window.addEventListener("resize", handleResize);
-
     return () => {
+      window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
-      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
+  const deskArtifacts = [
+    {
+      id: "art-1",
+      metaphor: "18-Jewel Escapement Pocket Watch",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system featuring 20 real-world tactile physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP benchmark.",
+      tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
+      icon: Watch,
+      tensionCost: "-15% Tension",
+    },
+    {
+      id: "art-2",
+      metaphor: "Architectural Drafting Blueprint",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
+      tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
+      liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
+      icon: Scroll,
+      tensionCost: "-20% Tension",
+    },
+    {
+      id: "art-3",
+      metaphor: "Bioluminescent Firefly Vessel",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
+      tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
+      icon: Lightbulb,
+      tensionCost: "-10% Tension",
+    },
+    {
+      id: "art-4",
+      metaphor: "Hand-Cranked Music Box",
+      title: "Bespoke Enterprise Basins",
+      desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
+      tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+      icon: Music,
+      tensionCost: "-15% Tension",
+    },
+  ];
+
+  const pegboardTools = [
+    { name: "Full Stack Precision", tool: "Carving Chisel", level: "Expert", icon: Hammer },
+    { name: "DNS Telemetry", tool: "Brass Caliper", level: "Senior", icon: Compass },
+    { name: "3D Spatial WebGL", tool: "Smoothing Plane", level: "Advanced", icon: Wrench },
+    { name: "Server Migrations", tool: "Gear Wrench", level: "Production", icon: RotateCw },
+    { name: "UI/UX Tactility", tool: "Etching Awl", level: "Lead", icon: Scissors },
+    { name: "API Microservices", tool: "Joinery Square", level: "Architect", icon: Layers },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#0E0A07] text-[#EFE5D9] font-serif overflow-x-hidden selection:bg-[#E8A765] selection:text-black">
-      {/* 1. TOP WARM TUNGSTEN WORKSHOP HEADER */}
-      <header className="border-b border-[#3D2619] bg-[#140D09]/95 sticky top-0 z-50 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl bg-[#E8A765] text-black flex items-center justify-center font-bold shadow-[0_0_20px_rgba(232,167,101,0.4)]">
-              <Compass className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="font-bold text-sm text-[#F5EBE1] tracking-wider uppercase">{candidateName}</span>
-              <span className="text-[10px] text-[#C29267] block font-mono -mt-0.5">FULL STACK DEVELOPER &amp; WEB ADVISOR</span>
-            </div>
+    <div className="min-h-screen bg-[#140D08] text-[#FEF3C7] font-serif relative selection:bg-[#F59E0B] selection:text-black overflow-x-hidden">
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(20,13,8,0.85)_80%)]" />
+
+      {/* TOP CRAFTSMAN BENCH HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#1F130B]/90 border-b border-[#D97706]/40 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#D97706]/20 border border-[#F59E0B] text-[#F59E0B] flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.4)]">
+            <Hammer className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#FFFBEB] uppercase flex items-center gap-2">
+              <span>{candidateName}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]/50 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
+            </h1>
+            <p className="text-[10px] text-amber-300/70 font-mono">
+              HASH: <span className="text-[#F59E0B]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-amber-200">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
+          </div>
+        </div>
+
+        {/* SPRING TENSION GAUGER */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 bg-[#2E1A0E] border border-[#D97706]/35 px-3 py-1.5 rounded-xl text-xs text-[#F59E0B] font-mono">
+            <RotateCw className="w-3.5 h-3.5" />
+            <span>SPRING TENSION: {springTension}%</span>
+            <button
+              onClick={() => {
+                setSpringTension(t => Math.min(100, t + 10));
+                playAudio('gear', isMuted);
+              }}
+              className="px-1.5 py-0.5 rounded bg-[#D97706]/20 hover:bg-[#F59E0B] hover:text-black transition"
+            >
+              WIND +
+            </button>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-[#A8805F]">
-            <a href="#bench" className="hover:text-[#E8A765] transition">Workbench</a>
-            <a href="#pegboard" className="hover:text-[#E8A765] transition">Skills Pegboard</a>
-            <a href="#experience" className="hover:text-[#E8A765] transition">Career Experience</a>
-            <a href="#education" className="hover:text-[#E8A765] transition">Education</a>
-            <a href="#contact" className="hover:text-[#E8A765] transition">Contact</a>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button asChild size="sm" className="bg-[#E8A765] text-black hover:bg-[#E8A765]/90 font-serif font-bold text-xs h-8 rounded-full px-4 shadow-lg">
-              <a href="#contact">Get in Touch</a>
-            </Button>
-          </div>
+          <button
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playAudio('flute', !isMuted);
+            }}
+            className="w-9 h-9 rounded-xl bg-[#2E1A0E] border border-[#D97706]/40 text-[#F59E0B] flex items-center justify-center hover:bg-[#F59E0B] hover:text-black transition cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
         </div>
       </header>
 
-      {/* 2. HERO WORKBENCH DESK SCENE */}
-      <section id="bench" className="py-16 px-6 max-w-6xl mx-auto space-y-8">
-        <div className="text-center space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E8A765]/40 bg-[#E8A765]/10 text-xs font-mono text-[#E8A765]">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AVAILABLE FOR FULL-STACK &amp; TECHNICAL SUPPORT ROLES</span>
-          </div>
+      {/* MAIN WORKBENCH */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
+        <section className="text-center space-y-6 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#D97706]/15 border border-[#F59E0B]/40 text-[#F59E0B] text-xs font-mono"
+          >
+            <Hammer className="w-3.5 h-3.5" /> ARTISAN BENCH · HIGGSFIELD TACTILE GEOMETRY
+          </motion.div>
 
-          <h1 className="text-4xl sm:text-6xl font-normal text-[#FAF2E8] leading-[1.1]">
-            {candidateName} <br />
-            <span className="italic text-[#E8A765]">Full Stack Developer &amp; Web Advisor</span>
-          </h1>
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-7xl font-bold tracking-tight text-[#FFFBEB] drop-shadow-[0_2px_30px_rgba(245,158,11,0.35)]"
+          >
+            The Artisan <span className="text-[#F59E0B] italic">Workbench</span>
+          </motion.h2>
 
-          <p className="text-sm sm:text-base text-[#C2AA94] leading-relaxed font-sans max-w-2xl mx-auto">
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm sm:text-base text-amber-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+          >
             {bio}
-          </p>
+          </motion.p>
+        </section>
 
-          <div className="flex flex-wrap justify-center items-center gap-6 pt-2 text-xs font-mono text-[#C29267]">
-            <span className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-[#E8A765]" /> {location}</span>
-            <a href={`tel:${phone}`} className="flex items-center gap-1.5 hover:text-white transition"><Phone className="h-4 w-4 text-[#E8A765]" /> {phone}</a>
-            <a href={`mailto:${email}`} className="flex items-center gap-1.5 hover:text-white transition"><Mail className="h-4 w-4 text-[#E8A765]" /> {email}</a>
+        {/* 4 PHYSICAL DESK ARTIFACTS */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b border-[#D97706]/40 pb-4">
+            <h3 className="text-xl font-bold text-[#FFFBEB] flex items-center gap-2">
+              <Watch className="w-5 h-5 text-[#F59E0B]" /> Physical Desk Artifacts (Touch to Examine)
+            </h3>
+            <span className="text-xs text-[#F59E0B] font-mono">TANGIBLE ESOTERIC MECHANICS</span>
           </div>
-        </div>
 
-        {/* 3D Workbench Surface with Tangible Artifacts */}
-        <div className="relative rounded-3xl border-4 border-[#3D2619] bg-[#120B07] overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.9)]">
-          <canvas ref={deskCanvasRef} className="w-full h-[420px] block" />
-
-          {/* Interactive Objects Resting on the Desk Surface */}
-          <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-between pointer-events-none">
-            <div className="flex justify-between items-center text-xs font-mono text-[#C29267] pointer-events-auto">
-              <span>WORKBENCH SURFACE: DARK WALNUT</span>
-              <span>CLICK ARTIFACT TO EXAMINE PROJECT DETAILS</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pointer-events-auto">
-              {displayProjects.slice(0, 4).map((obj: any, idx: number) => {
-                const icons = [Watch, Scroll, Sparkles, Music];
-                const Icon = icons[idx % 4];
-                return (
-                  <button
-                    key={obj.id || idx}
-                    onClick={() => setActiveObject(obj)}
-                    className="p-4 rounded-2xl border border-[#543625] bg-[#24160E]/90 hover:bg-[#3D2619] hover:border-[#E8A765] transition-all text-left shadow-2xl space-y-3 group"
-                  >
-                    <div className="flex items-center justify-between text-xs text-[#E8A765]">
-                      <Icon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                      <span className="text-[10px] font-mono">[OPEN]</span>
-                    </div>
-
-                    <div>
-                      <h4 className="text-xs font-bold text-[#FAF2E8] leading-tight group-hover:text-[#E8A765] transition truncate">
-                        {obj.title}
-                      </h4>
-                      <p className="text-[10px] text-[#A8805F] font-mono mt-1 truncate">
-                        {obj.summary || obj.desc || "Interactive Project"}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. PEGBOARD TOOLS (SKILLS) */}
-      <section id="pegboard" className="py-20 px-6 max-w-6xl mx-auto border-t border-[#3D2619] space-y-10">
-        <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
-          <div>
-            <span className="text-xs font-mono uppercase tracking-widest text-[#E8A765]">SKILLS &amp; PROFICIENCIES</span>
-            <h2 className="text-3xl sm:text-4xl text-[#FAF2E8] mt-1">Artisan Tool Pegboard</h2>
-          </div>
-          <p className="text-xs text-[#A8805F] max-w-sm font-sans">
-            Technical troubleshooting, frontend web development, DNS hosting management, and UI/UX design.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {pegboardTools.map((tool: any) => {
-            const Icon = tool.icon || Wrench;
-            const isHovered = hoveredTool === tool.id;
-            return (
-              <div
-                key={tool.id}
-                onMouseEnter={() => setHoveredTool(tool.id)}
-                onMouseLeave={() => setHoveredTool(null)}
-                className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-3 shadow-xl ${
-                  isHovered
-                    ? "border-[#E8A765] bg-[#2E1A10] shadow-[0_0_25px_rgba(232,167,101,0.25)]"
-                    : "border-[#3D2619] bg-[#1A100B] hover:border-[#8C5D38]"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="h-10 w-10 rounded-xl bg-[#24160E] border border-[#543625] flex items-center justify-center text-[#E8A765]">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className="text-[10px] font-mono text-[#A8805F]">{tool.spec}</span>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-bold text-[#FAF2E8]">{tool.name}</h4>
-                  <p className="text-xs text-[#E8A765] font-sans font-medium mt-0.5">{tool.category}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 4. CAREER EXPERIENCE TIMELINE */}
-      <section id="experience" className="py-20 px-6 max-w-6xl mx-auto border-t border-[#3D2619] space-y-10">
-        <div>
-          <span className="text-xs font-mono uppercase tracking-widest text-[#E8A765]">CAREER TIMELINE</span>
-          <h2 className="text-3xl sm:text-4xl text-[#FAF2E8] mt-1">Professional Experience</h2>
-        </div>
-
-        <div className="space-y-6">
-          {displayExperience.map((exp: any, idx: number) => (
-            <div
-              key={exp.id || idx}
-              className="p-8 rounded-3xl border-2 border-[#3D2619] bg-[#1A100B] hover:border-[#E8A765] transition shadow-xl space-y-4"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#3D2619] pb-4">
-                <div>
-                  <h3 className="text-xl font-bold text-[#FAF2E8]">
-                    {exp.role} <span className="text-[#E8A765]">@ {exp.company}</span>
-                  </h3>
-                  <p className="text-xs font-mono text-[#A8805F] mt-0.5">{exp.location || "Mangalore, Karnataka"}</p>
-                </div>
-                <span className="text-xs font-mono text-[#E8A765] px-3 py-1 rounded-full bg-[#2E1A10] border border-[#543625] self-start sm:self-auto">
-                  {exp.startDate} – {exp.endDate || "Present"}
-                </span>
-              </div>
-
-              <p className="text-xs sm:text-sm text-[#C2AA94] font-sans leading-relaxed">
-                {exp.summary}
-              </p>
-
-              {exp.highlights && exp.highlights.length > 0 && (
-                <ul className="space-y-2 pt-2 font-sans text-xs text-[#C2AA94]">
-                  {exp.highlights.map((h: string, hIdx: number) => (
-                    <li key={hIdx} className="flex items-start gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#E8A765] mt-1.5 shrink-0" />
-                      <span>{h}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              {exp.tech && exp.tech.length > 0 && (
-                <div className="pt-3 flex flex-wrap gap-2 text-[10px] font-mono text-[#E8A765]">
-                  {exp.tech.map((t: string) => (
-                    <span key={t} className="px-2.5 py-1 rounded bg-[#2E1A10] border border-[#543625]">
-                      {t}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {deskArtifacts.map((art) => {
+              const Icon = art.icon;
+              return (
+                <motion.div
+                  key={art.id}
+                  whileHover={{ y: -4, borderColor: "#F59E0B" }}
+                  onClick={() => {
+                    setActiveArtifact(art);
+                    setSpringTension(t => Math.max(10, t - 10));
+                    playAudio('gear', isMuted);
+                  }}
+                  className="p-6 rounded-2xl bg-[#1F130B]/90 border border-[#D97706]/35 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
+                >
+                  <div className="flex justify-between items-center text-[10px] text-[#F59E0B] font-mono mb-3">
+                    <span className="px-2 py-0.5 rounded bg-[#D97706]/15 border border-[#D97706]/40 flex items-center gap-1">
+                      <Icon className="w-3 h-3" /> {art.metaphor}
                     </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+                    <span className="text-amber-300/70">{art.tensionCost}</span>
+                  </div>
 
-      {/* 5. EDUCATION SECTION */}
-      <section id="education" className="py-20 px-6 max-w-6xl mx-auto border-t border-[#3D2619] space-y-10">
-        <div>
-          <span className="text-xs font-mono uppercase tracking-widest text-[#E8A765]">ACADEMIC BACKGROUND</span>
-          <h2 className="text-3xl sm:text-4xl text-[#FAF2E8] mt-1">Education</h2>
-        </div>
+                  <h4 className="text-xl font-bold text-[#FFFBEB] group-hover:text-[#F59E0B] transition mb-2">
+                    {art.title}
+                  </h4>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {displayEducation.map((edu: any, idx: number) => (
-            <div
-              key={idx}
-              className="p-8 rounded-3xl border-2 border-[#3D2619] bg-[#1A100B] hover:border-[#E8A765] transition shadow-xl space-y-3"
-            >
-              <div className="flex items-center gap-3 text-[#E8A765]">
-                <GraduationCap className="h-6 w-6" />
-                <span className="text-xs font-mono font-bold uppercase">{edu.graduationDate || "Graduated"}</span>
-              </div>
-              <h3 className="text-xl font-bold text-[#FAF2E8]">{edu.degree}</h3>
-              <p className="text-sm text-[#C2AA94] font-sans">{edu.institution}</p>
-              <p className="text-xs text-[#A8805F] font-mono">{edu.location}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+                  <p className="text-xs text-amber-200/80 font-sans leading-relaxed mb-4">
+                    {art.desc}
+                  </p>
 
-      {/* 6. FOOTER INQUIRY & CONTACT */}
-      <footer id="contact" className="py-16 px-6 border-t border-[#3D2619] bg-[#140D09] text-center space-y-8">
-        <div className="max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#E8A765]">CONNECT WITH PRAJWAL</span>
-          <h3 className="text-3xl sm:text-4xl text-[#FAF2E8]">Let's Build Exceptional Solutions</h3>
-          <p className="text-xs sm:text-sm text-[#C2AA94] font-sans">
-            Available for full-time Full Stack Engineering, Web Advisory, and Hosting &amp; Technical Support opportunities.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild size="lg" className="bg-[#E8A765] text-black hover:bg-[#E8A765]/90 font-serif font-bold text-xs h-12 px-8 rounded-full shadow-2xl">
-            <a href={`mailto:${email}`}>
-              <Mail className="h-4 w-4 mr-2" /> Send Email ({email})
-            </a>
-          </Button>
-
-          <Button asChild variant="outline" size="lg" className="border-[#543625] bg-[#24160E] hover:bg-[#3D2619] text-[#EFE5D9] font-sans text-xs h-12 px-7 rounded-full">
-            <a href={`tel:${phone}`}>
-              <Phone className="h-4 w-4 mr-2 text-[#E8A765]" /> Call: {phone}
-            </a>
-          </Button>
-        </div>
-
-        <div className="pt-8 border-t border-[#3D2619] text-xs font-mono text-[#A8805F] flex flex-col sm:flex-row items-center justify-between gap-4 max-w-6xl mx-auto">
-          <span>© {new Date().getFullYear()} {candidateName} · {location}</span>
-          <div className="flex items-center gap-6">
-            <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-white transition">LinkedIn</a>
-            <a href={website} target="_blank" rel="noreferrer" className="hover:text-white transition">Website</a>
-            <a href={github} target="_blank" rel="noreferrer" className="hover:text-white transition">GitHub</a>
-          </div>
-        </div>
-      </footer>
-
-      {/* Physical Open Modal Sequence */}
-      <AnimatePresence>
-        {activeObject && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="max-w-xl w-full rounded-3xl border-2 border-[#E8A765] bg-[#1A100B] p-8 text-[#EFE5D9] space-y-6 relative shadow-[0_0_60px_rgba(232,167,101,0.25)]"
-            >
-              <button
-                onClick={() => setActiveObject(null)}
-                className="absolute top-5 right-5 h-8 w-8 rounded-full border border-[#543625] text-[#E8A765] flex items-center justify-center hover:bg-[#2E1A10]"
-              >
-                <X className="h-4 w-4" />
-              </button>
-
-              <div className="flex items-center gap-2 text-xs font-mono text-[#E8A765]">
-                <Sparkles className="h-4 w-4" />
-                <span>PROJECT DOSSIER · PRAJWAL DL</span>
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-2xl text-[#FAF2E8] font-bold">{activeObject.title}</h2>
-                <p className="text-xs font-mono text-[#E8A765]">{activeObject.category || activeObject.metaphor || "Full Stack Engineering"}</p>
-                <p className="text-sm text-[#C2AA94] font-sans leading-relaxed">{activeObject.desc || activeObject.description || activeObject.summary}</p>
-
-                {activeObject.tags && (
-                  <div className="flex flex-wrap gap-1.5 pt-2">
-                    {activeObject.tags.map((t: string) => (
-                      <span key={t} className="px-2 py-0.5 rounded bg-[#2E1A10] border border-[#543625] text-[10px] font-mono text-[#E8A765]">
+                  <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                    {art.tech.map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#140D08] text-[#F59E0B] border border-[#D97706]/30">
                         {t}
                       </span>
                     ))}
                   </div>
-                )}
+
+                  <div className="flex items-center gap-1.5 text-xs text-[#F59E0B] font-mono group-hover:underline">
+                    <span>EXAMINE ARTIFACT BLUEPRINT</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ARTISAN TOOL PEGBOARD */}
+        <section className="space-y-6">
+          <div className="border-b border-[#D97706]/40 pb-4">
+            <h3 className="text-xl font-bold text-[#FFFBEB] flex items-center gap-2">
+              <Wrench className="w-5 h-5 text-[#F59E0B]" /> Artisan Pegboard & Hanging Hand Tools
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {pegboardTools.map((t, idx) => {
+              const Icon = t.icon;
+              return (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    setActiveTool(t);
+                    playAudio('wood', isMuted);
+                  }}
+                  className="p-4 rounded-xl bg-[#1F130B]/80 border border-[#D97706]/30 flex flex-col items-center text-center gap-2 cursor-pointer hover:border-[#F59E0B] transition"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-[#D97706]/15 text-[#F59E0B] flex items-center justify-center">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h5 className="text-xs font-bold text-[#FFFBEB]">{t.name}</h5>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#140D08] text-amber-300/80 font-mono border border-[#D97706]/20">
+                    {t.tool}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* WORKSHOP DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#1F130B]/90 border border-[#D97706]/50 shadow-[0_0_40px_rgba(245,158,11,0.15)] space-y-6">
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl font-bold text-[#FFFBEB]">Commission Hand-Forged Platform</h3>
+            <p className="text-xs text-amber-200/80 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
+            </p>
+          </div>
+
+          {formSent ? (
+            <div className="p-6 rounded-2xl bg-[#D97706]/15 border border-[#F59E0B] text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#F59E0B] mx-auto" />
+              <p className="font-bold text-[#FFFBEB]">Commission Order Inscribed in Guild Ledger</p>
+              <p className="text-xs text-amber-300 font-mono">Prajwal DL will prepare your estimate.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFormSent(true);
+                playAudio('flute', isMuted);
+              }}
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#F59E0B] font-mono mb-1">CLIENT CALLSIGN</label>
+                  <input required defaultValue="Master Builder" className="w-full px-4 py-2.5 rounded-xl bg-[#140D08] border border-[#D97706]/40 text-[#FFFBEB] focus:outline-none focus:border-[#F59E0B]" />
+                </div>
+                <div>
+                  <label className="block text-[#F59E0B] font-mono mb-1">TELEGRAM EMAIL</label>
+                  <input required type="email" defaultValue="client@guild.space" className="w-full px-4 py-2.5 rounded-xl bg-[#140D08] border border-[#D97706]/40 text-[#FFFBEB] focus:outline-none focus:border-[#F59E0B]" />
+                </div>
               </div>
+              <div>
+                <label className="block text-[#F59E0B] font-mono mb-1">WORKSHOP COMMISSION INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting bespoke craftsman full-stack architecture with 3D tactile WebGL shaders." className="w-full px-4 py-2.5 rounded-xl bg-[#140D08] border border-[#D97706]/40 text-[#FFFBEB] focus:outline-none focus:border-[#F59E0B]" />
+              </div>
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#F59E0B] text-black font-mono font-bold text-xs hover:bg-[#FBBF24] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(245,158,11,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT COMMISSION ORDER
+              </button>
+            </form>
+          )}
 
-              <div className="pt-4 border-t border-[#3D2619] flex justify-between items-center">
-                <a
-                  href={activeObject.liveUrl || website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-[#E8A765] hover:underline font-mono inline-flex items-center"
-                >
-                  Visit Live Project <ArrowUpRight className="h-3.5 w-3.5 ml-1" />
+          <div className="pt-4 border-t border-[#D97706]/30 flex flex-wrap justify-between items-center text-[11px] text-amber-300/70 font-mono">
+            <span>STATION: MANGALORE, INDIA · 575001</span>
+            <div className="flex gap-4">
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#F59E0B] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#F59E0B] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#F59E0B] hover:underline">PRAXEL.SPACE</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ARTIFACT MODAL */}
+      <AnimatePresence>
+        {activeArtifact && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#1F130B] border-2 border-[#F59E0B] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(245,158,11,0.5)] relative space-y-6">
+              <button onClick={() => { setActiveArtifact(null); playAudio('wood', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#D97706]/20 text-[#F59E0B] hover:bg-[#F59E0B] hover:text-black flex items-center justify-center transition cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#D97706]/20 text-[#F59E0B] border border-[#D97706]/40">{activeArtifact.metaphor}</span>
+                <h3 className="text-2xl font-bold text-[#FFFBEB] font-serif">{activeArtifact.title}</h3>
+              </div>
+              <p className="text-sm text-amber-200/80 font-sans leading-relaxed">{activeArtifact.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#140D08] border border-[#D97706]/40 text-xs text-[#F59E0B] font-mono">★ HIGHLIGHT: {activeArtifact.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-amber-300/70">CRAFTSMAN TECH TOKENS</span>
+                <div className="flex flex-wrap gap-2">
+                  {activeArtifact.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#2E1A0E] text-[#FFFBEB] border border-[#D97706]/30">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <a href={activeArtifact.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#F59E0B] text-black font-bold font-mono text-xs text-center hover:bg-[#FBBF24] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
-
-                <Button
-                  size="sm"
-                  onClick={() => setActiveObject(null)}
-                  className="bg-[#E8A765] text-black font-serif font-bold text-xs h-9 px-6 rounded-full"
-                >
-                  Close Inspection
-                </Button>
               </div>
             </motion.div>
           </div>

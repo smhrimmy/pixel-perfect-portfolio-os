@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Leaf, Flower, Sprout, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
+  Leaf, Search, Sparkles, X, ArrowUpRight,
+  CheckCircle2, Send, Bookmark, Glasses
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import {
-  HIGGSFIELD_MCF_HASH,
-  HIGGSFIELD_CLUSTER_UUID,
-  HIGGSFIELD_MOTION_PRESETS,
-  type HiggsfieldMotionPreset
-} from "@/integrations/higgsfield";
+import { HIGGSFIELD_MCF_HASH, HIGGSFIELD_CLUSTER_UUID } from "@/integrations/higgsfield";
 
-function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
+function playHerbariumAudio(type: 'press' | 'loupe' | 'leaf', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -23,39 +19,28 @@ function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'radar') {
+    if (type === 'loupe') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(910, now);
-      osc.frequency.exponentialRampToValueAtTime(1820, now + 0.2);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.frequency.setValueAtTime(500, now);
+      osc.frequency.exponentialRampToValueAtTime(1000, now + 0.15);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
       osc.start(now);
-      osc.stop(now + 0.5);
-    } else if (type === 'chime') {
+      osc.stop(now + 0.2);
+    } else if (type === 'press') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(523.25, now);
-      osc.frequency.setValueAtTime(659.25, now + 0.08);
-      osc.frequency.setValueAtTime(783.99, now + 0.16);
-      osc.frequency.setValueAtTime(1046.50, now + 0.24);
-      gain.gain.setValueAtTime(0.09, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.frequency.setValueAtTime(180, now);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
       osc.start(now);
-      osc.stop(now + 0.45);
-    } else if (type === 'pulse') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      osc.start(now);
-      osc.stop(now + 0.3);
+      osc.stop(now + 0.25);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(900, now);
+      osc.frequency.setValueAtTime(700, now);
       gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
       osc.start(now);
-      osc.stop(now + 0.06);
+      osc.stop(now + 0.08);
     }
   } catch {}
 }
@@ -63,7 +48,7 @@ function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted
 export default function AuroraMintTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Botanical specimen folio with pressed flora under glass, collection tags, and mint-tinted topographical matrices.";
+  const bio = profile?.bio || "Naturalist Systems Botanist & Herbarium Curator pressing rare code specimens under glass, cataloging cellular venation, and engineering sub-100ms resilient platforms.";
   const email = profile?.email || "pdlkpt@gmail.com";
   const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
@@ -72,13 +57,13 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
   const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+  const [selectedSpecimen, setSelectedSpecimen] = useState<any | null>(null);
+  const [loupeZoom, setLoupeZoom] = useState<number>(4);
   const [formSent, setFormSent] = useState(false);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Procedural Heightfield Canvas Engine for The Herbarium
+  // Mint Leaf Venation & Cell Grid Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -95,50 +80,24 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
-    const handlePointerMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-    };
-    window.addEventListener('mousemove', handlePointerMove);
-
     const render = () => {
-      time += 0.015;
-      ctx.fillStyle = '#021612';
+      time += 0.01;
+      ctx.fillStyle = '#051A14';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.46;
-      const cols = 32;
-      const rows = 20;
-      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
-      const spacingY = spacingX * 0.55;
+      // Subtle venation fractal branching
+      ctx.strokeStyle = 'rgba(45, 212, 191, 0.08)';
+      ctx.lineWidth = 1.2;
 
-      const mouseNormX = (cursorPos.x - cx) / canvas.width;
-      const mouseNormY = (cursorPos.y - cy) / canvas.height;
-
-      for (let r = 0; r < rows; r++) {
+      for (let i = 0; i < 8; i++) {
+        const startX = (i / 8) * canvas.width;
         ctx.beginPath();
-        for (let c = 0; c < cols; c++) {
-          const offsetX = (c - cols / 2) * spacingX;
-          const offsetY = (r - rows / 2) * spacingY;
-          const distToMouse = Math.sqrt(
-            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
-          );
-
-          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
-          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
-          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
-          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
-          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.2;
-
-          const isoX = cx + (offsetX - offsetY * 0.75);
-          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
-
-          if (c === 0) ctx.moveTo(isoX, isoY);
-          else ctx.lineTo(isoX, isoY);
-        }
-        ctx.strokeStyle = 'rgba(45, 212, 191, 0.28)';
-        ctx.lineWidth = 1.1;
+        ctx.moveTo(startX, 0);
+        ctx.bezierCurveTo(
+          startX + Math.sin(time + i) * 60, canvas.height * 0.5,
+          startX - Math.cos(time + i) * 60, canvas.height * 0.8,
+          startX + 20, canvas.height
+        );
         ctx.stroke();
       }
 
@@ -148,193 +107,175 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
     render();
     return () => {
       window.removeEventListener('resize', resize);
-      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, [cursorPos]);
+  }, []);
 
-  // Projects Matrix
-  const projects = [
+  const herbariumSpecimens = [
     {
-      id: "proj-1",
-      badge: "FLAGSHIP 3D",
+      id: "spec-1",
+      catalog: "HERBARIUM FOLIO #01",
       title: "Portfolio OS Spatial Matrix",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP benchmark.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
       liveUrl: website,
       highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
+      genus: "Genus: Architectura Universalis"
     },
     {
-      id: "proj-2",
-      badge: "CLOUD PROBES",
+      id: "spec-2",
+      catalog: "HERBARIUM FOLIO #02",
       title: "Praxel Space Cloud Platform",
       desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
       highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
+      genus: "Genus: Nebula Automata"
     },
     {
-      id: "proj-3",
-      badge: "WEB PLATFORM",
+      id: "spec-3",
+      catalog: "HERBARIUM FOLIO #03",
       title: "Vitvara Application Ridge",
       desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
       liveUrl: website,
       highlight: "High-throughput frontend with clean microservice integration",
+      genus: "Genus: Resilientia Scalaris"
     },
     {
-      id: "proj-4",
-      badge: "ENTERPRISE",
+      id: "spec-4",
+      catalog: "HERBARIUM FOLIO #04",
       title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
       liveUrl: website,
       highlight: "Custom client portals tailored for high-conversion performance",
-    },
-  ];
-
-  // Career Timeline
-  const careerTimeline = [
-    {
-      period: "2025 — PRESENT",
-      role: "Web Advisor & Technical Operations",
-      company: "Unifycx · Mangalore, Karnataka",
-      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
-    },
-    {
-      period: "2024 — 2025",
-      role: "Full Stack Web Developer & Designer",
-      company: "Freelance Practice · Remote / Mangalore",
-      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
-    },
-    {
-      period: "2024",
-      role: "Junior Support Engineer",
-      company: "GlowTouch Technologies · Mangalore",
-      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
-    },
-    {
-      period: "2023 — 2024",
-      role: "Web Developer Intern",
-      company: "Vitvara Technologies",
-      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
-    },
-    {
-      period: "2021 — 2024",
-      role: "Diploma in Full Stack Development",
-      company: "Karnataka (Govt) Polytechnic, Mangalore",
-      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+      genus: "Genus: Commercium Flexibilis"
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#021612] text-[#CCFBF1] font-sans relative overflow-x-hidden selection:bg-[#2DD4BF] selection:text-black">
+    <div className="min-h-screen bg-[#051A14] text-[#CCFBF1] font-sans relative selection:bg-[#2DD4BF] selection:text-black overflow-x-hidden">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
-      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(2,22,18,0.85)_80%)]" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(5,26,20,0.85)_80%)]" />
 
-      {/* TOP HUD */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#052821]/90 border-b border-[#2DD4BF]/30 backdrop-blur-md">
+      {/* TOP HERBARIUM HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#08291F]/90 border-b border-[#2DD4BF]/30 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#2DD4BF]/15 border border-[#2DD4BF] text-[#2DD4BF] flex items-center justify-center shadow-[0_0_15px_rgba(45,212,191,0.4)]">
+          <div className="w-10 h-10 rounded-2xl bg-[#2DD4BF]/20 border border-[#2DD4BF] text-[#2DD4BF] flex items-center justify-center shadow-[0_0_20px_rgba(45,212,191,0.3)]">
             <Leaf className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest text-[#CCFBF1] uppercase flex items-center gap-2">
               <span>{candidateName}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/40 font-mono">
-                HIGGSFIELD AI MCF
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40 font-mono">
+                HERBARIUM
               </span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-mono">
-              HASH: <span className="text-[#2DD4BF]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-teal-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            <p className="text-[10px] text-teal-300/70 font-mono">
+              HASH: <span className="text-[#2DD4BF]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · LOUPE: <span className="text-teal-200">{loupeZoom}× MAG</span>
             </p>
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setIsMuted(!isMuted);
-            playAudio('chime', !isMuted);
-          }}
-          className="w-9 h-9 rounded-xl bg-[#0A3D33] border border-[#2DD4BF]/30 text-[#2DD4BF] flex items-center justify-center hover:bg-[#2DD4BF] hover:text-black transition cursor-pointer"
-        >
-          <Sparkles className="w-4 h-4" />
-        </button>
+        {/* LOUPE MAGNIFIER & PRESERVATION */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setLoupeZoom((prev) => (prev >= 10 ? 4 : prev + 2));
+              playHerbariumAudio('loupe', isMuted);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-[#0D382B] border border-[#2DD4BF]/40 text-[#2DD4BF] text-xs font-mono hover:bg-[#2DD4BF] hover:text-black transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <Glasses className="w-3.5 h-3.5" />
+            <span>LOUPE {loupeZoom}×</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playHerbariumAudio('leaf', !isMuted);
+            }}
+            className="w-9 h-9 rounded-xl bg-[#0D382B] border border-[#2DD4BF]/30 text-[#2DD4BF] flex items-center justify-center hover:bg-[#2DD4BF] hover:text-black transition cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
-      {/* MAIN STAGE */}
+      {/* MAIN HERBARIUM STAGE */}
       <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
-        {/* HERO */}
         <section className="text-center space-y-6 pt-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2DD4BF]/15 border border-[#2DD4BF]/40 text-[#2DD4BF] text-xs font-mono"
           >
-            <Leaf className="w-3.5 h-3.5" /> HERBARIUM FOLIO · HIGGSFIELD MCF
+            <Bookmark className="w-3.5 h-3.5" /> BOTANICAL SPECIMEN FOLIO · PRESSED CELLULAR VENATION
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-white drop-shadow-[0_2px_30px_rgba(45,212,191,0.4)]"
+            className="text-4xl sm:text-7xl font-bold tracking-tight text-[#CCFBF1] drop-shadow-[0_2px_30px_rgba(45,212,191,0.35)]"
           >
-            Botanical <span class="text-[#2DD4BF] italic">Herbarium</span>
+            The Botanical <span className="text-[#2DD4BF] italic">Herbarium</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-teal-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+            className="text-sm sm:text-base text-teal-200/80 max-w-2xl mx-auto leading-relaxed"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* PROJECTS */}
-        <section className="space-y-8">
+        {/* PRESSED SPECIMENS (PROJECTS) */}
+        <section className="space-y-6">
           <div className="flex items-center justify-between border-b border-[#2DD4BF]/30 pb-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Leaf className="w-5 h-5 text-[#2DD4BF]" /> Featured Projects & Systems
+            <h3 className="text-xl font-bold text-[#CCFBF1] flex items-center gap-2">
+              <Leaf className="w-5 h-5 text-[#2DD4BF]" /> Pressed Botanical Folios
             </h3>
-            <span className="text-xs text-[#2DD4BF] font-mono">CLICK TO INSPECT</span>
+            <span className="text-xs text-[#2DD4BF] font-mono">EXAMINE TAXONOMY</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {projects.map((item) => (
+            {herbariumSpecimens.map((spec) => (
               <motion.div
-                key={item.id}
+                key={spec.id}
                 whileHover={{ y: -4, borderColor: "#2DD4BF" }}
                 onClick={() => {
-                  setSelectedNode(item);
-                  playAudio('radar', isMuted);
+                  setSelectedSpecimen(spec);
+                  playHerbariumAudio('press', isMuted);
                 }}
-                className="p-6 rounded-2xl bg-[#052821]/90 border border-[#2DD4BF]/25 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
+                className="p-6 rounded-3xl bg-[#08291F]/80 border border-[#2DD4BF]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_30px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
                 <div className="flex justify-between items-center text-[10px] text-[#2DD4BF] font-mono mb-3">
-                  <span className="px-2 py-0.5 rounded bg-[#2DD4BF]/15 border border-[#2DD4BF]/40">{item.badge}</span>
+                  <span className="px-2.5 py-1 rounded-full bg-[#2DD4BF]/20 border border-[#2DD4BF]/40">{spec.catalog}</span>
+                  <span className="text-teal-300/80">{spec.genus}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-white group-hover:text-[#2DD4BF] transition mb-2">
-                  {item.title}
+                <h4 className="text-xl font-bold text-[#CCFBF1] group-hover:text-[#2DD4BF] transition mb-2">
+                  {spec.title}
                 </h4>
 
-                <p className="text-xs text-teal-200/70 font-sans leading-relaxed mb-4">
-                  {item.desc}
+                <p className="text-xs text-teal-200/70 leading-relaxed mb-4">
+                  {spec.desc}
                 </p>
 
                 <div className="flex flex-wrap gap-2 mb-4 font-mono">
-                  {item.tech.map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#021612] text-[#2DD4BF] border border-[#2DD4BF]/20">
+                  {spec.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2.5 py-1 rounded-lg bg-[#051A14] text-[#2DD4BF] border border-[#2DD4BF]/20">
                       {t}
                     </span>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs text-[#2DD4BF] font-mono group-hover:underline">
-                  <span>SURVEY SYSTEM NODE</span>
+                  <span>VIEW TAXONOMIC DETAILS</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
@@ -342,76 +283,52 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
           </div>
         </section>
 
-        {/* EXPERIENCE */}
-        <section className="space-y-6">
-          <div className="border-b border-[#2DD4BF]/30 pb-4">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#2DD4BF]" /> Career Journey & Telemetry
-            </h3>
-          </div>
-
-          <div className="space-y-4">
-            {careerTimeline.map((item, i) => (
-              <div key={i} className="p-5 rounded-2xl bg-[#052821]/90 border border-[#2DD4BF]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
-                <div className="space-y-1">
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#2DD4BF]/15 text-[#2DD4BF] font-mono border border-[#2DD4BF]/40">
-                    {item.period}
-                  </span>
-                  <h4 className="text-base font-bold text-white">{item.role}</h4>
-                  <p className="text-xs text-teal-300 font-sans">{item.company}</p>
-                  <p className="text-xs text-teal-200/70 font-sans">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* CONTACT DISPATCH */}
-        <section className="p-8 rounded-3xl bg-[#052821]/90 border border-[#2DD4BF]/40 shadow-[0_0_40px_rgba(45,212,191,0.4)] space-y-6">
+        {/* HERBARIUM DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#08291F]/90 border border-[#2DD4BF]/40 shadow-[0_0_40px_rgba(45,212,191,0.2)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-white">Transmit Encrypted Dispatch</h3>
-            <p className="text-xs text-teal-200/70 font-sans">
+            <h3 className="text-2xl font-bold text-[#CCFBF1]">Request Botanical Specimen Catalog</h3>
+            <p className="text-xs text-teal-200/80">
               Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-[#2DD4BF]/15 border border-[#2DD4BF]/40 text-center space-y-2">
+            <div className="p-6 rounded-2xl bg-[#2DD4BF]/20 border border-[#2DD4BF] text-center space-y-2">
               <CheckCircle2 className="w-8 h-8 text-[#2DD4BF] mx-auto" />
-              <p className="font-bold text-white">Dispatch Inscribed in System Grid</p>
-              <p className="text-xs text-[#2DD4BF] font-mono">Prajwal DL will respond promptly.</p>
+              <p className="font-bold text-[#CCFBF1]">Specimen Tagged & Preserved in Herbarium</p>
+              <p className="text-xs text-teal-300 font-mono">Prajwal DL will inspect your accession request.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playAudio('chime', isMuted);
+                playHerbariumAudio('press', isMuted);
               }}
-              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
+              className="space-y-4 max-w-xl mx-auto text-xs"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#2DD4BF] font-mono mb-1">OPERATOR CALLSIGN</label>
-                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#021612] border border-[#2DD4BF]/30 text-white focus:outline-none focus:border-[#2DD4BF]" />
+                  <label className="block text-[#2DD4BF] font-mono mb-1">CURATOR NAME</label>
+                  <input required defaultValue="Naturalist Scholar" className="w-full px-4 py-2.5 rounded-xl bg-[#051A14] border border-[#2DD4BF]/30 text-[#CCFBF1] focus:outline-none focus:border-[#2DD4BF]" />
                 </div>
                 <div>
-                  <label className="block text-[#2DD4BF] font-mono mb-1">CORRESPONDENCE EMAIL</label>
-                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#021612] border border-[#2DD4BF]/30 text-white focus:outline-none focus:border-[#2DD4BF]" />
+                  <label className="block text-[#2DD4BF] font-mono mb-1">ACCESSION EMAIL</label>
+                  <input required type="email" defaultValue="curator@herbarium.space" className="w-full px-4 py-2.5 rounded-xl bg-[#051A14] border border-[#2DD4BF]/30 text-[#CCFBF1] focus:outline-none focus:border-[#2DD4BF]" />
                 </div>
               </div>
               <div>
-                <label className="block text-[#2DD4BF] font-mono mb-1">DISPATCH INQUIRY</label>
-                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#021612] border border-[#2DD4BF]/30 text-white focus:outline-none focus:border-[#2DD4BF]" />
+                <label className="block text-[#2DD4BF] font-mono mb-1">BOTANICAL PROPOSAL</label>
+                <textarea rows={3} required defaultValue="Requesting organic mint/teal full-stack architecture with taxonomy precision and sub-100ms response." className="w-full px-4 py-2.5 rounded-xl bg-[#051A14] border border-[#2DD4BF]/30 text-[#CCFBF1] focus:outline-none focus:border-[#2DD4BF]" />
               </div>
               <button type="submit" className="w-full py-3 rounded-xl bg-[#2DD4BF] text-black font-mono font-bold text-xs hover:bg-[#5EEAD4] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(45,212,191,0.4)]">
-                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
+                <Send className="w-4 h-4" /> TRANSMIT BOTANICAL ACCESSION
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-[#2DD4BF]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
-            <span>LOCATION: MANGALORE, INDIA · 575001</span>
+          <div className="pt-4 border-t border-[#2DD4BF]/30 flex flex-wrap justify-between items-center text-[11px] text-teal-300/70 font-mono">
+            <span>HERBARIUM: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
               <a href={github} target="_blank" rel="noreferrer" className="text-[#2DD4BF] hover:underline">GITHUB</a>
               <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#2DD4BF] hover:underline">LINKEDIN</a>
@@ -421,31 +338,31 @@ export default function AuroraMintTheme({ data }: ThemeRendererProps) {
         </section>
       </main>
 
-      {/* NODE MODAL */}
+      {/* SPECIMEN MODAL */}
       <AnimatePresence>
-        {selectedNode && (
+        {selectedSpecimen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#052821] border-2 border-[#2DD4BF] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(45,212,191,0.4)] relative space-y-6">
-              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#2DD4BF]/15 text-[#2DD4BF] hover:bg-[#2DD4BF] hover:text-black flex items-center justify-center transition cursor-pointer">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#08291F] border-2 border-[#2DD4BF] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(45,212,191,0.5)] relative space-y-6">
+              <button onClick={() => { setSelectedSpecimen(null); playHerbariumAudio('leaf', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#2DD4BF]/20 text-[#2DD4BF] hover:bg-[#2DD4BF] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
               <div className="space-y-1 font-mono">
-                <span className="text-[10px] px-2 py-0.5 rounded bg-[#2DD4BF]/15 text-[#2DD4BF] border border-[#2DD4BF]/40">{selectedNode.badge}</span>
-                <h3 className="text-2xl font-bold text-white font-serif">{selectedNode.title}</h3>
+                <span className="text-[10px] px-2.5 py-1 rounded-full bg-[#2DD4BF]/20 text-[#2DD4BF] border border-[#2DD4BF]/40">{selectedSpecimen.catalog}</span>
+                <h3 className="text-2xl font-bold text-[#CCFBF1]">{selectedSpecimen.title}</h3>
               </div>
-              <p className="text-sm text-teal-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
-              <div className="p-3.5 rounded-xl bg-[#021612] border border-[#2DD4BF]/20 text-xs text-[#2DD4BF] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <p className="text-sm text-teal-200/80 leading-relaxed">{selectedSpecimen.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#051A14] border border-[#2DD4BF]/30 text-xs text-[#2DD4BF] font-mono">★ HIGHLIGHT: {selectedSpecimen.highlight}</div>
               <div className="space-y-2 font-mono">
-                <span className="text-xs text-slate-400">TECH TOKENS</span>
+                <span className="text-xs text-teal-300/70">CELLULAR TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedNode.tech.map((t: string) => (
-                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#021612] text-white border border-[#2DD4BF]/20">{t}</span>
+                  {selectedSpecimen.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#0D382B] text-[#CCFBF1] border border-[#2DD4BF]/30">{t}</span>
                   ))}
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#2DD4BF] text-black font-bold font-mono text-xs text-center hover:bg-[#5EEAD4] transition flex items-center justify-center gap-1.5">
-                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
+                <a href={selectedSpecimen.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#2DD4BF] text-black font-bold font-mono text-xs text-center hover:bg-[#5EEAD4] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> ACCESS SPECIMEN
                 </a>
               </div>
             </motion.div>
