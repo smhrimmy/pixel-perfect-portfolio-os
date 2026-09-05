@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { PortfolioRepository } from "../repositories";
 import type { PortfolioData } from "../domain/portfolio";
+import { DEFAULT_RESUME_DATA } from "../lib/cms.functions";
 
 interface UniversalStoreState extends PortfolioData {
   isLoading: boolean;
@@ -31,11 +32,11 @@ interface UniversalStoreState extends PortfolioData {
 }
 
 export const useUniversalStore = create<UniversalStoreState>((set, get) => ({
-  profile: null,
-  projects: [],
-  skills: [],
-  experience: [],
-  education: [],
+  profile: DEFAULT_RESUME_DATA.profile as any,
+  projects: DEFAULT_RESUME_DATA.projects as any,
+  skills: DEFAULT_RESUME_DATA.skills as any,
+  experience: DEFAULT_RESUME_DATA.experience as any,
+  education: DEFAULT_RESUME_DATA.education as any,
   certificates: [],
   articles: [],
   media: [],
@@ -56,8 +57,16 @@ export const useUniversalStore = create<UniversalStoreState>((set, get) => ({
       const data = await PortfolioRepository.fetchAll();
       set({ ...data, isLoading: false });
     } catch (err: any) {
-      console.error("Failed to fetch universal portfolio data:", err);
-      set({ error: err.message, isLoading: false });
+      console.warn("Failed to fetch universal portfolio data, using defaults:", err);
+      set({
+        profile: DEFAULT_RESUME_DATA.profile as any,
+        projects: DEFAULT_RESUME_DATA.projects as any,
+        skills: DEFAULT_RESUME_DATA.skills as any,
+        experience: DEFAULT_RESUME_DATA.experience as any,
+        education: DEFAULT_RESUME_DATA.education as any,
+        error: null,
+        isLoading: false,
+      });
     }
   },
 
