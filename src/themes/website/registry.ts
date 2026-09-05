@@ -11,6 +11,14 @@ export interface ThemeMeta {
 
 export const websiteThemes: ThemeMeta[] = [
   {
+    id: "the-heightfield",
+    name: "The 3D Heightfield Matrix (Flagship Mesh)",
+    category: "3D Topographical Heightfield",
+    description: "Real-time 3D procedural vertex heightfield mesh with dynamic elevation deformation, MCF matrix tokens, and spatial audio.",
+    component: React.lazy(() => import("./the-heightfield")),
+  },
+
+  {
     id: "the-hypercube",
     name: "The 4D Hypercube (Spatial 4D)",
     category: "4D Scrollable Dimension",
@@ -165,6 +173,10 @@ export const WEBSITE_THEMES = websiteThemes;
 
 // Alias mapping for backward compatibility with database records and legacy URLs
 export const THEME_ALIAS_MAP: Record<string, string> = {
+  "heightfield": "the-heightfield",
+  "highfield": "the-heightfield",
+  "higgfiled": "the-heightfield",
+  "the-highfield": "the-heightfield",
   "galaxy-cosmos": "the-observatory",
   "playful-3d": "the-toy-chest",
   "noir-aurora": "the-reservoir",
