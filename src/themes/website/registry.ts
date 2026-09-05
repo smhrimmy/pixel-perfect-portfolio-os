@@ -11,6 +11,13 @@ export interface ThemeMeta {
 
 export const websiteThemes: ThemeMeta[] = [
   {
+    id: "the-hypercube",
+    name: "The 4D Hypercube (Spatial 4D)",
+    category: "4D Scrollable Dimension",
+    description: "4D tesseract manifold with real-time Euclidean rotation, scroll-driven dimensional warping, and quantum telemetry uplink.",
+    component: React.lazy(() => import("./the-hypercube")),
+  },
+  {
     id: "the-workshop",
     name: "The Workshop (Flagship 3D)",
     category: "3D Physical Metaphor",
