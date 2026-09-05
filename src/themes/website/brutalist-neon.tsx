@@ -1,209 +1,406 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, X, Printer, ArrowUpRight } from "lucide-react";
+import {
+  Printer,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  X,
+  ArrowUpRight,
+  ExternalLink,
+  Send,
+  CheckCircle2,
+  Stamp,
+  Layers,
+  Zap
+} from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Button } from "@/components/ui/button";
 
-
-function playSoundEffect(type: 'click' | 'stamp' | 'page' | 'water' | 'coin' | 'clay', isMuted: boolean) {
+function playPrintSound(type: 'press' | 'ink' | 'roller' | 'stamp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    const now = ctx.currentTime;
 
-    if (type === 'stamp') {
+    if (type === 'press') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.linearRampToValueAtTime(40, now + 0.3);
+      gain.gain.setValueAtTime(0.18, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else if (type === 'stamp') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(150, now);
+      gain.gain.setValueAtTime(0.15, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      osc.start(now);
+      osc.stop(now + 0.15);
+    } else {
       osc.type = 'square';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-      gain.gain.setValueAtTime(0.2, now);
+      osc.frequency.setValueAtTime(300, now);
+      gain.gain.setValueAtTime(0.06, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
       osc.start(now);
       osc.stop(now + 0.1);
-    } else if (type === 'page') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.start(now);
-      osc.stop(now + 0.08);
-    } else if (type === 'coin') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(987.77, now);
-      osc.frequency.setValueAtTime(1318.51, now + 0.08);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      osc.start(now);
-      osc.stop(now + 0.25);
-    } else if (type === 'water') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(450, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      osc.start(now);
-      osc.stop(now + 0.12);
-    } else {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(600, now);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-      osc.start(now);
-      osc.stop(now + 0.05);
     }
   } catch {}
 }
 
-
 export default function ThePrintShop({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
-  const links = (data as any)?.socialLinks || (data as any)?.links || {};
-  const rawExperience = (data as any)?.experience || [];
-  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
-
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.";
-  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || links?.phone || "+918105561638";
+  const bio = profile?.bio || "Full Stack Developer & Master Printer stamping high-impact brutalist digital interfaces, heavy-duty backend architectures, and sub-100ms web systems.";
+  const email = profile?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || "+91 8105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const website = profile?.website || links?.website || "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
+  const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
 
-  const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [activePrint, setActivePrint] = useState<any | null>(null);
+  const [selectedPlate, setSelectedPlate] = useState<any | null>(null);
+  const [formSent, setFormSent] = useState(false);
+  const [impressionsCount, setImpressionsCount] = useState(1402);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // 3D Letterpress Ink Viscosity & Roller Press Canvas
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 1800);
-    return () => clearTimeout(t);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    let time = 0;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const render = () => {
+      time += 0.02;
+      ctx.fillStyle = '#0D0D0D';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 3D Cylinder Press Shimmer & Ink Heightmap
+      const cols = 20;
+      const rows = 14;
+      const cw = canvas.width / cols;
+      const ch = canvas.height / rows;
+
+      ctx.lineWidth = 1.5;
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c <= cols; c++) {
+          const x = c * cw;
+          const y = r * ch;
+          const inkWave = Math.sin(c * 0.4 + time * 2) * 8 + Math.cos(r * 0.3 + time) * 6;
+          const px = x;
+          const py = y + inkWave;
+
+          if (c === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = r % 2 === 0 ? 'rgba(255, 230, 0, 0.08)' : 'rgba(255, 0, 128, 0.06)';
+        ctx.stroke();
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animId);
+    };
   }, []);
 
-  const displayProjects = rawProjects.length > 0 ? rawProjects : [
-    { title: "Portfolio OS · 20 Tactile Themes", category: "Full Stack", desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine." },
-    { title: "Praxel Space Cloud Platform", category: "Infrastructure", desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal." },
-    { title: "Vitvara Scalable Web App", category: "Frontend", desc: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
-    { title: "Custom Client Platforms", category: "Full Stack", desc: "Delivered bespoke performant web applications and custom CMS solutions." },
+  const plates = [
+    {
+      id: "plate-1",
+      edition: "EDITION 01/2026",
+      title: "Portfolio OS Letterpress",
+      ink: "PANTONE NEON YELLOW",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "plate-2",
+      edition: "EDITION 02/2025",
+      title: "Praxel Space Cloud Press",
+      ink: "PANTONE MAGENTA 806",
+      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "plate-3",
+      edition: "EDITION 03/2024",
+      title: "Vitvara Web Imprint",
+      ink: "PANTONE CYAN 300",
+      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "plate-4",
+      edition: "EDITION 04/2023",
+      title: "Bespoke Enterprise Editions",
+      ink: "PANTONE REFLEX BLACK",
+      desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
+      tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
+      liveUrl: "https://praxel.space/",
+    },
   ];
 
-  const displayExperience = rawExperience.length > 0 ? rawExperience : [
-    { company: "Unifycx", role: "Web Advisor", startDate: "Jun 2025", endDate: "Present", summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panels." },
-    { company: "Freelancer", role: "Full Stack Developer", startDate: "Dec 2024", endDate: "Jun 2025", summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies." },
-    { company: "Glowtouch Technologies", role: "Junior Support Engineer", startDate: "Aug 2024", endDate: "Dec 2024", summary: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues." },
-    { company: "Vitvara Technologies", role: "Web Developer Intern", startDate: "Jan 2024", endDate: "May 2024", summary: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
-  ];
+  const pullLever = () => {
+    setImpressionsCount(c => c + 1);
+    playPrintSound('press', isMuted);
+  };
 
   return (
-    <div className="min-h-screen bg-[#8F8B85] text-[#111111] font-sans selection:bg-[#C8321F] selection:text-white">
-      <a href="#main-content" className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#C8321F] text-white font-bold text-xs">
-        Skip 3D experience
-      </a>
+    <div className="min-h-screen bg-[#0D0D0D] text-[#FFE600] font-mono relative selection:bg-[#FFE600] selection:text-black overflow-x-hidden">
+      {/* 3D Letterpress Canvas */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 
-      {/* LOADER: Press Stamp */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#8F8B85] flex flex-col items-center justify-center p-6 text-center">
-            <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.2, repeat: Infinity }} className="p-4 bg-[#111111] text-[#FAF7F0] rounded shadow-[6px_6px_0px_#C8321F]">
-              <Printer className="w-10 h-10" />
-            </motion.div>
-            <h3 className="mt-4 font-black uppercase text-xl tracking-tighter">STAMPING FRESH LETTERPRESS...</h3>
-            <button onClick={() => setLoading(false)} className="mt-3 text-xs underline font-mono">[SKIP STAMP]</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <header className="border-b-4 border-[#111111] bg-[#FAF7F0] sticky top-0 z-40">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <span className="font-black text-lg tracking-tighter uppercase">{candidateName} // PRINT WORKSHOP</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setIsMuted(!isMuted);
-                playSoundEffect("stamp", !isMuted);
-              }}
-              className="h-8 w-8 border-2 border-[#111111] bg-[#FAF7F0] flex items-center justify-center shadow-[2px_2px_0px_#111111]"
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
-            <Button asChild size="sm" className="bg-[#C8321F] text-white font-black text-xs uppercase border-2 border-[#111111] shadow-[3px_3px_0px_#111111]">
-              <a href="#contact">Press Ink Stamp</a>
-            </Button>
+      {/* HEADER */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#141414]/90 border-b-2 border-[#FFE600] backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#FFE600] text-black font-black flex items-center justify-center text-lg">
+            <Printer className="w-6 h-6" />
           </div>
+          <div>
+            <h1 className="text-sm font-black tracking-widest text-white uppercase flex items-center gap-2">
+              <span>{candidateName}</span>
+              <span className="text-[10px] px-2 py-0.5 bg-[#FFE600] text-black font-bold">PRINT SHOP</span>
+            </h1>
+            <p className="text-[10px] text-zinc-400">{location} · IMPRESSIONS: {impressionsCount}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={pullLever}
+            className="px-3.5 py-1.5 bg-[#FFE600] text-black font-black text-xs hover:bg-white transition flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_0px_#fff]"
+          >
+            <Stamp className="w-3.5 h-3.5" /> PULL PRESS LEVER
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playPrintSound('stamp', !isMuted);
+            }}
+            className="w-9 h-9 bg-black border border-[#FFE600] text-[#FFE600] flex items-center justify-center hover:bg-[#FFE600] hover:text-black transition cursor-pointer"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-zinc-600" /> : <Volume2 className="w-4 h-4 text-[#FFE600]" />}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        <section className="p-8 border-4 border-[#111111] bg-[#FAF7F0] shadow-[8px_8px_0px_#111111] space-y-4">
-          <div className="text-xs font-black text-[#C8321F] uppercase tracking-widest">[LETTERPRESS PROOF · NO NEON]</div>
-          <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight">{candidateName}</h1>
-          <p className="text-sm font-medium leading-relaxed max-w-2xl">{bio}</p>
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
+        <section className="p-8 bg-[#141414] border-3 border-[#FFE600] shadow-[8px_8px_0px_#FFE600] space-y-4">
+          <div className="flex justify-between items-center text-xs text-zinc-400 border-b border-zinc-800 pb-3">
+            <span className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-[#FFE600]" /> HEAVY LETTERPRESS WORKSHOP</span>
+            <span className="text-[#FFE600] font-black">HIGH-PRESSURE INK RELIEF</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-6xl font-black text-white tracking-tighter uppercase">
+            STAMPING RAW <span className="text-[#FFE600]">PERFORMANCE</span>
+          </h2>
+
+          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-2xl">
+            {bio}
+          </p>
         </section>
 
-        {/* PROJECTS */}
+        {/* PRINTED PLATES */}
         <section className="space-y-6">
-          <h2 className="text-2xl font-black uppercase tracking-tight">PULLED PRINTS // CASE STUDIES</h2>
+          <div className="flex justify-between items-center text-xs font-black text-zinc-400 border-b-2 border-zinc-800 pb-3">
+            <span>EMBOSSED RELIEF PLATES</span>
+            <span>PRESS TO INSPECT PROOF</span>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {displayProjects.map((proj: any, idx: number) => (
-              <div
-                key={idx}
+            {plates.map((p) => (
+              <motion.div
+                key={p.id}
+                whileHover={{ y: -4 }}
                 onClick={() => {
-                  setActivePrint(proj);
-                  playSoundEffect("stamp", isMuted);
+                  setSelectedPlate(p);
+                  playPrintSound('stamp', isMuted);
                 }}
-                className="p-6 border-4 border-[#111111] bg-[#FAF7F0] shadow-[6px_6px_0px_#111111] hover:shadow-none hover:translate-x-[6px] hover:translate-y-[6px] transition-all cursor-pointer space-y-3"
+                className="p-6 bg-[#141414] border-2 border-[#FFE600] shadow-[5px_5px_0px_#FFE600] cursor-pointer transition group"
               >
-                <div className="flex justify-between font-black text-xs text-[#C8321F]">
-                  <span>PRINT #{idx + 1}</span>
-                  <span>[PULL LEVER]</span>
+                <div className="flex justify-between items-center text-[10px] text-zinc-400 mb-3">
+                  <span className="font-black text-[#FFE600]">{p.edition}</span>
+                  <span className="px-2 py-0.5 bg-black border border-zinc-700 text-white">{p.ink}</span>
                 </div>
-                <h3 className="text-xl font-black uppercase">{proj.title}</h3>
-                <p className="text-xs leading-relaxed">{proj.desc}</p>
-              </div>
+
+                <h4 className="text-xl font-black text-white group-hover:text-[#FFE600] transition mb-2">
+                  {p.title}
+                </h4>
+
+                <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                  {p.desc}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {p.tech.map((t) => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 bg-black text-[#FFE600] border border-zinc-800">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-black text-[#FFE600] group-hover:underline">
+                  <span>INSPECT PROOF PRINT</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
-        {/* EXPERIENCE */}
-        <section className="space-y-6">
-          <h2 className="text-2xl font-black uppercase tracking-tight">WORKSHOP LOGS // CAREER</h2>
-          <div className="space-y-4">
-            {displayExperience.map((exp: any, idx: number) => (
-              <div key={idx} className="p-5 border-4 border-[#111111] bg-[#FAF7F0] shadow-[4px_4px_0px_#111111] flex flex-col sm:flex-row justify-between text-xs font-medium">
+        {/* PRINT SHOP CONTACT */}
+        <section className="p-8 bg-[#141414] border-3 border-[#FFE600] shadow-[8px_8px_0px_#FFE600] space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl font-black text-white uppercase">ORDER BESPOKE PRESS RUN</h3>
+            <p className="text-xs text-zinc-400">
+              Submit proofing request directly to Prajwal DL ({email}).
+            </p>
+          </div>
+
+          {formSent ? (
+            <div className="p-4 bg-black border-2 border-[#FFE600] text-center space-y-1">
+              <CheckCircle2 className="w-6 h-6 mx-auto text-[#FFE600]" />
+              <p className="font-black text-xs text-white">PROOF RUN QUEUED FOR IMPRESSION</p>
+              <p className="text-[10px] text-zinc-400">Prajwal DL will inspect your proof request.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFormSent(true);
+                playPrintSound('press', isMuted);
+              }}
+              className="space-y-4 text-xs font-bold"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <span className="font-black uppercase text-sm">{exp.role}</span> @ {exp.company}
-                  <p className="mt-1">{exp.summary}</p>
+                  <label className="block text-zinc-400 text-[10px] mb-1">CLIENT NAME</label>
+                  <input
+                    required
+                    defaultValue="Print Collector"
+                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
+                  />
                 </div>
-                <span className="font-black text-[#C8321F] shrink-0 mt-2 sm:mt-0">{exp.startDate} – {exp.endDate || "Present"}</span>
+                <div>
+                  <label className="block text-zinc-400 text-[10px] mb-1">CLIENT EMAIL</label>
+                  <input
+                    required
+                    type="email"
+                    defaultValue="client@printshop.art"
+                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+              <div>
+                <label className="block text-zinc-400 text-[10px] mb-1">PRINT SPECIFICATIONS</label>
+                <textarea
+                  rows={3}
+                  required
+                  defaultValue="Requesting full-stack architecture design with bold brutalist typography and high-speed delivery."
+                  className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#FFE600] text-black font-black text-xs hover:bg-white transition flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_#fff]"
+              >
+                <Send className="w-3.5 h-3.5" /> STAMP PROOF ORDER
+              </button>
+            </form>
+          )}
 
-        <section id="contact" className="p-8 border-4 border-[#111111] bg-[#FAF7F0] shadow-[8px_8px_0px_#111111] text-center space-y-4">
-          <h2 className="text-3xl font-black uppercase">RUBBER STAMP TRANSMISSION</h2>
-          <p className="text-xs font-bold">{email} · {phone}</p>
-          <a href={`mailto:${email}`} className="inline-block px-8 py-3 bg-[#C8321F] text-white font-black text-sm uppercase border-2 border-[#111111] shadow-[4px_4px_0px_#111111]">
-            STAMP &amp; SUBMIT &gt;&gt;
-          </a>
+          <div className="pt-4 border-t border-zinc-800 flex flex-wrap justify-between items-center text-[10px] text-zinc-400">
+            <span>PRESS SHOP: MANGALORE, KARNATAKA</span>
+            <div className="flex gap-4">
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">LINKEDIN</a>
+              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">PRAXEL.SPACE</a>
+            </div>
+          </div>
         </section>
       </main>
 
+      {/* PLATE MODAL */}
       <AnimatePresence>
-        {activePrint && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-            <div className="max-w-md w-full border-4 border-[#111111] bg-[#FAF7F0] p-6 space-y-4 shadow-[8px_8px_0px_#C8321F] relative">
-              <button onClick={() => setActivePrint(null)} className="absolute top-4 right-4 font-black">
-                <X className="w-5 h-5" />
+        {selectedPlate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#141414] border-3 border-[#FFE600] p-6 sm:p-8 max-w-lg w-full shadow-[10px_10px_0px_#FFE600] relative space-y-6"
+            >
+              <button
+                onClick={() => {
+                  setSelectedPlate(null);
+                  playPrintSound('stamp', isMuted);
+                }}
+                className="absolute top-5 right-5 w-8 h-8 bg-black text-[#FFE600] border border-[#FFE600] hover:bg-[#FFE600] hover:text-black flex items-center justify-center transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
               </button>
-              <h3 className="text-2xl font-black uppercase">{activePrint.title}</h3>
-              <p className="text-xs leading-relaxed font-medium">{activePrint.desc}</p>
-              <Button size="sm" onClick={() => setActivePrint(null)} className="bg-[#111111] text-white font-black text-xs uppercase w-full">
-                Close Print
-              </Button>
-            </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-black px-2 py-0.5 bg-[#FFE600] text-black">
+                  {selectedPlate.edition} · {selectedPlate.ink}
+                </span>
+                <h3 className="text-2xl font-black text-white">{selectedPlate.title}</h3>
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                {selectedPlate.desc}
+              </p>
+
+              <div className="space-y-2">
+                <span className="text-xs text-[#FFE600]">TYPOGRAPHIC SPECIFICATIONS</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedPlate.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 bg-black text-[#FFE600] border border-zinc-700">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <a
+                  href={selectedPlate.liveUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 py-2.5 bg-[#FFE600] text-black font-black text-xs text-center hover:bg-white transition flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#fff]"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> VIEW LIVE EDITION
+                </a>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

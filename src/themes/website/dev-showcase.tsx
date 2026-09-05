@@ -1,198 +1,404 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, X, Wrench, Gauge } from "lucide-react";
+import {
+  Wrench,
+  Gauge,
+  Sparkles,
+  Volume2,
+  VolumeX,
+  X,
+  ArrowUpRight,
+  ExternalLink,
+  Send,
+  CheckCircle2,
+  Cpu,
+  Zap,
+  Activity
+} from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Button } from "@/components/ui/button";
 
-
-function playSoundEffect(type: 'trophy' | 'engine' | 'desk' | 'film', isMuted: boolean) {
+function playGarageSound(type: 'turbo' | 'ratchet' | 'rev' | 'ignite', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    const now = ctx.currentTime;
 
-    if (type === 'trophy') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1046.5, now);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-      osc.start(now);
-      osc.stop(now + 0.2);
-    } else if (type === 'engine') {
+    if (type === 'turbo') {
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(80, now);
-      osc.frequency.linearRampToValueAtTime(160, now + 0.15);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.start(now);
-      osc.stop(now + 0.15);
-    } else if (type === 'film') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(300, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
-      osc.start(now);
-      osc.stop(now + 0.04);
-    } else {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.setValueAtTime(200, now);
+      osc.frequency.exponentialRampToValueAtTime(1800, now + 0.35);
       gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.start(now);
-      osc.stop(now + 0.06);
+      osc.stop(now + 0.45);
+    } else if (type === 'ratchet') {
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(800, now);
+      gain.gain.setValueAtTime(0.06, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } else {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(300, now + 0.2);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
     }
   } catch {}
 }
 
-
 export default function TheMechanicsGarage({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
-  const links = (data as any)?.socialLinks || (data as any)?.links || {};
-  const rawExperience = (data as any)?.experience || [];
-  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
-
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.";
-  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || links?.phone || "+918105561638";
+  const bio = profile?.bio || "Master Diagnostic Mechanic tuning high-horsepower digital engines, automated DNS turbochargers, and sub-100ms web systems.";
+  const email = profile?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || "+91 8105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const website = profile?.website || links?.website || "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
+  const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
 
-  const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [activePart, setActivePart] = useState<any | null>(null);
+  const [selectedEngine, setSelectedEngine] = useState<any | null>(null);
+  const [formSent, setFormSent] = useState(false);
+  const [rpmGauge, setRpmGauge] = useState(7200);
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // 3D Engine Block Wireframe & Tachometer Canvas
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(t);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    let time = 0;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const render = () => {
+      time += 0.03;
+      ctx.fillStyle = '#080808';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height * 0.42;
+
+      // 3D Crankshaft & Cylinder Oscillations
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.25)';
+      ctx.lineWidth = 2;
+
+      const cylinders = 6;
+      const w = 60;
+      for (let i = 0; i < cylinders; i++) {
+        const x = cx + (i - (cylinders - 1) / 2) * (w + 16);
+        const stroke = Math.sin(time * 3 + i * (Math.PI / 3)) * 30;
+
+        // Cylinder Sleeve
+        ctx.strokeRect(x - w / 2, cy - 50, w, 100);
+
+        // Piston Head
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.4)';
+        ctx.fillRect(x - w / 2 + 4, cy - 40 + stroke, w - 8, 20);
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      window.removeEventListener('resize', resize);
+      cancelAnimationFrame(animId);
+    };
   }, []);
 
-  const displayProjects = rawProjects.length > 0 ? rawProjects : [
-    { title: "Portfolio OS · 20 Tactile Themes", category: "Full Stack", desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine." },
-    { title: "Praxel Space Cloud Platform", category: "Infrastructure", desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal." },
-    { title: "Vitvara Scalable Web App", category: "Frontend", desc: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
-    { title: "Custom Client Platforms", category: "Full Stack", desc: "Delivered bespoke performant web applications and custom CMS solutions." },
-  ];
-
-  const displayExperience = rawExperience.length > 0 ? rawExperience : [
-    { company: "Unifycx", role: "Web Advisor", startDate: "Jun 2025", endDate: "Present", summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panels." },
-    { company: "Freelancer", role: "Full Stack Developer", startDate: "Dec 2024", endDate: "Jun 2025", summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies." },
-    { company: "Glowtouch Technologies", role: "Junior Support Engineer", startDate: "Aug 2024", endDate: "Dec 2024", summary: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues." },
-    { company: "Vitvara Technologies", role: "Web Developer Intern", startDate: "Jan 2024", endDate: "May 2024", summary: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+  const engines = [
+    {
+      id: "eng-1",
+      bay: "SERVICE BAY 01 / V12 TWIN-TURBO",
+      title: "Portfolio OS Engine",
+      boost: "24.5 PSI BOOST",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "eng-2",
+      bay: "SERVICE BAY 02 / TURBO INTERCOOLER",
+      title: "Praxel Space Cloud Dyno",
+      boost: "32.0 PSI BOOST",
+      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "eng-3",
+      bay: "SERVICE BAY 03 / DIRECT INJECTION",
+      title: "Vitvara High-RPM Module",
+      boost: "18.2 PSI BOOST",
+      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
+      liveUrl: "https://praxel.space/",
+    },
+    {
+      id: "eng-4",
+      bay: "SERVICE BAY 04 / CUSTOM RACE-SPEC",
+      title: "Enterprise Client Powertrain",
+      boost: "28.0 PSI BOOST",
+      desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
+      tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
+      liveUrl: "https://praxel.space/",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-[#14181C] text-[#E0E6ED] font-mono selection:bg-[#E85D35] selection:text-white">
-      <a href="#main-content" className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#E85D35] text-white font-bold text-xs rounded">
-        Skip 3D experience
-      </a>
+    <div className="min-h-screen bg-[#080808] text-[#FCA5A5] font-mono relative selection:bg-[#EF4444] selection:text-white overflow-x-hidden">
+      {/* 3D Engine Dyno Canvas */}
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
 
-      {/* LOADER: Hydraulic Lift */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#0C1014] flex flex-col items-center justify-center p-6 text-center text-[#E0E6ED]">
-            <Gauge className="w-12 h-12 text-[#E85D35] animate-spin" />
-            <h3 className="mt-4 text-xl font-bold uppercase">Raising Hydraulic Service Bay Lift...</h3>
-            <button onClick={() => setLoading(false)} className="mt-3 text-xs underline text-[#7B8B9B]">[Skip]</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <header className="border-b border-[#2A3440] bg-[#182026]/95 sticky top-0 z-40 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <span className="font-bold text-xs uppercase tracking-widest text-[#E85D35]">{candidateName} // SERVICE GARAGE</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setIsMuted(!isMuted);
-                playSoundEffect("engine", !isMuted);
-              }}
-              className="h-8 w-8 rounded border border-[#2A3440] text-[#E0E6ED] flex items-center justify-center hover:bg-[#2A3440]"
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
-            <Button asChild size="sm" className="bg-[#E85D35] text-white font-bold text-xs rounded hover:bg-[#D44A22]">
-              <a href="#clipboard">Service Clipboard</a>
-            </Button>
+      {/* HEADER */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#121212]/90 border-b border-[#EF4444]/40 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#EF4444] text-black font-black flex items-center justify-center">
+            <Gauge className="w-6 h-6" />
           </div>
+          <div>
+            <h1 className="text-sm font-black tracking-widest text-white uppercase flex items-center gap-2">
+              <span>{candidateName}</span>
+              <span className="text-[10px] px-2 py-0.5 bg-[#EF4444] text-black font-bold">GARAGE DYNO</span>
+            </h1>
+            <p className="text-[10px] text-red-300">{location} · RPM: {rpmGauge} · REDLINE READY</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setRpmGauge(r => r === 7200 ? 9000 : 7200);
+              playGarageSound('turbo', isMuted);
+            }}
+            className="px-3 py-1.5 bg-[#EF4444] text-black font-black text-xs hover:bg-white transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5" /> SPOOL TURBO
+          </button>
+
+          <button
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playGarageSound('ratchet', !isMuted);
+            }}
+            className="w-9 h-9 border border-[#EF4444]/50 text-[#FCA5A5] flex items-center justify-center hover:bg-[#EF4444] hover:text-black transition cursor-pointer"
+          >
+            {isMuted ? <VolumeX className="w-4 h-4 text-red-900" /> : <Volume2 className="w-4 h-4 text-[#EF4444]" />}
+          </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        <section className="p-8 border-2 border-[#2A3440] bg-[#1A2229] shadow-2xl space-y-4">
-          <span className="text-xs text-[#E85D35] uppercase tracking-widest">OPEN-HOOD ENGINE DIAGNOSTICS</span>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white">{candidateName}</h1>
-          <p className="text-xs text-[#9AAEC2] leading-relaxed max-w-2xl">{bio}</p>
+      {/* MAIN GARAGE STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
+        <section className="p-8 bg-[#121212] border-2 border-[#EF4444] shadow-[8px_8px_0px_#EF4444] space-y-4">
+          <div className="flex justify-between items-center text-xs text-red-300 border-b border-red-900/50 pb-3">
+            <span className="flex items-center gap-1.5"><Wrench className="w-4 h-4 text-[#EF4444]" /> HIGH-PERFORMANCE DIAGNOSTIC BAY</span>
+            <span className="text-[#EF4444] font-black">0-100% SUB-100MS LCP</span>
+          </div>
+
+          <h2 className="text-3xl sm:text-6xl font-black text-white tracking-tighter uppercase">
+            CALIBRATING HIGH-HORSEPOWER <span className="text-[#EF4444]">SYSTEMS</span>
+          </h2>
+
+          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-2xl">
+            {bio}
+          </p>
         </section>
 
-        {/* ENGINE COMPONENTS */}
+        {/* ENGINE BAYS */}
         <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-wider text-[#E85D35]">&gt; ENGINE COMPONENTS // PROJECTS</h2>
+          <div className="flex justify-between items-center text-xs font-black text-red-300 border-b-2 border-red-900/50 pb-3">
+            <span>DYNO-TESTED POWERTRAINS</span>
+            <span>CLICK BAY TO RUN OBD-II DIAGNOSTICS</span>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {displayProjects.map((proj: any, idx: number) => (
-              <div
-                key={idx}
+            {engines.map((eng) => (
+              <motion.div
+                key={eng.id}
+                whileHover={{ y: -4 }}
                 onClick={() => {
-                  setActivePart(proj);
-                  playSoundEffect("engine", isMuted);
+                  setSelectedEngine(eng);
+                  playGarageSound('ratchet', isMuted);
                 }}
-                className="p-6 border-2 border-[#2A3440] bg-[#1A2229] hover:border-[#E85D35] transition shadow-xl space-y-3 cursor-pointer"
+                className="p-6 bg-[#121212] border-2 border-[#EF4444] shadow-[5px_5px_0px_#EF4444] cursor-pointer transition group"
               >
-                <div className="flex justify-between text-xs text-[#E85D35]">
-                  <span>PART ST-0{idx + 1}</span>
-                  <span>[INSPECT COMPONENT]</span>
+                <div className="flex justify-between items-center text-[10px] text-zinc-400 mb-3">
+                  <span className="font-black text-[#EF4444]">{eng.bay}</span>
+                  <span className="px-2 py-0.5 bg-black border border-red-900 text-white">{eng.boost}</span>
                 </div>
-                <h3 className="text-lg font-bold text-white">{proj.title}</h3>
-                <p className="text-xs text-[#9AAEC2]">{proj.desc}</p>
-              </div>
+
+                <h4 className="text-xl font-black text-white group-hover:text-[#EF4444] transition mb-2">
+                  {eng.title}
+                </h4>
+
+                <p className="text-xs text-zinc-300 leading-relaxed mb-4">
+                  {eng.desc}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {eng.tech.map((t) => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 bg-black text-[#FCA5A5] border border-red-900/40">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-black text-[#EF4444] group-hover:underline">
+                  <span>RUN TELEMETRY DIAGNOSTICS</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
-        {/* LOGS */}
-        <section className="space-y-6">
-          <h2 className="text-sm uppercase tracking-wider text-[#E85D35]">&gt; SERVICE LOGS // EXPERIENCE</h2>
-          <div className="space-y-4">
-            {displayExperience.map((exp: any, idx: number) => (
-              <div key={idx} className="p-5 border border-[#2A3440] bg-[#1A2229] flex flex-col sm:flex-row justify-between text-xs">
+        {/* GARAGE SERVICE REQUISITION */}
+        <section className="p-8 bg-[#121212] border-2 border-[#EF4444] shadow-[8px_8px_0px_#EF4444] space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-xl font-black text-white uppercase">BOOK DIAGNOSTIC SERVICE CALL</h3>
+            <p className="text-xs text-zinc-400">
+              Submit tune-up request directly to chief mechanic Prajwal DL ({email}).
+            </p>
+          </div>
+
+          {formSent ? (
+            <div className="p-4 bg-black border-2 border-[#EF4444] text-center space-y-1">
+              <CheckCircle2 className="w-6 h-6 mx-auto text-[#EF4444]" />
+              <p className="font-black text-xs text-white">SERVICE APPOINTMENT LOGGED ON DYNO</p>
+              <p className="text-[10px] text-zinc-400">Prajwal DL will inspect your powertrain specs.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFormSent(true);
+                playGarageSound('turbo', isMuted);
+              }}
+              className="space-y-4 text-xs font-bold"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <span className="text-white font-bold">{exp.role}</span> @ {exp.company}
-                  <p className="text-[#9AAEC2] mt-1">{exp.summary}</p>
+                  <label className="block text-zinc-400 text-[10px] mb-1">DRIVER / CLIENT NAME</label>
+                  <input
+                    required
+                    defaultValue="Race Pilot"
+                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#EF4444]"
+                  />
                 </div>
-                <span className="text-[#E85D35] shrink-0">{exp.startDate} – {exp.endDate || "Present"}</span>
+                <div>
+                  <label className="block text-zinc-400 text-[10px] mb-1">CONTACT EMAIL</label>
+                  <input
+                    required
+                    type="email"
+                    defaultValue="pilot@garage.speed"
+                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#EF4444]"
+                  />
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
+              <div>
+                <label className="block text-zinc-400 text-[10px] mb-1">ENGINE REQUIREMENTS</label>
+                <textarea
+                  rows={3}
+                  required
+                  defaultValue="Requesting high-horsepower full-stack web architecture with sub-100ms response targets."
+                  className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#EF4444]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#EF4444] text-black font-black text-xs hover:bg-white transition flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_#fff]"
+              >
+                <Send className="w-3.5 h-3.5" /> DISPATCH SERVICE ORDER
+              </button>
+            </form>
+          )}
 
-        <section id="clipboard" className="p-8 border-2 border-[#E85D35] bg-[#1A2229] text-center space-y-4 shadow-2xl">
-          <h2 className="text-lg font-bold text-white uppercase">MECHANIC SERVICE CLIPBOARD</h2>
-          <p className="text-xs text-[#9AAEC2]">{email} · {phone}</p>
-          <Button asChild size="sm" className="bg-[#E85D35] text-white font-bold text-xs rounded px-6">
-            <a href={`mailto:${email}`}>Submit Service Ticket</a>
-          </Button>
+          <div className="pt-4 border-t border-zinc-800 flex flex-wrap justify-between items-center text-[10px] text-zinc-400">
+            <span>SERVICE BAY: MANGALORE, KARNATAKA</span>
+            <div className="flex gap-4">
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#EF4444] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#EF4444] hover:underline">LINKEDIN</a>
+              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#EF4444] hover:underline">PRAXEL.SPACE</a>
+            </div>
+          </div>
         </section>
       </main>
 
+      {/* ENGINE MODAL */}
       <AnimatePresence>
-        {activePart && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90">
-            <div className="max-w-md w-full border-2 border-[#E85D35] bg-[#1A2229] p-6 space-y-4 relative shadow-2xl text-[#E0E6ED]">
-              <button onClick={() => setActivePart(null)} className="absolute top-4 right-4 text-[#E85D35]">
+        {selectedEngine && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#121212] border-2 border-[#EF4444] p-6 sm:p-8 max-w-lg w-full shadow-[10px_10px_0px_#EF4444] relative space-y-6"
+            >
+              <button
+                onClick={() => {
+                  setSelectedEngine(null);
+                  playGarageSound('ratchet', isMuted);
+                }}
+                className="absolute top-5 right-5 w-8 h-8 bg-black text-[#EF4444] border border-[#EF4444] hover:bg-[#EF4444] hover:text-black flex items-center justify-center transition cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
-              <h3 className="text-lg font-bold text-white">{activePart.title}</h3>
-              <p className="text-xs text-[#9AAEC2] leading-relaxed">{activePart.desc}</p>
-              <Button size="sm" onClick={() => setActivePart(null)} className="bg-[#E85D35] text-white font-bold text-xs rounded w-full">
-                Close Inspection
-              </Button>
-            </div>
+
+              <div className="space-y-1">
+                <span className="text-[10px] font-black px-2 py-0.5 bg-[#EF4444] text-black">
+                  {selectedEngine.bay} · {selectedEngine.boost}
+                </span>
+                <h3 className="text-2xl font-black text-white">{selectedEngine.title}</h3>
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                {selectedEngine.desc}
+              </p>
+
+              <div className="space-y-2">
+                <span className="text-xs text-[#EF4444]">POWERTRAIN TECHNOLOGIES</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedEngine.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 bg-black text-white border border-red-900">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <a
+                  href={selectedEngine.liveUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 py-2.5 bg-[#EF4444] text-black font-black text-xs text-center hover:bg-white transition flex items-center justify-center gap-1.5"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> LIVE REPOSITORY
+                </a>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>
