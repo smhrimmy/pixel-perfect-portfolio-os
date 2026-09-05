@@ -1,33 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
-  Layers,
-  ArrowUpRight,
-  ExternalLink,
-  MapPin,
-  Mail,
-  Phone,
-  GraduationCap,
-  Briefcase,
-  Terminal,
-  Volume2,
-  VolumeX,
-  X,
-  Compass,
-  Zap,
-  Activity,
-  CheckCircle2,
-  Send,
-  Cpu,
-  Globe,
-  Code2,
-  ChevronDown,
+  Boxes, Rotate3d, Globe, Cpu, Terminal, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-// 4D Sound Synthesizer (Web Audio API)
-function playHyperSound(type: 'warp' | 'click' | 'pulse' | 'dispatch' | 'toggle', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -39,725 +23,435 @@ function playHyperSound(type: 'warp' | 'click' | 'pulse' | 'dispatch' | 'toggle'
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'warp') {
+    if (type === 'radar') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.35);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-      osc.start(now);
-      osc.stop(now + 0.35);
-    } else if (type === 'pulse') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440, now);
-      osc.frequency.linearRampToValueAtTime(220, now + 0.15);
+      osc.frequency.setValueAtTime(980, now);
+      osc.frequency.exponentialRampToValueAtTime(1960, now + 0.2);
       gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       osc.start(now);
-      osc.stop(now + 0.15);
-    } else if (type === 'dispatch') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(587.33, now);
-      osc.frequency.setValueAtTime(880, now + 0.1);
-      osc.frequency.setValueAtTime(1174.66, now + 0.2);
-      gain.gain.setValueAtTime(0.15, now);
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.start(now);
       osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.setValueAtTime(900, now);
       gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.05);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function The4DHypercubeTheme({ data }: ThemeRendererProps) {
+export default function TheHypercubeTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
-  const links = (data as any)?.socialLinks || (data as any)?.links || {};
-  const rawExperience = (data as any)?.experience || [];
-  const rawEducation = (data as any)?.education || [];
-  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
-
   const candidateName = profile?.name || "Prajwal DL";
-  const bio =
-    profile?.bio ||
-    "Dedicated and adaptable Full Stack Developer & Web Advisor with a proactive attitude and strong problem-solving skills. Experienced in architecting performant web systems, DNS/SSL automations, and spatial UI engines.";
-  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || links?.phone || "+918105561638";
+  const bio = profile?.bio || "Navigating 4D spatial tesseract dimensions, sub-atomic WebGL geometries, and resilient cloud architectures with zero latency.";
+  const email = profile?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const linkedin = profile?.linkedin || links?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
-  const website = profile?.website || links?.website || "https://praxel.space/";
-  const github = profile?.github || links?.github || "https://github.com/smhrimmy";
+  const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeDimension, setActiveDimension] = useState(1);
-  const [selectedProject, setSelectedProject] = useState<any | null>(null);
-  const [contactStatus, setContactStatus] = useState<'idle' | 'transmitting' | 'sent'>('idle');
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+  const [formSent, setFormSent] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 4D Project Hyper-Nodes
-  const hyperProjects = [
-    {
-      id: "dim-1",
-      dim: "DIMENSION α",
-      title: "Portfolio OS",
-      subtitle: "Multi-Theme Spatial Operating System",
-      tech: ["React 19", "TypeScript", "Three.js", "TanStack Start", "Tailwind CSS"],
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP performance budget, and a dual draft-to-live pipeline with Studio HQ Terminal.",
-      metrics: "Sub-100ms LCP · 20 Physical Metaphors · Zero Jitter",
-      accent: "#00F5D4",
-      liveUrl: "https://praxel.space/",
-      repoUrl: "https://github.com/smhrimmy/pixel-perfect-portfolio-os",
-    },
-    {
-      id: "dim-2",
-      dim: "DIMENSION β",
-      title: "Praxel Space",
-      subtitle: "Cloud Infrastructure & DNS Automation Platform",
-      tech: ["DNS Management", "SSL Automation", "WordPress", "PHP", "MySQL"],
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, real-time DNS propagation health checks, and zero-downtime website migration pipelines.",
-      metrics: "99.99% Uptime · Automated SSL · Instant DNS Sync",
-      accent: "#7B2CBF",
-      liveUrl: "https://praxel.space/",
-    },
-    {
-      id: "dim-3",
-      dim: "DIMENSION γ",
-      title: "Vitvara Web App",
-      subtitle: "High-Throughput Scalable Frontend Architecture",
-      tech: ["React.js", "JavaScript", "REST APIs", "CSS3", "HTML5"],
-      desc: "Engineered responsive, user-centric web applications with modern React.js state patterns and scalable REST API endpoints adhering to high performance budgets.",
-      metrics: "60 FPS Transitions · Modular State · High Performance",
-      accent: "#FF007F",
-      liveUrl: "https://praxel.space/",
-    },
-    {
-      id: "dim-4",
-      dim: "DIMENSION δ",
-      title: "Custom Client Platforms",
-      subtitle: "Bespoke Enterprise Web & CMS Engineering",
-      tech: ["Full Stack", "Node.js", "WordPress Architecture", "UI/UX Design"],
-      desc: "Delivered bespoke client web applications and high-converting storefronts with custom WordPress architectures and secure contact pipelines.",
-      metrics: "Custom Architecture · Secure Pipelines · Bespoke UI",
-      accent: "#38BDF8",
-      liveUrl: "https://praxel.space/",
-    },
-  ];
-
-  // 4D Hypercube Math & Procedural Canvas Rendering
+  // 3D Procedural Heightfield Canvas Engine for The 4D Hypercube
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animId: number;
-    let angleXW = 0;
-    let angleYW = 0;
-    let angleZW = 0;
-    let angleXY = 0;
-
-    // 16 Vertices of a 4D Hypercube (Tesseract) in 4D Euclidean space [-1, 1]
-    const vertices: number[][] = [];
-    for (let i = 0; i < 16; i++) {
-      vertices.push([
-        (i & 1 ? 1 : -1) * 1.3,
-        (i & 2 ? 1 : -1) * 1.3,
-        (i & 4 ? 1 : -1) * 1.3,
-        (i & 8 ? 1 : -1) * 1.3,
-      ]);
-    }
-
-    // 32 Edges connecting vertices differing in exactly one coordinate
-    const edges: [number, number][] = [];
-    for (let i = 0; i < 16; i++) {
-      for (let j = i + 1; j < 16; j++) {
-        let diff = 0;
-        for (let k = 0; k < 4; k++) {
-          if (vertices[i][k] !== vertices[j][k]) diff++;
-        }
-        if (diff === 1) edges.push([i, j]);
-      }
-    }
+    let time = 0;
 
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
 
-    const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = totalScroll > 0 ? window.scrollY / totalScroll : 0;
-      setScrollProgress(progress);
-
-      if (progress < 0.25) setActiveDimension(1);
-      else if (progress < 0.5) setActiveDimension(2);
-      else if (progress < 0.75) setActiveDimension(3);
-      else setActiveDimension(4);
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener('mousemove', handlePointerMove);
 
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      time += 0.015;
+      ctx.fillStyle = '#030014';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
 
-      // Scroll actively drives 4D rotation speed and dimensional angle
-      angleXW += 0.006 + scrollProgress * 0.03;
-      angleYW += 0.008 + scrollProgress * 0.02;
-      angleZW += 0.005 + scrollProgress * 0.025;
-      angleXY += 0.004;
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
 
-      // Project 4D -> 3D -> 2D
-      const projected: { x: number; y: number; z: number; w: number }[] = [];
-
-      for (const v of vertices) {
-        let [x, y, z, w] = v;
-
-        // 4D Rotation in XW plane
-        const cosXW = Math.cos(angleXW);
-        const sinXW = Math.sin(angleXW);
-        const x1 = x * cosXW - w * sinXW;
-        const w1 = x * sinXW + w * cosXW;
-        x = x1;
-        w = w1;
-
-        // 4D Rotation in YW plane
-        const cosYW = Math.cos(angleYW);
-        const sinYW = Math.sin(angleYW);
-        const y1 = y * cosYW - w * sinYW;
-        const w2 = y * sinYW + w * cosYW;
-        y = y1;
-        w = w2;
-
-        // 4D Rotation in ZW plane
-        const cosZW = Math.cos(angleZW);
-        const sinZW = Math.sin(angleZW);
-        const z1 = z * cosZW - w * sinZW;
-        const w3 = z * sinZW + w * cosZW;
-        z = z1;
-        w = w3;
-
-        // 3D Rotation in XY plane
-        const cosXY = Math.cos(angleXY);
-        const sinXY = Math.sin(angleXY);
-        const x2 = x * cosXY - y * sinXY;
-        const y2 = x * sinXY + y * cosXY;
-        x = x2;
-        y = y2;
-
-        // 4D to 3D Perspective Projection (Distance from 4D camera = 3.2)
-        const d4 = 3.2;
-        const scale4 = d4 / (d4 - w);
-        const x3D = x * scale4;
-        const y3D = y * scale4;
-        const z3D = z * scale4;
-
-        // 3D to 2D Screen Projection (Distance from 3D camera = 4.0)
-        const d3 = 4.0;
-        const scale3 = d3 / (d3 - z3D);
-        const radius = Math.min(canvas.width, canvas.height) * 0.26;
-
-        projected.push({
-          x: cx + x3D * scale3 * radius,
-          y: cy + y3D * scale3 * radius,
-          z: z3D,
-          w: w,
-        });
-      }
-
-      // Draw 4D Hypercube Edges with depth-based chromatic glow
-      for (const [i, j] of edges) {
-        const p1 = projected[i];
-        const p2 = projected[j];
-
-        const avgW = (p1.w + p2.w) / 2;
-        const alpha = Math.max(0.15, Math.min(0.9, (avgW + 1.5) / 3));
-
+      for (let r = 0; r < rows; r++) {
         ctx.beginPath();
-        ctx.moveTo(p1.x, p1.y);
-        ctx.lineTo(p2.x, p2.y);
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
 
-        // Chromatic Color shift based on active dimension
-        const color =
-          activeDimension === 1
-            ? "rgba(0, 245, 212, " + alpha + ")"
-            : activeDimension === 2
-            ? "rgba(123, 44, 191, " + alpha + ")"
-            : activeDimension === 3
-            ? "rgba(255, 0, 127, " + alpha + ")"
-            : "rgba(56, 189, 248, " + alpha + ")";
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.4;
 
-        ctx.strokeStyle = color;
-        ctx.lineWidth = Math.max(1, (avgW + 2) * 1.5);
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = color;
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
+        }
+        ctx.strokeStyle = 'rgba(168, 85, 247, 0.25)';
+        ctx.lineWidth = 1.1;
         ctx.stroke();
-      }
-
-      // Draw Glowing 4D Vertices
-      for (let i = 0; i < projected.length; i++) {
-        const p = projected[i];
-        const nodeSize = Math.max(3, (p.w + 2) * 3);
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, nodeSize, 0, Math.PI * 2);
-        ctx.fillStyle = activeDimension === 1 ? "#00F5D4" : activeDimension === 2 ? "#C77DFF" : activeDimension === 3 ? "#FF007F" : "#38BDF8";
-        ctx.shadowBlur = 16;
-        ctx.shadowColor = ctx.fillStyle;
-        ctx.fill();
       }
 
       animId = requestAnimationFrame(render);
     };
 
     render();
-
     return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-      window.removeEventListener("scroll", handleScroll);
     };
-  }, [scrollProgress, activeDimension]);
+  }, [cursorPos]);
 
-  const handleTransmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.email) return;
+  // Projects Matrix
+  const projects = [
+    {
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
+      tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
+    },
+    {
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
+      tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
+      liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
+    },
+    {
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
+      tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
+    },
+    {
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
+      desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
+      tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+    },
+  ];
 
-    setContactStatus('transmitting');
-    playHyperSound('warp', isMuted);
-
-    setTimeout(() => {
-      setContactStatus('sent');
-      playHyperSound('dispatch', isMuted);
-      const subject = encodeURIComponent("[4D Transmission] Project Inquiry from " + formData.name);
-      const body = encodeURIComponent("Name: " + formData.name + "\nEmail: " + formData.email + "\n\nMessage:\n" + formData.message);
-      window.location.href = "mailto:" + email + "?subject=" + subject + "&body=" + body;
-    }, 1200);
-  };
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+    },
+  ];
 
   return (
-    <div className="min-h-[400vh] bg-[#05070B] text-[#E6F1FF] font-sans antialiased selection:bg-[#00F5D4] selection:text-[#05070B] relative">
-      {/* 1. FIXED BACKGROUND 4D HYPERCUBE GLSL/2D CANVAS */}
-      <canvas
-        ref={canvasRef}
-        className="fixed inset-0 pointer-events-none z-0 opacity-85"
-      />
+    <div className="min-h-screen bg-[#030014] text-[#F3E8FF] font-mono relative overflow-x-hidden selection:bg-[#A855F7] selection:text-black">
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(3,0,20,0.85)_80%)]" />
 
-      {/* 2. FIXED 4D HUD TELEMETRY OVERLAY */}
-      <div className="fixed top-0 inset-x-0 z-30 pointer-events-none flex justify-between items-center p-6 sm:p-8 backdrop-blur-[2px]">
-        {/* Identity & Coordinates */}
-        <div className="pointer-events-auto flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#0B1019]/90 border border-[#00F5D4]/40 flex items-center justify-center shadow-[0_0_20px_rgba(0,245,212,0.3)]">
-            <Layers className="w-5 h-5 text-[#00F5D4]" />
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#0A0520]/90 border-b border-[#A855F7]/30 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#A855F7]/15 border border-[#A855F7] text-[#C084FC] flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+            <Boxes className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="font-mono font-black text-sm tracking-wider uppercase text-white flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-[#FAF5FF]">
               <span>{candidateName}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#00F5D4]/10 text-[#00F5D4] border border-[#00F5D4]/30">4D SPATIAL OS</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#A855F7]/15 text-[#C084FC] border border-[#A855F7]/40 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] font-mono text-[#8B9BB4] flex items-center gap-1.5">
-              <MapPin className="w-3 h-3 text-[#00F5D4]" /> {location}
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#C084FC]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-purple-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
             </p>
           </div>
         </div>
 
-        {/* Real-Time 4D Vector Coordinate Monitor */}
-        <div className="hidden md:flex items-center gap-4 bg-[#0B1019]/80 border border-white/10 px-4 py-2 rounded-2xl font-mono text-[11px] shadow-2xl">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#00F5D4] animate-pulse" />
-            <span className="text-white/70">W-AXIS SCROLL:</span>
-            <span className="text-[#00F5D4] font-bold">{(scrollProgress * 360).toFixed(1)}°</span>
-          </div>
-          <span className="text-white/20">|</span>
-          <div className="flex items-center gap-2">
-            <span className="text-white/70">DIMENSION:</span>
-            <span className="text-[#FF007F] font-bold">0{activeDimension} / 04</span>
-          </div>
-        </div>
-
-        {/* Audio Toggle & Quick Contact Trigger */}
-        <div className="pointer-events-auto flex items-center gap-3">
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playHyperSound('toggle', !isMuted);
-            }}
-            className="w-10 h-10 rounded-xl bg-[#0B1019]/90 border border-white/15 text-white/80 hover:text-white hover:border-[#00F5D4] transition flex items-center justify-center cursor-pointer shadow-lg"
-            title={isMuted ? "Enable 4D Audio" : "Mute Audio"}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#00F5D4]" />}
-          </button>
-
-          <a
-            href="#contact-dimension"
-            className="bg-[#00F5D4] text-[#05070B] hover:bg-white transition px-5 py-2 rounded-xl font-mono font-bold text-xs uppercase tracking-wider shadow-[0_0_25px_rgba(0,245,212,0.4)] inline-flex items-center gap-1.5"
-          >
-            <span>Transmit</span>
-            <Zap className="w-3.5 h-3.5 fill-current" />
-          </a>
-        </div>
-      </div>
-
-      {/* 3. SCROLL-TRIGGERED 4D DIMENSIONAL CHAMBERS */}
-
-      {/* CHAMBER 1: HERO & SPATIAL GENESIS */}
-      <section className="h-screen flex flex-col justify-center items-center px-6 text-center relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl space-y-6"
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#120A30] border border-[#A855F7]/30 text-[#C084FC] flex items-center justify-center hover:bg-[#A855F7] hover:text-black transition cursor-pointer"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00F5D4]/10 border border-[#00F5D4]/30 text-[#00F5D4] text-xs font-mono">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>HYPER-DIMENSIONAL PORTFOLIO ARCHITECTURE</span>
-          </div>
+          <Sparkles className="w-4 h-4" />
+        </button>
+      </header>
 
-          <h1 className="text-4xl sm:text-7xl font-mono font-black tracking-tight text-white uppercase leading-[1.05]">
-            Engineering across <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00F5D4] via-[#7B2CBF] to-[#FF007F]">4 Dimensions</span>
-          </h1>
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
+        <section className="text-center space-y-6 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#A855F7]/15 border border-[#A855F7]/40 text-[#C084FC] text-xs font-mono"
+          >
+            <Boxes className="w-3.5 h-3.5" /> 4D QUANTUM TESSERACT · HIGGSFIELD AI MCF
+          </motion.div>
 
-          <p className="text-sm sm:text-base text-[#8B9BB4] max-w-xl mx-auto leading-relaxed">
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-[#FAF5FF] drop-shadow-[0_2px_30px_rgba(168,85,247,0.4)]"
+          >
+            Spatial 4D <span class="text-[#C084FC]">Dimension</span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm sm:text-base text-purple-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+          >
             {bio}
-          </p>
+          </motion.p>
+        </section>
 
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
-            <a
-              href="#projects-dimension"
-              onClick={() => playHyperSound('click', isMuted)}
-              className="bg-[#0B1019] border border-[#00F5D4]/50 text-[#00F5D4] hover:bg-[#00F5D4] hover:text-[#05070B] transition px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-wider shadow-xl inline-flex items-center gap-2"
-            >
-              <span>Traverse Dimensions</span>
-              <ChevronDown className="w-4 h-4 animate-bounce" />
-            </a>
-            <a
-              href={linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="bg-[#0B1019] border border-white/15 text-white/80 hover:text-white hover:border-white transition px-6 py-3 rounded-xl font-mono font-bold text-xs uppercase tracking-wider shadow-lg"
-            >
-              LinkedIn Profile
-            </a>
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#A855F7]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FAF5FF] flex items-center gap-2">
+              <Boxes className="w-5 h-5 text-[#C084FC]" /> Featured Projects & Systems
+            </h3>
+            <span className="text-xs text-[#C084FC] font-mono">CLICK TO INSPECT</span>
           </div>
-        </motion.div>
-      </section>
 
-      {/* CHAMBER 2: 4D PROJECT HYPER-NODES */}
-      <section id="projects-dimension" className="min-h-screen py-24 px-6 sm:px-12 max-w-7xl mx-auto relative z-10 flex flex-col justify-center">
-        <div className="space-y-3 mb-12">
-          <span className="text-xs font-mono font-bold tracking-widest text-[#00F5D4] uppercase block">
-            DIMENSION 02 · HYPER-SPATIAL SYSTEMS
-          </span>
-          <h2 className="text-3xl sm:text-5xl font-mono font-bold text-white uppercase">
-            Architected &amp; Shipped Deliverables
-          </h2>
-          <p className="text-xs sm:text-sm text-[#8B9BB4] max-w-lg">
-            Scroll drives rotation through the 4D manifold. Click any project node to expand its architectural telemetry.
-          </p>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projects.map((item) => (
+              <motion.div
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#A855F7" }}
+                onClick={() => {
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
+                }}
+                className="p-6 rounded-2xl bg-[#0A0520]/90 border border-[#A855F7]/25 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
+              >
+                <div className="flex justify-between items-center text-[10px] text-[#C084FC] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#A855F7]/15 border border-[#A855F7]/40">{item.badge}</span>
+                </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {hyperProjects.map((p, idx) => (
-            <motion.div
-              key={p.id}
-              whileHover={{ y: -6, scale: 1.01 }}
-              onClick={() => {
-                setSelectedProject(p);
-                playHyperSound('pulse', isMuted);
-              }}
-              className="p-7 rounded-3xl bg-[#0B1019]/90 border border-white/10 hover:border-[#00F5D4]/60 transition cursor-pointer space-y-4 shadow-2xl backdrop-blur-xl group relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start">
-                <span className="text-[10px] font-mono font-bold text-[#00F5D4] uppercase px-2.5 py-1 rounded-full bg-[#00F5D4]/10 border border-[#00F5D4]/30">
-                  {p.dim}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/60 group-hover:text-[#00F5D4] group-hover:bg-[#00F5D4]/10 transition">
-                  <ArrowUpRight className="w-4 h-4" />
+                <h4 className="text-xl font-bold text-[#FAF5FF] group-hover:text-[#C084FC] transition mb-2">
+                  {item.title}
+                </h4>
+
+                <p className="text-xs text-purple-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#030014] text-[#C084FC] border border-[#A855F7]/20">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-[#C084FC] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#A855F7]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FAF5FF] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#C084FC]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#0A0520]/90 border border-[#A855F7]/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#A855F7]/15 text-[#C084FC] font-mono border border-[#A855F7]/40">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-[#FAF5FF]">{item.role}</h4>
+                  <p className="text-xs text-purple-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-purple-200/70 font-sans">{item.desc}</p>
                 </div>
               </div>
-
-              <div>
-                <h3 className="text-xl sm:text-2xl font-mono font-bold text-white group-hover:text-[#00F5D4] transition">
-                  {p.title}
-                </h3>
-                <p className="text-xs text-[#8B9BB4] mt-1 font-mono">{p.subtitle}</p>
-              </div>
-
-              <p className="text-xs text-[#C5D1E2] leading-relaxed line-clamp-2">
-                {p.desc}
-              </p>
-
-              <div className="flex flex-wrap gap-1.5 pt-2">
-                {p.tech.map((t) => (
-                  <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-white/80 border border-white/10">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* CHAMBER 3: CAREER TRAJECTORY & SKILLS HYPER-MATRIX */}
-      <section className="min-h-screen py-24 px-6 sm:px-12 max-w-7xl mx-auto relative z-10 flex flex-col justify-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Work History */}
-          <div className="space-y-6">
-            <div>
-              <span className="text-xs font-mono font-bold tracking-widest text-[#7B2CBF] uppercase block">
-                DIMENSION 03 · CHRONICLES
-              </span>
-              <h2 className="text-3xl font-mono font-bold text-white uppercase mt-1">
-                Career Trajectory
-              </h2>
-            </div>
-
-            <div className="space-y-4">
-              {rawExperience.map((exp: any, i: number) => (
-                <div key={i} className="p-5 rounded-2xl bg-[#0B1019]/90 border border-white/10 space-y-2 backdrop-blur-xl">
-                  <div className="flex justify-between items-center text-sm font-mono font-bold text-white">
-                    <span>{exp.role}</span>
-                    <span className="text-xs text-[#00F5D4]">{exp.startDate} – {exp.endDate || "Present"}</span>
-                  </div>
-                  <p className="text-xs font-mono text-[#8B9BB4]">{exp.company} · {exp.location}</p>
-                  <p className="text-xs text-[#C5D1E2] leading-relaxed">{exp.summary}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
+        </section>
 
-          {/* Skills Matrix & Education */}
-          <div className="space-y-6">
-            <div>
-              <span className="text-xs font-mono font-bold tracking-widest text-[#FF007F] uppercase block">
-                DIMENSION 03 · CAPABILITIES
-              </span>
-              <h2 className="text-3xl font-mono font-bold text-white uppercase mt-1">
-                Proficiency Matrix
-              </h2>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#0B1019]/90 border border-white/10 space-y-4 backdrop-blur-xl">
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Frontend Architecture",
-                  "React.js & TypeScript",
-                  "Three.js / WebGL",
-                  "Tailwind CSS",
-                  "Technical Troubleshooting",
-                  "WordPress Engineering",
-                  "DNS & SSL Automation",
-                  "PHP & MySQL",
-                  "REST APIs",
-                  "UI/UX Design",
-                  "Server Migrations",
-                ].map((s) => (
-                  <span key={s} className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/15 text-xs font-mono text-white/90">
-                    {s}
-                  </span>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-white/10 space-y-3">
-                <span className="text-[11px] font-mono text-[#8B9BB4] uppercase block">Academic Credentials</span>
-                {rawEducation.map((edu: any, i: number) => (
-                  <div key={i} className="text-xs font-mono space-y-0.5">
-                    <p className="font-bold text-white">{edu.degree}</p>
-                    <p className="text-[#8B9BB4]">{edu.institution} · {edu.graduationDate}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CHAMBER 4: QUANTUM TRANSMISSION (CONTACT FORM) */}
-      <section id="contact-dimension" className="min-h-screen py-24 px-6 sm:px-12 max-w-4xl mx-auto relative z-10 flex flex-col justify-center">
-        <div className="p-8 sm:p-14 rounded-3xl bg-[#0B1019]/95 border border-[#00F5D4]/40 shadow-[0_0_80px_rgba(0,245,212,0.15)] space-y-8 backdrop-blur-2xl">
-          <div className="space-y-2 border-b border-white/10 pb-6">
-            <span className="text-xs font-mono font-bold tracking-widest text-[#00F5D4] uppercase block">
-              DIMENSION 04 · TRANSMISSION CONSOLE
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-mono font-bold text-white uppercase">
-              Initiate 4D Uplink
-            </h2>
-            <p className="text-xs sm:text-sm text-[#8B9BB4]">
-              Transmit your opportunity or project specification directly into Prajwal DL's terminal inbox.
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#0A0520]/90 border border-[#A855F7]/40 shadow-[0_0_40px_rgba(168,85,247,0.4)] space-y-6">
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl font-bold text-[#FAF5FF]">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-purple-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
-          {contactStatus !== 'sent' ? (
-            <form onSubmit={handleTransmit} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono text-white/80 uppercase block">Name / Entity</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Ada Lovelace"
-                    className="w-full bg-[#05070B] border border-white/15 text-white px-4 py-3 rounded-xl text-xs font-mono placeholder:text-white/30 focus:outline-none focus:border-[#00F5D4]"
-                  />
+          {formSent ? (
+            <div className="p-6 rounded-2xl bg-[#A855F7]/15 border border-[#A855F7]/40 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#C084FC] mx-auto" />
+              <p className="font-bold text-[#FAF5FF]">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#C084FC] font-mono">Prajwal DL will respond promptly.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFormSent(true);
+                playAudio('chime', isMuted);
+              }}
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#C084FC] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#030014] border border-[#A855F7]/30 text-[#FAF5FF] focus:outline-none focus:border-[#A855F7]" />
                 </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono text-white/80 uppercase block">Transmission Email</label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="ada@domain.com"
-                    className="w-full bg-[#05070B] border border-white/15 text-white px-4 py-3 rounded-xl text-xs font-mono placeholder:text-white/30 focus:outline-none focus:border-[#00F5D4]"
-                  />
+                <div>
+                  <label className="block text-[#C084FC] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#030014] border border-[#A855F7]/30 text-[#FAF5FF] focus:outline-none focus:border-[#A855F7]" />
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-mono text-white/80 uppercase block">Message Payload</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  placeholder="Describe project requirements, timeline, or advisory scope..."
-                  className="w-full bg-[#05070B] border border-white/15 text-white px-4 py-3 rounded-xl text-xs font-mono placeholder:text-white/30 focus:outline-none focus:border-[#00F5D4]"
-                />
+              <div>
+                <label className="block text-[#C084FC] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#030014] border border-[#A855F7]/30 text-[#FAF5FF] focus:outline-none focus:border-[#A855F7]" />
               </div>
-
-              <button
-                type="submit"
-                disabled={contactStatus === 'transmitting'}
-                className="w-full bg-[#00F5D4] text-[#05070B] hover:bg-white transition py-4 rounded-xl font-mono font-bold text-xs uppercase tracking-wider shadow-2xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {contactStatus === 'transmitting' ? (
-                  <span>Transmitting across dimensions...</span>
-                ) : (
-                  <>
-                    <span>Transmit Signal to pdlkpt@gmail.com</span>
-                    <Send className="w-4 h-4" />
-                  </>
-                )}
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#A855F7] text-black font-mono font-bold text-xs hover:bg-[#C084FC] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
-          ) : (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="text-center space-y-4 py-8"
-            >
-              <div className="w-16 h-16 rounded-full bg-[#00F5D4]/20 text-[#00F5D4] border border-[#00F5D4] flex items-center justify-center mx-auto shadow-2xl">
-                <CheckCircle2 className="w-9 h-9" />
-              </div>
-              <h3 className="text-2xl font-mono font-bold text-white uppercase">Transmission Delivered</h3>
-              <p className="text-xs font-mono text-[#8B9BB4] max-w-sm mx-auto">
-                Your transmission has been confirmed and routed to <span className="text-[#00F5D4]">{email}</span>.
-              </p>
-              <button
-                onClick={() => {
-                  setContactStatus('idle');
-                  setFormData({ name: "", email: "", message: "" });
-                }}
-                className="text-xs font-mono font-bold text-[#00F5D4] underline cursor-pointer"
-              >
-                Send Another Transmission
-              </button>
-            </motion.div>
           )}
-        </div>
-      </section>
 
-      {/* 4. MODAL: 4D PROJECT TELEMETRY INSPECTOR */}
+          <div className="pt-4 border-t border-[#A855F7]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
+            <div className="flex gap-4">
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#C084FC] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#C084FC] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#C084FC] hover:underline">PRAXEL.SPACE</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedProject && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
-            <motion.div
-              initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.85, opacity: 0 }}
-              className="max-w-2xl w-full rounded-3xl bg-[#0B1019] border border-[#00F5D4]/50 p-8 text-white space-y-6 shadow-[0_0_90px_rgba(0,245,212,0.3)] relative"
-            >
-              <button
-                onClick={() => {
-                  setSelectedProject(null);
-                  playHyperSound('click', isMuted);
-                }}
-                className="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
+        {selectedNode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#0A0520] border-2 border-[#A855F7] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(168,85,247,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#A855F7]/15 text-[#C084FC] hover:bg-[#A855F7] hover:text-black flex items-center justify-center transition cursor-pointer">
+                <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-xs font-mono text-[#00F5D4] font-bold">{selectedProject.dim}</span>
-                <h3 className="text-3xl font-mono font-bold">{selectedProject.title}</h3>
-                <p className="text-xs font-mono text-[#8B9BB4]">{selectedProject.subtitle}</p>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#A855F7]/15 text-[#C084FC] border border-[#A855F7]/40">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-[#FAF5FF] font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-xs sm:text-sm text-[#C5D1E2] leading-relaxed">
-                {selectedProject.desc}
-              </p>
-
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-1 text-xs font-mono">
-                <span className="text-[#00F5D4] font-bold">TELEMETRY BENCHMARKS:</span>
-                <p className="text-[#8B9BB4]">{selectedProject.metrics}</p>
+              <p className="text-sm text-purple-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#030014] border border-[#A855F7]/20 text-xs text-[#C084FC] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#030014] text-[#FAF5FF] border border-[#A855F7]/20">{t}</span>
+                  ))}
+                </div>
               </div>
-
-              <div className="flex flex-wrap gap-2">
-                {selectedProject.tech.map((t: string) => (
-                  <span key={t} className="px-3 py-1 rounded-full bg-[#00F5D4]/10 text-[#00F5D4] border border-[#00F5D4]/30 text-xs font-mono">
-                    {t}
-                  </span>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-white/10 flex justify-between items-center">
-                <button
-                  onClick={() => setSelectedProject(null)}
-                  className="text-xs font-mono text-white/60 hover:text-white underline cursor-pointer"
-                >
-                  Close Dimension
-                </button>
-
-                {selectedProject.liveUrl && (
-                  <a
-                    href={selectedProject.liveUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="bg-[#00F5D4] text-[#05070B] hover:bg-white transition px-5 py-2 rounded-xl font-mono font-bold text-xs uppercase inline-flex items-center gap-2 shadow-lg"
-                  >
-                    <span>Launch Live URL</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                )}
+              <div className="flex gap-3 pt-2">
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#A855F7] text-black font-bold font-mono text-xs text-center hover:bg-[#C084FC] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
+                </a>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
-
-      {/* 5. FOOTER */}
-      <footer className="border-t border-white/10 py-10 px-6 text-center text-xs font-mono text-[#8B9BB4] relative z-10 space-y-3">
-        <p>© {new Date().getFullYear()} {candidateName} · 4D Hyper-Spatial Architecture</p>
-        <div className="flex justify-center gap-6 text-[#E6F1FF]">
-          <a href={linkedin} target="_blank" rel="noreferrer" className="hover:text-[#00F5D4] transition">LinkedIn</a>
-          <a href={website} target="_blank" rel="noreferrer" className="hover:text-[#00F5D4] transition">Praxel.space</a>
-          <a href={github} target="_blank" rel="noreferrer" className="hover:text-[#00F5D4] transition">GitHub</a>
-        </div>
-      </footer>
     </div>
   );
 }

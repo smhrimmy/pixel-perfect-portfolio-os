@@ -1,207 +1,454 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, X, Gamepad2 } from "lucide-react";
+import {
+  Gamepad, Tv, Zap, Flame, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
+} from "lucide-react";
 import type { ThemeRendererProps } from "../types";
-import { Button } from "@/components/ui/button";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-
-function playSoundEffect(type: 'click' | 'stamp' | 'page' | 'water' | 'coin' | 'clay', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
+    const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
-    const now = ctx.currentTime;
 
-    if (type === 'stamp') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(120, now);
-      osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-      gain.gain.setValueAtTime(0.2, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
-    } else if (type === 'page') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(300, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-      osc.start(now);
-      osc.stop(now + 0.08);
-    } else if (type === 'coin') {
+    if (type === 'radar') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(987.77, now);
-      osc.frequency.setValueAtTime(1318.51, now + 0.08);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.frequency.setValueAtTime(1350, now);
+      osc.frequency.exponentialRampToValueAtTime(2700, now + 0.2);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       osc.start(now);
-      osc.stop(now + 0.25);
-    } else if (type === 'water') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(450, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      osc.start(now);
-      osc.stop(now + 0.12);
-    } else {
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(600, now);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.start(now);
-      osc.stop(now + 0.05);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } else {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.start(now);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-
-export default function TheArcadeCabinet({ data }: ThemeRendererProps) {
+export default function CyberMagentaTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
-  const links = (data as any)?.socialLinks || (data as any)?.links || {};
-  const rawExperience = (data as any)?.experience || [];
-  const rawProjects = (data as any)?.projects || (data as any)?.cmsProjects || [];
-
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Dedicated and adaptable professional with a proactive attitude and the ability to learn quickly.";
-  const email = profile?.email || links?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || links?.phone || "+918105561638";
+  const bio = profile?.bio || "Retro CRT arcade cabinet with degauss wobble, joystick game selectors, synthwave neon grid, and sub-100ms response.";
+  const email = profile?.email || "pdlkpt@gmail.com";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const website = profile?.website || links?.website || "https://praxel.space/";
+  const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
-  const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [activeGame, setActiveGame] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
+  const [formSent, setFormSent] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  // 3D Procedural Heightfield Canvas Engine for The Arcade Cabinet
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(t);
-  }, []);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  const displayProjects = rawProjects.length > 0 ? rawProjects : [
-    { title: "Portfolio OS · 20 Tactile Themes", category: "Full Stack", desc: "Full-stack personal operating system with 20 real-world tactile 3D themes, Studio HQ Terminal, and content automation engine." },
-    { title: "Praxel Space Cloud Platform", category: "Infrastructure", desc: "High-performance web hosting, domain DNS manager, and automated SSL orchestration portal." },
-    { title: "Vitvara Scalable Web App", category: "Frontend", desc: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
-    { title: "Custom Client Platforms", category: "Full Stack", desc: "Delivered bespoke performant web applications and custom CMS solutions." },
+    let animId: number;
+    let time = 0;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
+
+    const render = () => {
+      time += 0.015;
+      ctx.fillStyle = '#16001E';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
+
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
+
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
+
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.4;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
+        }
+        ctx.strokeStyle = 'rgba(236, 72, 153, 0.3)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+    return () => {
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
+      cancelAnimationFrame(animId);
+    };
+  }, [cursorPos]);
+
+  // Projects Matrix
+  const projects = [
+    {
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
+      tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
+    },
+    {
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
+      tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
+      liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
+    },
+    {
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
+      tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
+    },
+    {
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
+      desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
+      tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+    },
   ];
 
-  const displayExperience = rawExperience.length > 0 ? rawExperience : [
-    { company: "Unifycx", role: "Web Advisor", startDate: "Jun 2025", endDate: "Present", summary: "Assisted customers with website migrations, SSL installations, email configurations, and hosting control panels." },
-    { company: "Freelancer", role: "Full Stack Developer", startDate: "Dec 2024", endDate: "Jun 2025", summary: "Designed and developed custom websites and web applications using modern frontend and backend technologies." },
-    { company: "Glowtouch Technologies", role: "Junior Support Engineer", startDate: "Aug 2024", endDate: "Dec 2024", summary: "Provided live chat support for hosting, domain, server, DNS, and WordPress issues." },
-    { company: "Vitvara Technologies", role: "Web Developer Intern", startDate: "Jan 2024", endDate: "May 2024", summary: "Engineered responsive, user-centric web applications with React.js and scalable REST APIs." },
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+    },
   ];
 
   return (
-    <div className="min-h-screen bg-[#100818] text-[#2FF3FF] font-sans selection:bg-[#FF2FB2] selection:text-white">
-      <a href="#main-content" className="sr-only focus:not-sr-only fixed top-4 left-4 z-50 px-4 py-2 bg-[#FF2FB2] text-white font-bold text-xs rounded">
-        Skip 3D experience
-      </a>
+    <div className="min-h-screen bg-[#16001E] text-[#FCE7F3] font-mono relative overflow-x-hidden selection:bg-[#EC4899] selection:text-black">
+      <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(22,0,30,0.85)_80%)]" />
 
-      {/* LOADER: CRT Degauss Wobble */}
-      <AnimatePresence>
-        {loading && (
-          <motion.div exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#08040C] flex flex-col items-center justify-center p-6 text-center text-[#FF2FB2]">
-            <Gamepad2 className="w-12 h-12 animate-spin" />
-            <h3 className="mt-4 text-xl font-bold tracking-widest uppercase">DEGAUSSING RETRO ARCADE CRT...</h3>
-            <button onClick={() => setLoading(false)} className="mt-3 text-xs underline font-mono text-[#2FF3FF]">[SKIP]</button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <header className="border-b border-[#3D1A54] bg-[#1A0D26]/95 sticky top-0 z-40 backdrop-blur-md">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <span className="font-bold text-sm uppercase tracking-widest text-[#FF2FB2]">{candidateName} // ARCADE</span>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setIsMuted(!isMuted);
-                playSoundEffect("coin", !isMuted);
-              }}
-              className="h-8 w-8 rounded-full border border-[#3D1A54] text-[#FF2FB2] flex items-center justify-center hover:bg-[#3D1A54]"
-            >
-              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-            </button>
-            <Button asChild size="sm" className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full hover:bg-[#E0269B]">
-              <a href="#highscore">Insert Coin</a>
-            </Button>
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#270233]/90 border-b border-[#EC4899]/35 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#EC4899]/20 border border-[#EC4899] text-[#F472B6] flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.4)]">
+            <Gamepad className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white">
+              <span>{candidateName}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#EC4899]/20 text-[#F472B6] border border-[#EC4899]/45 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
+            </h1>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#F472B6]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-pink-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
+
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#3B054D] border border-[#EC4899]/35 text-[#F472B6] flex items-center justify-center hover:bg-[#EC4899] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        <section className="p-8 rounded-3xl border-2 border-[#3D1A54] bg-[#1A0D26] shadow-[0_0_40px_rgba(255,47,178,0.2)] space-y-4">
-          <span className="text-xs font-mono text-[#FF2FB2] uppercase tracking-widest">[INSERT COIN TO PLAY]</span>
-          <h1 className="text-4xl sm:text-5xl font-black text-white">{candidateName}</h1>
-          <p className="text-sm text-[#A8B2D1] leading-relaxed max-w-2xl">{bio}</p>
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
+        <section className="text-center space-y-6 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EC4899]/20 border border-[#EC4899]/45 text-[#F472B6] text-xs font-mono"
+          >
+            <Gamepad className="w-3.5 h-3.5" /> RETRO ARCADE CABINET · HIGGSFIELD MCF
+          </motion.div>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-white drop-shadow-[0_2px_30px_rgba(236,72,153,0.4)]"
+          >
+            Synthwave <span class="text-[#F472B6]">Arcade</span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm sm:text-base text-pink-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+          >
+            {bio}
+          </motion.p>
         </section>
 
-        {/* GAMES SHOWCASE */}
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold uppercase text-white">SELECT GAME // PROJECTS</h2>
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#EC4899]/30 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Gamepad className="w-5 h-5 text-[#F472B6]" /> Featured Projects & Systems
+            </h3>
+            <span className="text-xs text-[#F472B6] font-mono">CLICK TO INSPECT</span>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {displayProjects.map((proj: any, idx: number) => (
-              <div
-                key={idx}
+            {projects.map((item) => (
+              <motion.div
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#EC4899" }}
                 onClick={() => {
-                  setActiveGame(proj);
-                  playSoundEffect("coin", isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-7 rounded-3xl border-2 border-[#3D1A54] bg-[#1A0D26] hover:border-[#FF2FB2] transition shadow-xl space-y-3 cursor-pointer"
+                className="p-6 rounded-2xl bg-[#270233]/90 border border-[#EC4899]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between text-xs font-mono text-[#FF2FB2]">
-                  <span>CARTRIDGE #{idx + 1}</span>
-                  <span>[PRESS 'A' TO LAUNCH]</span>
+                <div className="flex justify-between items-center text-[10px] text-[#F472B6] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#EC4899]/20 border border-[#EC4899]/45">{item.badge}</span>
                 </div>
-                <h3 className="text-xl font-bold text-white">{proj.title}</h3>
-                <p className="text-xs text-[#A8B2D1] leading-relaxed">{proj.desc}</p>
-              </div>
+
+                <h4 className="text-xl font-bold text-white group-hover:text-[#F472B6] transition mb-2">
+                  {item.title}
+                </h4>
+
+                <p className="text-xs text-pink-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
+                </p>
+
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#16001E] text-[#F472B6] border border-[#EC4899]/20">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs text-[#F472B6] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </div>
+              </motion.div>
             ))}
           </div>
         </section>
 
-        {/* HIGH SCORES (EXPERIENCE) */}
+        {/* EXPERIENCE */}
         <section className="space-y-6">
-          <h2 className="text-2xl font-bold uppercase text-white">HIGH SCORES // EXPERIENCE</h2>
+          <div className="border-b border-[#EC4899]/30 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#F472B6]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
           <div className="space-y-4">
-            {displayExperience.map((exp: any, idx: number) => (
-              <div key={idx} className="p-6 rounded-2xl border border-[#3D1A54] bg-[#1A0D26] space-y-2">
-                <div className="flex justify-between text-sm">
-                  <h3 className="font-bold text-white">{exp.role} @ {exp.company}</h3>
-                  <span className="text-xs font-mono text-[#FF2FB2]">{exp.startDate} – {exp.endDate || "Present"}</span>
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#270233]/90 border border-[#EC4899]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#EC4899]/20 text-[#F472B6] font-mono border border-[#EC4899]/45">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-white">{item.role}</h4>
+                  <p className="text-xs text-pink-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-pink-200/70 font-sans">{item.desc}</p>
                 </div>
-                <p className="text-xs text-[#A8B2D1]">{exp.summary}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section id="highscore" className="p-8 rounded-3xl border-2 border-[#FF2FB2] bg-[#1A0D26] text-center space-y-4 shadow-[0_0_50px_rgba(255,47,178,0.25)]">
-          <h2 className="text-2xl font-bold uppercase text-white">ENTER INITIALS // CONTACT</h2>
-          <p className="text-xs text-[#A8B2D1]">{email} · {phone}</p>
-          <Button asChild size="sm" className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full px-6">
-            <a href={`mailto:${email}`}>Submit High Score Record</a>
-          </Button>
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#270233]/90 border border-[#EC4899]/40 shadow-[0_0_40px_rgba(236,72,153,0.4)] space-y-6">
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl font-bold text-white">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-pink-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
+            </p>
+          </div>
+
+          {formSent ? (
+            <div className="p-6 rounded-2xl bg-[#EC4899]/20 border border-[#EC4899]/45 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#F472B6] mx-auto" />
+              <p className="font-bold text-white">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#F472B6] font-mono">Prajwal DL will respond promptly.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setFormSent(true);
+                playAudio('chime', isMuted);
+              }}
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#F472B6] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#16001E] border border-[#EC4899]/30 text-white focus:outline-none focus:border-[#EC4899]" />
+                </div>
+                <div>
+                  <label className="block text-[#F472B6] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#16001E] border border-[#EC4899]/30 text-white focus:outline-none focus:border-[#EC4899]" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[#F472B6] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#16001E] border border-[#EC4899]/30 text-white focus:outline-none focus:border-[#EC4899]" />
+              </div>
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#EC4899] text-black font-mono font-bold text-xs hover:bg-[#F9A8D4] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(236,72,153,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
+              </button>
+            </form>
+          )}
+
+          <div className="pt-4 border-t border-[#EC4899]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
+            <div className="flex gap-4">
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#F472B6] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#F472B6] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#F472B6] hover:underline">PRAXEL.SPACE</a>
+            </div>
+          </div>
         </section>
       </main>
 
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {activeGame && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-            <div className="max-w-md w-full rounded-3xl border-2 border-[#FF2FB2] bg-[#1A0D26] p-6 space-y-4 relative shadow-2xl text-[#2FF3FF]">
-              <button onClick={() => setActiveGame(null)} className="absolute top-4 right-4 text-[#FF2FB2]">
+        {selectedNode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#270233] border-2 border-[#EC4899] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(236,72,153,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EC4899]/20 text-[#F472B6] hover:bg-[#EC4899] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-              <h3 className="text-xl font-bold text-white">{activeGame.title}</h3>
-              <p className="text-xs text-[#A8B2D1] leading-relaxed">{activeGame.desc}</p>
-              <Button size="sm" onClick={() => setActiveGame(null)} className="bg-[#FF2FB2] text-white font-bold text-xs rounded-full w-full">
-                Exit Arcade Demo
-              </Button>
-            </div>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#EC4899]/20 text-[#F472B6] border border-[#EC4899]/45">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-white font-serif">{selectedNode.title}</h3>
+              </div>
+              <p className="text-sm text-pink-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#16001E] border border-[#EC4899]/20 text-xs text-[#F472B6] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#16001E] text-white border border-[#EC4899]/20">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#EC4899] text-black font-bold font-mono text-xs text-center hover:bg-[#F9A8D4] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
+                </a>
+              </div>
+            </motion.div>
           </div>
         )}
       </AnimatePresence>

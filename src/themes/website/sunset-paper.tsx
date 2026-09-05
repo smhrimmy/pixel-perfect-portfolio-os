@@ -1,22 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-  ArrowUpRight,
-  ExternalLink,
-  Send,
-  CheckCircle2,
-  Sun,
-  Flame,
-  RotateCw,
-  Layers
+  Sun, Flame, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-function playPotterySound(type: 'wheel' | 'clay' | 'glaze' | 'chime', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -28,51 +23,62 @@ function playPotterySound(type: 'wheel' | 'clay' | 'glaze' | 'chime', isMuted: b
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'wheel') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.linearRampToValueAtTime(320, now + 0.3);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-      osc.start(now);
-      osc.stop(now + 0.4);
-    } else if (type === 'glaze') {
+    if (type === 'radar') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(783.99, now);
-      osc.frequency.exponentialRampToValueAtTime(1567.98, now + 0.2);
+      osc.frequency.setValueAtTime(840, now);
+      osc.frequency.exponentialRampToValueAtTime(1680, now + 0.2);
       gain.gain.setValueAtTime(0.08, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       osc.start(now);
       osc.stop(now + 0.5);
+    } else if (type === 'chime') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.start(now);
+      osc.stop(now + 0.3);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, now);
-      gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.frequency.setValueAtTime(900, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function ThePottersStudio({ data }: ThemeRendererProps) {
+export default function SunsetPaperTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Full Stack Artisan shaping elegant, high-durability digital vessels, automated DNS workflows, and sub-100ms web systems with golden-hour warmth.";
+  const bio = profile?.bio || "Golden-hour pottery studio with spinning clay lathe wheels, kiln-fired glazed vessels, and organic topographical ceramics.";
   const email = profile?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || "+91 8105561638";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const github = profile?.github || "https://github.com/smhrimmy";
   const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedVessel, setSelectedVessel] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [formSent, setFormSent] = useState(false);
-  const [rpm, setRpm] = useState(120);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Rotational Clay Lathe Heightfield Canvas
+  // 3D Procedural Heightfield Canvas Engine for The Potter's Studio
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -89,29 +95,50 @@ export default function ThePottersStudio({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
+
     const render = () => {
-      time += 0.02 * (rpm / 100);
-      ctx.fillStyle = '#1A120B';
+      time += 0.015;
+      ctx.fillStyle = '#1A0C08';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
-      const cy = canvas.height * 0.4;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
 
-      // Draw 3D Cylindrical Clay Lathe Heightfield
-      ctx.strokeStyle = 'rgba(234, 88, 12, 0.15)';
-      ctx.lineWidth = 1.5;
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
 
-      const layers = 16;
-      for (let i = 0; i < layers; i++) {
-        const y = cy + (i - layers / 2) * 18;
-        // Vase silhouette radius function
-        const profileK = Math.sin(i / layers * Math.PI) * 120 + 60;
-        const wobble = Math.sin(time * 3 + i * 0.3) * 6;
-        const rx = profileK + wobble;
-        const ry = rx * 0.3;
-
+      for (let r = 0; r < rows; r++) {
         ctx.beginPath();
-        ctx.ellipse(cx, y, rx, ry, 0, 0, Math.PI * 2);
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
+
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.2;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
+        }
+        ctx.strokeStyle = 'rgba(249, 115, 22, 0.28)';
+        ctx.lineWidth = 1.1;
         ctx.stroke();
       }
 
@@ -119,168 +146,195 @@ export default function ThePottersStudio({ data }: ThemeRendererProps) {
     };
 
     render();
-
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, [rpm]);
+  }, [cursorPos]);
 
-  const vessels = [
+  // Projects Matrix
+  const projects = [
     {
-      id: "vessel-1",
-      name: "Portfolio OS Vessel",
-      glaze: "TERRACOTTA & OBSIDIAN",
-      firing: "1200°C HIGH-FIRE",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
     },
     {
-      id: "vessel-2",
-      name: "Praxel Space Cloud Urn",
-      glaze: "COBALT & COPPER",
-      firing: "1280°C REDUCTION",
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
     },
     {
-      id: "vessel-3",
-      name: "Vitvara Application Pot",
-      glaze: "CELADON CRACKLE",
-      firing: "1180°C OXIDATION",
-      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
     },
     {
-      id: "vessel-4",
-      name: "Client Enterprise Amphora",
-      glaze: "IRON ASH STONEWARE",
-      firing: "1300°C WOOD-FIRE",
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+    },
+  ];
+
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#1A120B] text-[#FDE047] font-serif relative selection:bg-[#EA580C] selection:text-white overflow-x-hidden">
-      {/* 3D Clay Lathe Canvas */}
+    <div className="min-h-screen bg-[#1A0C08] text-[#FFEDD5] font-serif relative overflow-x-hidden selection:bg-[#F97316] selection:text-black">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(26,12,8,0.85)_80%)]" />
 
-      {/* HEADER */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#26190E]/90 border-b border-[#EA580C]/40 backdrop-blur-md">
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#2A140E]/90 border-b border-[#F97316]/35 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#EA580C]/20 border border-[#EA580C] text-[#EA580C] flex items-center justify-center shadow-[0_0_15px_rgba(234,88,12,0.4)]">
-            <RotateCw className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#F97316]/20 border border-[#F97316] text-[#FB923C] flex items-center justify-center shadow-[0_0_15px_rgba(249,115,22,0.4)]">
+            <Sun className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-widest text-[#FED7AA] uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-[#FFF7ED]">
               <span>{candidateName}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EA580C]/20 text-[#EA580C] border border-[#EA580C]">POTTER'S STUDIO</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#F97316]/20 text-[#FB923C] border border-[#F97316]/45 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] font-mono text-[#D97706]">{location} · WHEEL SPEED: {rpm} RPM</p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#FB923C]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-orange-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setRpm(r => r === 120 ? 240 : 120);
-              playPotterySound('wheel', isMuted);
-            }}
-            className="px-3 py-1.5 rounded-full bg-[#EA580C] text-white font-mono font-bold text-xs hover:bg-[#F97316] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-          >
-            <RotateCw className="w-3.5 h-3.5" /> WHEEL SPEED ({rpm} RPM)
-          </button>
-
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playPotterySound('glaze', !isMuted);
-            }}
-            className="w-9 h-9 rounded-full bg-[#3B2513] border border-[#EA580C]/40 text-[#FED7AA] flex items-center justify-center hover:border-[#EA580C] transition cursor-pointer"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-amber-800" /> : <Volume2 className="w-4 h-4 text-[#EA580C]" />}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#3D1D15] border border-[#F97316]/35 text-[#FB923C] flex items-center justify-center hover:bg-[#F97316] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
-      {/* HERO SECTION */}
-      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
         <section className="text-center space-y-6 pt-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EA580C]/10 border border-[#EA580C]/40 text-[#EA580C] text-xs font-mono"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F97316]/20 border border-[#F97316]/45 text-[#FB923C] text-xs font-mono"
           >
-            <Sun className="w-3.5 h-3.5" /> GOLDEN-HOUR METAPHOR · HAND-THROWN CERAMICS
+            <Sun className="w-3.5 h-3.5" /> POTTER'S STUDIO · HIGGSFIELD AI MCF
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-normal tracking-wide text-[#FED7AA] drop-shadow-[0_2px_20px_rgba(234,88,12,0.3)]"
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-[#FFF7ED] drop-shadow-[0_2px_30px_rgba(249,115,22,0.4)]"
           >
-            Molding Digital Vessels with Precision
+            Terracotta <span class="text-[#FB923C] italic">Lathe</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-[#E2E8F0] font-sans max-w-2xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base text-orange-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* CERAMIC VESSELS */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-center border-b border-[#EA580C]/30 pb-3">
-            <h3 className="text-xl font-normal text-[#FED7AA] flex items-center gap-2">
-              <Flame className="w-5 h-5 text-[#EA580C]" /> Kiln-Fired Glazed Vessels
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#F97316]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FFF7ED] flex items-center gap-2">
+              <Sun className="w-5 h-5 text-[#FB923C]" /> Featured Projects & Systems
             </h3>
-            <span className="text-xs font-mono text-[#EA580C]">4 PIECES IN GALLERY</span>
+            <span className="text-xs text-[#FB923C] font-mono">CLICK TO INSPECT</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {vessels.map((v) => (
+            {projects.map((item) => (
               <motion.div
-                key={v.id}
-                whileHover={{ y: -4, borderColor: "#EA580C" }}
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#F97316" }}
                 onClick={() => {
-                  setSelectedVessel(v);
-                  playPotterySound('glaze', isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-6 rounded-2xl bg-[#26190E]/90 border border-[#EA580C]/30 backdrop-blur-md cursor-pointer transition shadow-[0_4px_25px_rgba(0,0,0,0.5)] group relative"
+                className="p-6 rounded-2xl bg-[#2A140E]/90 border border-[#F97316]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center text-[10px] font-mono text-[#EA580C] mb-3">
-                  <span className="px-2 py-0.5 rounded bg-[#EA580C]/10 border border-[#EA580C]/30">{v.firing}</span>
-                  <span className="text-[#FED7AA]">{v.glaze}</span>
+                <div className="flex justify-between items-center text-[10px] text-[#FB923C] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#F97316]/20 border border-[#F97316]/45">{item.badge}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-[#FED7AA] group-hover:text-[#EA580C] transition mb-2">
-                  {v.name}
+                <h4 className="text-xl font-bold text-[#FFF7ED] group-hover:text-[#FB923C] transition mb-2">
+                  {item.title}
                 </h4>
 
-                <p className="text-xs text-[#CBD5E1] font-sans leading-relaxed mb-4">
-                  {v.desc}
+                <p className="text-xs text-orange-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {v.tech.map((t) => (
-                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#1A120B] text-[#FED7AA] border border-[#EA580C]/20">
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#1A0C08] text-[#FB923C] border border-[#F97316]/20">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-mono text-[#EA580C] group-hover:underline">
-                  <span>EXAMINE GLAZED DETAILS</span>
+                <div className="flex items-center gap-1.5 text-xs text-[#FB923C] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
@@ -288,128 +342,110 @@ export default function ThePottersStudio({ data }: ThemeRendererProps) {
           </div>
         </section>
 
-        {/* POTTER'S STUDIO CONTACT */}
-        <section className="p-8 rounded-3xl bg-[#26190E]/90 border border-[#EA580C]/40 shadow-[0_0_40px_rgba(234,88,12,0.15)] space-y-6">
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#F97316]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FFF7ED] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#FB923C]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#2A140E]/90 border border-[#F97316]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#F97316]/20 text-[#FB923C] font-mono border border-[#F97316]/45">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-[#FFF7ED]">{item.role}</h4>
+                  <p className="text-xs text-orange-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-orange-200/70 font-sans">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#2A140E]/90 border border-[#F97316]/40 shadow-[0_0_40px_rgba(249,115,22,0.4)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-normal text-[#FED7AA]">Commission a Ceramic Vessel</h3>
-            <p className="text-xs text-[#CBD5E1] font-sans">
-              Send commission request directly to Prajwal DL ({email}).
+            <h3 className="text-2xl font-bold text-[#FFF7ED]">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-orange-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-[#EA580C]/10 border border-[#EA580C] text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-[#EA580C] mx-auto" />
-              <p className="font-bold text-[#FED7AA]">Commission Slip Placed on the Studio Bench</p>
-              <p className="text-xs text-[#CBD5E1] font-mono">Prajwal DL will throw your vessel soon.</p>
+            <div className="p-6 rounded-2xl bg-[#F97316]/20 border border-[#F97316]/45 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#FB923C] mx-auto" />
+              <p className="font-bold text-[#FFF7ED]">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#FB923C] font-mono">Prajwal DL will respond promptly.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playPotterySound('wheel', isMuted);
+                playAudio('chime', isMuted);
               }}
               className="space-y-4 max-w-xl mx-auto text-xs font-sans"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#EA580C] font-mono mb-1">PATRON NAME</label>
-                  <input
-                    required
-                    defaultValue="Artisan Patron"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#1A120B] border border-[#EA580C]/30 text-white focus:outline-none focus:border-[#EA580C]"
-                  />
+                  <label className="block text-[#FB923C] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#1A0C08] border border-[#F97316]/30 text-[#FFF7ED] focus:outline-none focus:border-[#F97316]" />
                 </div>
                 <div>
-                  <label className="block text-[#EA580C] font-mono mb-1">PATRON EMAIL</label>
-                  <input
-                    required
-                    type="email"
-                    defaultValue="patron@pottery.studio"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#1A120B] border border-[#EA580C]/30 text-white focus:outline-none focus:border-[#EA580C]"
-                  />
+                  <label className="block text-[#FB923C] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#1A0C08] border border-[#F97316]/30 text-[#FFF7ED] focus:outline-none focus:border-[#F97316]" />
                 </div>
               </div>
               <div>
-                <label className="block text-[#EA580C] font-mono mb-1">COMMISSION SPECIFICATIONS</label>
-                <textarea
-                  rows={3}
-                  required
-                  defaultValue="Requesting full-stack architecture design and high-performance web systems."
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#1A120B] border border-[#EA580C]/30 text-white focus:outline-none focus:border-[#EA580C]"
-                />
+                <label className="block text-[#FB923C] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#1A0C08] border border-[#F97316]/30 text-[#FFF7ED] focus:outline-none focus:border-[#F97316]" />
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#EA580C] text-white font-mono font-bold text-xs hover:bg-[#F97316] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(234,88,12,0.4)]"
-              >
-                <Send className="w-4 h-4" /> SUBMIT COMMISSION REQUEST
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#F97316] text-black font-mono font-bold text-xs hover:bg-[#FDBA74] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-[#EA580C]/20 flex flex-wrap justify-between items-center text-[11px] font-mono text-[#D97706]">
-            <span>KILN: MANGALORE, KARNATAKA</span>
+          <div className="pt-4 border-t border-[#F97316]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-[#EA580C] hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#EA580C] hover:underline">LINKEDIN</a>
-              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#EA580C] hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FB923C] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FB923C] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#FB923C] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* VESSEL MODAL */}
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedVessel && (
+        {selectedNode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#26190E] border-2 border-[#EA580C] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(234,88,12,0.5)] relative space-y-6"
-            >
-              <button
-                onClick={() => {
-                  setSelectedVessel(null);
-                  playPotterySound('chime', isMuted);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EA580C]/10 text-[#EA580C] hover:bg-[#EA580C] hover:text-white flex items-center justify-center transition cursor-pointer"
-              >
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#2A140E] border-2 border-[#F97316] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(249,115,22,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F97316]/20 text-[#FB923C] hover:bg-[#F97316] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EA580C]/20 text-[#EA580C] border border-[#EA580C]/40">
-                  {selectedVessel.firing} · {selectedVessel.glaze}
-                </span>
-                <h3 className="text-2xl font-bold text-[#FED7AA]">{selectedVessel.name}</h3>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#F97316]/20 text-[#FB923C] border border-[#F97316]/45">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-[#FFF7ED] font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-sm text-[#CBD5E1] font-sans leading-relaxed">
-                {selectedVessel.desc}
-              </p>
-
-              <div className="space-y-2">
-                <span className="text-xs font-mono text-[#EA580C]">GLAZE & STRUCTURAL TOKENS</span>
+              <p className="text-sm text-orange-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#1A0C08] border border-[#F97316]/20 text-xs text-[#FB923C] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedVessel.tech.map((t: string) => (
-                    <span key={t} className="text-xs font-mono px-2.5 py-1 rounded-lg bg-[#1A120B] text-[#FED7AA] border border-[#EA580C]/30">
-                      {t}
-                    </span>
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#1A0C08] text-[#FFF7ED] border border-[#F97316]/20">{t}</span>
                   ))}
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <a
-                  href={selectedVessel.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2.5 rounded-xl bg-[#EA580C] text-white font-mono font-bold text-xs text-center hover:bg-[#F97316] transition flex items-center justify-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> VIEW LIVE REPOSITORY
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#F97316] text-black font-bold font-mono text-xs text-center hover:bg-[#FDBA74] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
               </div>
             </motion.div>

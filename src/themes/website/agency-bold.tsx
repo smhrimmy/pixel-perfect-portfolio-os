@@ -1,22 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Trophy,
-  Award,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-  ArrowUpRight,
-  ExternalLink,
-  Send,
-  CheckCircle2,
-  Crown,
-  Medal
+  Trophy, Award, Medal, Star, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-function playTrophySound(type: 'gong' | 'pedestal' | 'chime' | 'cheer', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -28,49 +23,62 @@ function playTrophySound(type: 'gong' | 'pedestal' | 'chime' | 'cheer', isMuted:
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'gong') {
+    if (type === 'radar') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(261.63, now);
-      osc.frequency.exponentialRampToValueAtTime(130.81, now + 0.6);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+      osc.frequency.setValueAtTime(1020, now);
+      osc.frequency.exponentialRampToValueAtTime(2040, now + 0.2);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       osc.start(now);
-      osc.stop(now + 1.0);
-    } else if (type === 'pedestal') {
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(523.25, now);
-      gain.gain.setValueAtTime(0.08, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
       osc.stop(now + 0.3);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      osc.frequency.setValueAtTime(900, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function TheTrophyRoom({ data }: ThemeRendererProps) {
+export default function AgencyBoldTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Award-winning Full Stack Architect showcasing spotlit museum pedestals, precision WebGL glass vitrines, and sub-100ms enterprise systems.";
+  const bio = profile?.bio || "Spotlit museum exhibition hall with glass vitrines, engraved plaques, gallery guestbook, and distinguished honors.";
   const email = profile?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || "+91 8105561638";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const github = profile?.github || "https://github.com/smhrimmy";
   const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedTrophy, setSelectedTrophy] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [formSent, setFormSent] = useState(false);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Spotlit Museum Pedestal Canvas
+  // 3D Procedural Heightfield Canvas Engine for The Trophy Room
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,191 +95,246 @@ export default function TheTrophyRoom({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
+
     const render = () => {
       time += 0.015;
-      ctx.fillStyle = '#0A0A0A';
+      ctx.fillStyle = '#140E02';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
 
-      // Draw Volumetric Spotlight Beam from top center
-      const spotGrad = ctx.createRadialGradient(cx, 0, 10, cx, 300, 450);
-      spotGrad.addColorStop(0, 'rgba(234, 179, 8, 0.18)');
-      spotGrad.addColorStop(0.5, 'rgba(234, 179, 8, 0.06)');
-      spotGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
 
-      ctx.fillStyle = spotGrad;
-      ctx.beginPath();
-      ctx.moveTo(cx - 50, 0);
-      ctx.lineTo(cx + 50, 0);
-      ctx.lineTo(cx + 380, canvas.height * 0.7);
-      ctx.lineTo(cx - 380, canvas.height * 0.7);
-      ctx.closePath();
-      ctx.fill();
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
 
-      // Pedestal Ring
-      ctx.strokeStyle = 'rgba(234, 179, 8, 0.2)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.ellipse(cx, canvas.height * 0.45, 240, 60, 0, 0, Math.PI * 2);
-      ctx.stroke();
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.2;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
+        }
+        ctx.strokeStyle = 'rgba(234, 179, 8, 0.28)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
 
       animId = requestAnimationFrame(render);
     };
 
     render();
-
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [cursorPos]);
 
-  const trophies = [
+  // Projects Matrix
+  const projects = [
     {
-      id: "trophy-1",
-      award: "GOLD MEDAL / FLAGSHIP 2026",
-      title: "Portfolio OS Grand Prix",
-      hall: "HALL OF SPATIAL ARCHITECTURE",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
     },
     {
-      id: "trophy-2",
-      award: "EXCELLENCE IN CLOUD AUTOMATION",
-      title: "Praxel Space Cup",
-      hall: "HALL OF INFRASTRUCTURE",
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
     },
     {
-      id: "trophy-3",
-      award: "HIGH VELOCITY REACT SUITE",
-      title: "Vitvara Performance Trophy",
-      hall: "HALL OF ENTERPRISE UI",
-      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
     },
     {
-      id: "trophy-4",
-      award: "BESPOKE CLIENT MASTERY",
-      title: "Enterprise Solutions Shield",
-      hall: "HALL OF CLIENT DELIVERIES",
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+    },
+  ];
+
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#FEF08A] font-sans relative selection:bg-[#EAB308] selection:text-black overflow-x-hidden">
-      {/* 3D Spotlight Canvas */}
+    <div className="min-h-screen bg-[#140E02] text-[#FEF9C3] font-sans relative overflow-x-hidden selection:bg-[#EAB308] selection:text-black">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(20,14,2,0.85)_80%)]" />
 
-      {/* HEADER */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#141414]/90 border-b border-[#EAB308]/40 backdrop-blur-md">
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#261B04]/90 border-b border-[#EAB308]/35 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#EAB308] text-black font-black flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.4)]">
-            <Crown className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-[#EAB308]/20 border border-[#EAB308] text-[#FACC15] flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.4)]">
+            <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-widest text-white uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-[#FEF08A]">
               <span>{candidateName}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#EAB308] border border-[#EAB308]/40">TROPHY ROOM</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] border border-[#EAB308]/45 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] font-mono text-[#CA8A04]">{location} · SPOTLIT GALLERY</p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#FACC15]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-yellow-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playTrophySound('gong', !isMuted);
-            }}
-            className="w-9 h-9 rounded-xl bg-[#1C1917] border border-[#EAB308]/40 text-[#FEF08A] flex items-center justify-center hover:border-[#EAB308] transition cursor-pointer"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-stone-600" /> : <Volume2 className="w-4 h-4 text-[#EAB308]" />}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#3B2B07] border border-[#EAB308]/35 text-[#FACC15] flex items-center justify-center hover:bg-[#EAB308] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
-      {/* MAIN TROPHY STAGE */}
-      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
         <section className="text-center space-y-6 pt-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EAB308]/10 border border-[#EAB308]/40 text-[#EAB308] text-xs font-mono"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EAB308]/20 border border-[#EAB308]/45 text-[#FACC15] text-xs font-mono"
           >
-            <Trophy className="w-3.5 h-3.5" /> SPOTLIT VITRINE METAPHOR · EXECUTIVE TROPHY ROOM
+            <Trophy className="w-3.5 h-3.5" /> MUSEUM TROPHY ROOM · HIGGSFIELD MCF
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-[0_2px_25px_rgba(234,179,8,0.4)] uppercase"
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-[#FEF08A] drop-shadow-[0_2px_30px_rgba(234,179,8,0.4)]"
           >
-            Engineering Champion Systems
+            Exhibition <span class="text-[#FACC15]">Trophies</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-stone-300 max-w-2xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base text-yellow-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* TROPHY VITRINES */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-center border-b border-[#EAB308]/30 pb-3">
-            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Medal className="w-5 h-5 text-[#EAB308]" /> Spotlit Award Pedestals
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#EAB308]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FEF08A] flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-[#FACC15]" /> Featured Projects & Systems
             </h3>
-            <span className="text-xs font-mono text-[#EAB308]">CLICK VITRINE TO INSPECT</span>
+            <span className="text-xs text-[#FACC15] font-mono">CLICK TO INSPECT</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {trophies.map((tr) => (
+            {projects.map((item) => (
               <motion.div
-                key={tr.id}
+                key={item.id}
                 whileHover={{ y: -4, borderColor: "#EAB308" }}
                 onClick={() => {
-                  setSelectedTrophy(tr);
-                  playTrophySound('pedestal', isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-6 rounded-2xl bg-[#141414]/90 border border-[#EAB308]/30 backdrop-blur-md cursor-pointer transition shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative"
+                className="p-6 rounded-2xl bg-[#261B04]/90 border border-[#EAB308]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center text-[10px] font-mono text-[#EAB308] mb-3">
-                  <span className="px-2 py-0.5 rounded bg-[#EAB308]/10 border border-[#EAB308]/30">{tr.award}</span>
-                  <span className="text-stone-400">{tr.hall}</span>
+                <div className="flex justify-between items-center text-[10px] text-[#FACC15] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#EAB308]/20 border border-[#EAB308]/45">{item.badge}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-white group-hover:text-[#EAB308] transition mb-2">
-                  {tr.title}
+                <h4 className="text-xl font-bold text-[#FEF08A] group-hover:text-[#FACC15] transition mb-2">
+                  {item.title}
                 </h4>
 
-                <p className="text-xs text-stone-300 leading-relaxed mb-4">
-                  {tr.desc}
+                <p className="text-xs text-yellow-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {tr.tech.map((t) => (
-                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0A0A0A] text-[#FEF08A] border border-stone-800">
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#140E02] text-[#FACC15] border border-[#EAB308]/20">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-mono text-[#EAB308] group-hover:underline">
-                  <span>VIEW VITRINE DETAILS</span>
+                <div className="flex items-center gap-1.5 text-xs text-[#FACC15] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
@@ -279,128 +342,110 @@ export default function TheTrophyRoom({ data }: ThemeRendererProps) {
           </div>
         </section>
 
-        {/* TROPHY ROOM GUESTBOOK */}
-        <section className="p-8 rounded-3xl bg-[#141414]/90 border border-[#EAB308]/40 shadow-[0_0_40px_rgba(234,179,8,0.15)] space-y-6">
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#EAB308]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FEF08A] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#FACC15]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#261B04]/90 border border-[#EAB308]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] font-mono border border-[#EAB308]/45">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-[#FEF08A]">{item.role}</h4>
+                  <p className="text-xs text-yellow-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-yellow-200/70 font-sans">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#261B04]/90 border border-[#EAB308]/40 shadow-[0_0_40px_rgba(234,179,8,0.4)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-white">Sign Gallery Guestbook</h3>
-            <p className="text-xs text-stone-400">
-              Submit your congratulations or project inquiry directly to Prajwal DL ({email}).
+            <h3 className="text-2xl font-bold text-[#FEF08A]">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-yellow-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-[#EAB308]/10 border border-[#EAB308] text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-[#EAB308] mx-auto" />
-              <p className="font-bold text-white">Guestbook Entry Inscribed on Golden Plaque</p>
-              <p className="text-xs text-stone-400 font-mono">Prajwal DL will read your entry in the hall.</p>
+            <div className="p-6 rounded-2xl bg-[#EAB308]/20 border border-[#EAB308]/45 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#FACC15] mx-auto" />
+              <p className="font-bold text-[#FEF08A]">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#FACC15] font-mono">Prajwal DL will respond promptly.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playTrophySound('gong', isMuted);
+                playAudio('chime', isMuted);
               }}
-              className="space-y-4 max-w-xl mx-auto text-xs"
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#EAB308] font-mono mb-1">GUEST NAME</label>
-                  <input
-                    required
-                    defaultValue="Distinguished Guest"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EAB308]/30 text-white focus:outline-none focus:border-[#EAB308]"
-                  />
+                  <label className="block text-[#FACC15] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#140E02] border border-[#EAB308]/30 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
                 </div>
                 <div>
-                  <label className="block text-[#EAB308] font-mono mb-1">GUEST EMAIL</label>
-                  <input
-                    required
-                    type="email"
-                    defaultValue="guest@trophyhall.com"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EAB308]/30 text-white focus:outline-none focus:border-[#EAB308]"
-                  />
+                  <label className="block text-[#FACC15] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#140E02] border border-[#EAB308]/30 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
                 </div>
               </div>
               <div>
-                <label className="block text-[#EAB308] font-mono mb-1">INSCRIPTION MESSAGE</label>
-                <textarea
-                  rows={3}
-                  required
-                  defaultValue="Requesting full-stack architecture design with high-performance WebGL systems."
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EAB308]/30 text-white focus:outline-none focus:border-[#EAB308]"
-                />
+                <label className="block text-[#FACC15] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#140E02] border border-[#EAB308]/30 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-[#EAB308] text-black font-mono font-bold text-xs hover:bg-[#FACC15] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,0.4)]"
-              >
-                <Send className="w-4 h-4" /> INSCRIBE GUESTBOOK ENTRY
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#EAB308] text-black font-mono font-bold text-xs hover:bg-[#FDE047] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-[#EAB308]/20 flex flex-wrap justify-between items-center text-[11px] font-mono text-[#CA8A04]">
-            <span>GALLERY: MANGALORE, KARNATAKA</span>
+          <div className="pt-4 border-t border-[#EAB308]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-[#EAB308] hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#EAB308] hover:underline">LINKEDIN</a>
-              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#EAB308] hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* TROPHY MODAL */}
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedTrophy && (
+        {selectedNode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#141414] border-2 border-[#EAB308] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(234,179,8,0.5)] relative space-y-6"
-            >
-              <button
-                onClick={() => {
-                  setSelectedTrophy(null);
-                  playTrophySound('pedestal', isMuted);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EAB308]/10 text-[#EAB308] hover:bg-[#EAB308] hover:text-black flex items-center justify-center transition cursor-pointer"
-              >
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#261B04] border-2 border-[#EAB308] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(234,179,8,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EAB308]/20 text-[#FACC15] hover:bg-[#EAB308] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#EAB308] border border-[#EAB308]/40">
-                  {selectedTrophy.award} · {selectedTrophy.hall}
-                </span>
-                <h3 className="text-2xl font-bold text-white">{selectedTrophy.title}</h3>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] border border-[#EAB308]/45">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-[#FEF08A] font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-sm text-stone-300 leading-relaxed">
-                {selectedTrophy.desc}
-              </p>
-
-              <div className="space-y-2">
-                <span className="text-xs font-mono text-[#EAB308]">ARCHITECTURAL HIGHLIGHTS</span>
+              <p className="text-sm text-yellow-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#140E02] border border-[#EAB308]/20 text-xs text-[#FACC15] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedTrophy.tech.map((t: string) => (
-                    <span key={t} className="text-xs font-mono px-2.5 py-1 rounded-lg bg-[#0A0A0A] text-white border border-stone-800">
-                      {t}
-                    </span>
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#140E02] text-[#FEF08A] border border-[#EAB308]/20">{t}</span>
                   ))}
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <a
-                  href={selectedTrophy.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2.5 rounded-xl bg-[#EAB308] text-black font-mono font-bold text-xs text-center hover:bg-[#FACC15] transition flex items-center justify-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> LIVE REPOSITORY
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#EAB308] text-black font-bold font-mono text-xs text-center hover:bg-[#FDE047] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
               </div>
             </motion.div>

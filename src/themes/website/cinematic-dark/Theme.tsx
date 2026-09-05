@@ -1,22 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Film,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-  ArrowUpRight,
-  ExternalLink,
-  Send,
-  CheckCircle2,
-  Play,
-  RotateCw,
-  Layers
+  Film, Video, Camera, Eye, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-function playProjectionSound(type: 'reel' | 'shutter' | 'beam' | 'clatter', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -28,49 +23,62 @@ function playProjectionSound(type: 'reel' | 'shutter' | 'beam' | 'clatter', isMu
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'reel') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(24, now);
+    if (type === 'radar') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(1600, now + 0.2);
       gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
       osc.stop(now + 0.3);
-    } else if (type === 'shutter') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(48, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      osc.start(now);
-      osc.stop(now + 0.1);
     } else {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, now);
+      osc.frequency.setValueAtTime(900, now);
       gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.2);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function TheProjectionRoom({ data }: ThemeRendererProps) {
+export default function CinematicDarkTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Chief Projectionist projecting 35mm cinematic digital experiences, volumetric WebGL light beams, and sub-100ms ultra-smooth motion systems.";
+  const bio = profile?.bio || "35mm celluloid film projection booth with spinning film reels, anamorphic lens flares, and theater marquee boards.";
   const email = profile?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || "+91 8105561638";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const github = profile?.github || "https://github.com/smhrimmy";
   const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedFilm, setSelectedFilm] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [formSent, setFormSent] = useState(false);
-  const [fps, setFps] = useState(24);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Volumetric Light Beam & Spinning Film Reel Canvas
+  // 3D Procedural Heightfield Canvas Engine for The Projection Room
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -87,196 +95,246 @@ export default function TheProjectionRoom({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
+
     const render = () => {
-      time += 0.03;
-      ctx.fillStyle = '#050505';
+      time += 0.015;
+      ctx.fillStyle = '#0A0A0A';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
-      const cy = canvas.height * 0.35;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
 
-      // 1. Draw Volumetric Light Beam Cone from Projector Lens
-      const beamGrad = ctx.createLinearGradient(cx, 0, cx, canvas.height * 0.7);
-      beamGrad.addColorStop(0, 'rgba(255, 255, 255, 0.2)');
-      beamGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.05)');
-      beamGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
 
-      ctx.fillStyle = beamGrad;
-      ctx.beginPath();
-      ctx.moveTo(cx - 30, 0);
-      ctx.lineTo(cx + 30, 0);
-      ctx.lineTo(cx + 350, canvas.height * 0.7);
-      ctx.lineTo(cx - 350, canvas.height * 0.7);
-      ctx.closePath();
-      ctx.fill();
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
 
-      // 2. Spinning Film Reel Circles
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(cx - 100, cy - 80, 50, 0, Math.PI * 2);
-      ctx.arc(cx + 100, cy - 80, 50, 0, Math.PI * 2);
-      ctx.stroke();
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.3;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
+        }
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.28)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
 
       animId = requestAnimationFrame(render);
     };
 
     render();
-
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [cursorPos]);
 
-  const reels = [
+  // Projects Matrix
+  const projects = [
     {
-      id: "reel-1",
-      reelNum: "REEL 01 / 35MM NITRATE",
-      title: "Portfolio OS Feature",
-      aspectRatio: "2.39:1 ANAMORPHIC",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
     },
     {
-      id: "reel-2",
-      reelNum: "REEL 02 / 70MM IMAX",
-      title: "Praxel Space Cloud Cinema",
-      aspectRatio: "1.43:1 IMAX",
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
     },
     {
-      id: "reel-3",
-      reelNum: "REEL 03 / TECHNICOLOR",
-      title: "Vitvara Application Sequence",
-      aspectRatio: "1.85:1 VISTAVISION",
-      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
     },
     {
-      id: "reel-4",
-      reelNum: "REEL 04 / DIRECTOR'S CUT",
-      title: "Enterprise Client Premiere",
-      aspectRatio: "2.35:1 CINEMASCOPE",
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
+    },
+  ];
+
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F3F4F6] font-sans relative selection:bg-white selection:text-black overflow-x-hidden">
-      {/* 3D Volumetric Projection Canvas */}
+    <div className="min-h-screen bg-[#0A0A0A] text-[#FEE2E2] font-sans relative overflow-x-hidden selection:bg-[#EF4444] selection:text-black">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,10,10,0.85)_80%)]" />
 
-      {/* Celluloid Film Flicker Overlay */}
-      <div className="fixed inset-0 pointer-events-none z-10 shadow-[inset_0_0_180px_rgba(0,0,0,0.95)]" />
-
-      {/* HEADER */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#0A0A0A]/90 border-b border-white/20 backdrop-blur-md">
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#181818]/90 border-b border-[#EF4444]/35 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-white/10 border border-white/30 text-white flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-[#EF4444]/20 border border-[#EF4444] text-[#F87171] flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.4)]">
             <Film className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-bold tracking-widest text-white uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white">
               <span>{candidateName}</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/20 text-white border border-white/30">PROJECTION ROOM</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] border border-[#EF4444]/45 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] font-mono text-zinc-400">{location} · {fps} FPS SHUTTER</p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#F87171]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-red-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playProjectionSound('reel', !isMuted);
-            }}
-            className="w-9 h-9 rounded-full bg-[#1A1A1A] border border-white/30 text-white flex items-center justify-center hover:border-white transition cursor-pointer"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-zinc-600" /> : <Volume2 className="w-4 h-4 text-white" />}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#262626] border border-[#EF4444]/35 text-[#F87171] flex items-center justify-center hover:bg-[#EF4444] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
-      {/* MAIN PROJECTION STAGE */}
-      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
         <section className="text-center space-y-6 pt-6">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/30 text-white text-xs font-mono"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EF4444]/20 border border-[#EF4444]/45 text-[#F87171] text-xs font-mono"
           >
-            <Sparkles className="w-3.5 h-3.5" /> 35MM CINEMATIC METAPHOR · PROJECTION BOOTH
+            <Film className="w-3.5 h-3.5" /> 35MM PROJECTION BOOTH · HIGGSFIELD MCF
           </motion.div>
 
           <motion.h2
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-[0_2px_25px_rgba(255,255,255,0.3)] uppercase"
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-white drop-shadow-[0_2px_30px_rgba(239,68,68,0.4)]"
           >
-            Projecting High-Impact Digital Visions
+            Celluloid <span class="text-[#F87171] italic">Projection</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base text-red-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* FILM REELS */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-center border-b border-white/20 pb-3">
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#EF4444]/30 pb-4">
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <Play className="w-5 h-5 text-white" /> 35mm Celluloid Reels
+              <Film className="w-5 h-5 text-[#F87171]" /> Featured Projects & Systems
             </h3>
-            <span className="text-xs font-mono text-zinc-400">CLICK REEL TO PROJECT</span>
+            <span className="text-xs text-[#F87171] font-mono">CLICK TO INSPECT</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {reels.map((r) => (
+            {projects.map((item) => (
               <motion.div
-                key={r.id}
-                whileHover={{ y: -4, borderColor: "rgba(255, 255, 255, 0.8)" }}
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#EF4444" }}
                 onClick={() => {
-                  setSelectedFilm(r);
-                  playProjectionSound('shutter', isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-6 rounded-2xl bg-[#0F0F0F]/90 border border-white/20 backdrop-blur-md cursor-pointer transition shadow-[0_4px_25px_rgba(0,0,0,0.8)] group relative"
+                className="p-6 rounded-2xl bg-[#181818]/90 border border-[#EF4444]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center text-[10px] font-mono text-zinc-400 mb-3">
-                  <span className="px-2 py-0.5 rounded bg-white/10 text-white border border-white/20">{r.reelNum}</span>
-                  <span>{r.aspectRatio}</span>
+                <div className="flex justify-between items-center text-[10px] text-[#F87171] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#EF4444]/20 border border-[#EF4444]/45">{item.badge}</span>
                 </div>
 
-                <h4 className="text-xl font-bold text-white group-hover:text-zinc-200 transition mb-2">
-                  {r.title}
+                <h4 className="text-xl font-bold text-white group-hover:text-[#F87171] transition mb-2">
+                  {item.title}
                 </h4>
 
-                <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                  {r.desc}
+                <p className="text-xs text-red-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {r.tech.map((t) => (
-                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 rounded bg-black text-zinc-200 border border-zinc-800">
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#0A0A0A] text-[#F87171] border border-[#EF4444]/20">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-mono text-white group-hover:underline">
-                  <span>PROJECT FEATURE FILM</span>
+                <div className="flex items-center gap-1.5 text-xs text-[#F87171] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
@@ -284,128 +342,110 @@ export default function TheProjectionRoom({ data }: ThemeRendererProps) {
           </div>
         </section>
 
-        {/* PROJECTION ROOM CONTACT */}
-        <section className="p-8 rounded-3xl bg-[#0F0F0F]/90 border border-white/30 shadow-[0_0_40px_rgba(255,255,255,0.1)] space-y-6">
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#EF4444]/30 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#F87171]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#181818]/90 border border-[#EF4444]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] font-mono border border-[#EF4444]/45">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-white">{item.role}</h4>
+                  <p className="text-xs text-red-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-red-200/70 font-sans">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#181818]/90 border border-[#EF4444]/40 shadow-[0_0_40px_rgba(239,68,68,0.4)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-bold text-white">Projector Booth Transmission</h3>
-            <p className="text-xs text-zinc-400">
-              Send screening inquiries directly to Prajwal DL ({email}).
+            <h3 className="text-2xl font-bold text-white">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-red-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-white/10 border border-white text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-white mx-auto" />
-              <p className="font-bold text-white">Transmission Screened on Main Projection Board</p>
-              <p className="text-xs text-zinc-400 font-mono">Prajwal DL will project your response soon.</p>
+            <div className="p-6 rounded-2xl bg-[#EF4444]/20 border border-[#EF4444]/45 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#F87171] mx-auto" />
+              <p className="font-bold text-white">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#F87171] font-mono">Prajwal DL will respond promptly.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playProjectionSound('beam', isMuted);
+                playAudio('chime', isMuted);
               }}
-              className="space-y-4 max-w-xl mx-auto text-xs"
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-400 font-mono mb-1">CINEMA PRODUCER</label>
-                  <input
-                    required
-                    defaultValue="Film Producer"
-                    className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white focus:outline-none focus:border-white"
-                  />
+                  <label className="block text-[#F87171] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
                 </div>
                 <div>
-                  <label className="block text-zinc-400 font-mono mb-1">STUDIO EMAIL</label>
-                  <input
-                    required
-                    type="email"
-                    defaultValue="producer@studio.film"
-                    className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white focus:outline-none focus:border-white"
-                  />
+                  <label className="block text-[#F87171] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
                 </div>
               </div>
               <div>
-                <label className="block text-zinc-400 font-mono mb-1">SCREENING INQUIRY</label>
-                <textarea
-                  rows={3}
-                  required
-                  defaultValue="Requesting full-stack architecture design and high-performance WebGL cinematic systems."
-                  className="w-full px-4 py-2.5 rounded-xl bg-black border border-white/20 text-white focus:outline-none focus:border-white"
-                />
+                <label className="block text-[#F87171] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/30 text-white focus:outline-none focus:border-[#EF4444]" />
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-white text-black font-mono font-bold text-xs hover:bg-zinc-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.4)]"
-              >
-                <Send className="w-4 h-4" /> TRANSMIT SCREENING REQUISITION
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#EF4444] text-white font-mono font-bold text-xs hover:bg-[#FCA5A5] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(239,68,68,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-white/20 flex flex-wrap justify-between items-center text-[11px] font-mono text-zinc-400">
-            <span>BOOTH: MANGALORE, KARNATAKA</span>
+          <div className="pt-4 border-t border-[#EF4444]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-white hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-white hover:underline">LINKEDIN</a>
-              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-white hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#F87171] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* REEL MODAL */}
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedFilm && (
+        {selectedNode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#0F0F0F] border-2 border-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(255,255,255,0.5)] relative space-y-6"
-            >
-              <button
-                onClick={() => {
-                  setSelectedFilm(null);
-                  playProjectionSound('shutter', isMuted);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 text-white hover:bg-white hover:text-black flex items-center justify-center transition cursor-pointer"
-              >
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#181818] border-2 border-[#EF4444] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(239,68,68,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EF4444]/20 text-[#F87171] hover:bg-[#EF4444] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/20 text-white border border-white/30">
-                  {selectedFilm.reelNum} · {selectedFilm.aspectRatio}
-                </span>
-                <h3 className="text-2xl font-bold text-white">{selectedFilm.title}</h3>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#F87171] border border-[#EF4444]/45">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-white font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-sm text-zinc-400 leading-relaxed">
-                {selectedFilm.desc}
-              </p>
-
-              <div className="space-y-2">
-                <span className="text-xs font-mono text-white">CINEMATOGRAPHY TOKENS</span>
+              <p className="text-sm text-red-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#0A0A0A] border border-[#EF4444]/20 text-xs text-[#F87171] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedFilm.tech.map((t: string) => (
-                    <span key={t} className="text-xs font-mono px-2.5 py-1 rounded-lg bg-black text-white border border-zinc-800">
-                      {t}
-                    </span>
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#0A0A0A] text-white border border-[#EF4444]/20">{t}</span>
                   ))}
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <a
-                  href={selectedFilm.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2.5 rounded-xl bg-white text-black font-mono font-bold text-xs text-center hover:bg-zinc-200 transition flex items-center justify-center gap-1.5"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> SCREEN LIVE REEL
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#EF4444] text-white font-bold font-mono text-xs text-center hover:bg-[#FCA5A5] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
               </div>
             </motion.div>

@@ -1,23 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Boxes,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-  ArrowUpRight,
-  ExternalLink,
-  Send,
-  CheckCircle2,
-  Smile,
-  Zap,
-  Package,
-  Heart
+  Gamepad2, Boxes, Smile, Wrench, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-function playToySound(type: 'bounce' | 'pop' | 'bell' | 'windup', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -29,60 +23,62 @@ function playToySound(type: 'bounce' | 'pop' | 'bell' | 'windup', isMuted: boole
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'bounce') {
+    if (type === 'radar') {
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(350, now);
-      osc.frequency.exponentialRampToValueAtTime(800, now + 0.12);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+      osc.frequency.setValueAtTime(1200, now);
+      osc.frequency.exponentialRampToValueAtTime(2400, now + 0.2);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
       osc.start(now);
-      osc.stop(now + 0.25);
-    } else if (type === 'pop') {
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(800, now);
-      osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
       osc.start(now);
-      osc.stop(now + 0.2);
-    } else if (type === 'bell') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1046.5, now);
-      osc.frequency.setValueAtTime(1318.5, now + 0.08);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
       gain.gain.setValueAtTime(0.1, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
-      osc.stop(now + 0.4);
+      osc.stop(now + 0.3);
     } else {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(200, now);
-      osc.frequency.linearRampToValueAtTime(400, now + 0.15);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.2);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function TheToyChest({ data }: ThemeRendererProps) {
+export default function Playful3DTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Full Stack Developer & Web Advisor building joyful 3D interactive physics boxes, high-velocity web apps, and automated DNS infrastructure.";
+  const bio = profile?.bio || "Crafting vibrant kinetic 3D dioramas, wind-up music mechanics, and delightful full-stack interactive systems.";
   const email = profile?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || "+91 8105561638";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const github = profile?.github || "https://github.com/smhrimmy";
   const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedToy, setSelectedToy] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [formSent, setFormSent] = useState(false);
-  const [windupTurns, setWindupTurns] = useState(3);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Isometric Physics Toy Blocks Canvas
+  // 3D Procedural Heightfield Canvas Engine for The Toy Chest
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -99,384 +95,357 @@ export default function TheToyChest({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
-    // Blocks
-    const blocks: { x: number; y: number; size: number; color: string; speed: number; rot: number; rotSpeed: number }[] = [];
-    const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#FF8E53', '#A8E6CF', '#DEDBA7'];
-    for (let i = 0; i < 24; i++) {
-      blocks.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        size: Math.random() * 30 + 25,
-        color: colors[i % colors.length],
-        speed: Math.random() * 0.6 + 0.3,
-        rot: Math.random() * Math.PI,
-        rotSpeed: (Math.random() - 0.5) * 0.02,
-      });
-    }
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
 
     const render = () => {
-      time += 0.02;
-      ctx.fillStyle = '#FFFDF5';
+      time += 0.015;
+      ctx.fillStyle = '#1E1B4B';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw playful 3D isometric floating toy blocks
-      blocks.forEach((b) => {
-        b.y -= b.speed;
-        b.rot += b.rotSpeed;
-        if (b.y < -60) {
-          b.y = canvas.height + 60;
-          b.x = Math.random() * canvas.width;
+      const cx = canvas.width / 2;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
+
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
+
+      for (let r = 0; r < rows; r++) {
+        ctx.beginPath();
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
+
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.3;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
         }
-
-        ctx.save();
-        ctx.translate(b.x, b.y);
-        ctx.rotate(b.rot);
-
-        // 3D Isometric Box Rendering
-        const s = b.size;
-        // Shadow
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.06)';
-        ctx.beginPath();
-        ctx.ellipse(0, s * 0.8, s * 0.9, s * 0.3, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Top Face
-        ctx.fillStyle = b.color;
-        ctx.beginPath();
-        ctx.moveTo(0, -s * 0.5);
-        ctx.lineTo(s * 0.8, -s * 0.1);
-        ctx.lineTo(0, s * 0.3);
-        ctx.lineTo(-s * 0.8, -s * 0.1);
-        ctx.closePath();
-        ctx.fill();
-
-        // Left Face
-        ctx.fillStyle = 'rgba(0,0,0,0.15)';
-        ctx.beginPath();
-        ctx.moveTo(-s * 0.8, -s * 0.1);
-        ctx.lineTo(0, s * 0.3);
-        ctx.lineTo(0, s * 0.9);
-        ctx.lineTo(-s * 0.8, s * 0.5);
-        ctx.closePath();
-        ctx.fill();
-
-        // Right Face
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.beginPath();
-        ctx.moveTo(0, s * 0.3);
-        ctx.lineTo(s * 0.8, -s * 0.1);
-        ctx.lineTo(s * 0.8, s * 0.5);
-        ctx.lineTo(0, s * 0.9);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.restore();
-      });
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.28)';
+        ctx.lineWidth = 1.1;
+        ctx.stroke();
+      }
 
       animId = requestAnimationFrame(render);
     };
 
     render();
-
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [cursorPos]);
 
-  const toyBoxes = [
+  // Projects Matrix
+  const projects = [
     {
-      id: "toy-1",
-      title: "Portfolio OS 3D Chest",
-      color: "bg-[#FF6B6B]",
-      accent: "border-[#FF6B6B]",
-      tag: "FLAGSHIP TOY",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and interactive 3D physics.",
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
     },
     {
-      id: "toy-2",
-      title: "Praxel Space Cloud Sandbox",
-      color: "bg-[#4ECDC4]",
-      accent: "border-[#4ECDC4]",
-      tag: "CLOUD BOX",
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
     },
     {
-      id: "toy-3",
-      title: "Vitvara Web Playground",
-      color: "bg-[#FFE66D]",
-      accent: "border-[#FFE66D]",
-      tag: "REACT BOX",
-      desc: "Engineered scalable, user-centric web applications with modern state management, high test coverage, and fast API microservices.",
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
     },
     {
-      id: "toy-4",
-      title: "Client Enterprise Diorama",
-      color: "bg-[#FF8E53]",
-      accent: "border-[#FF8E53]",
-      tag: "CUSTOM SUITE",
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
     },
   ];
 
-  const handleWindup = () => {
-    setWindupTurns(w => w + 1);
-    playToySound('windup', isMuted);
-  };
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#FFFDF5] text-[#2D3748] font-sans relative selection:bg-[#FF6B6B] selection:text-white overflow-x-hidden">
-      {/* 3D Toy Physics Canvas */}
+    <div className="min-h-screen bg-[#1E1B4B] text-[#FFE4E6] font-sans relative overflow-x-hidden selection:bg-[#F43F5E] selection:text-black">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(30,27,75,0.85)_80%)]" />
 
-      {/* HEADER */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-white/85 border-b-2 border-slate-200 backdrop-blur-md shadow-sm">
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#2E1065]/90 border-b border-[#F43F5E]/40 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#FF6B6B] text-white flex items-center justify-center shadow-md">
-            <Boxes className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-[#F43F5E]/20 border border-[#F43F5E] text-[#FB7185] flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+            <Gamepad2 className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-wide text-slate-800 uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white">
               <span>{candidateName}</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FF6B6B]/15 text-[#FF6B6B]">TOY CHEST</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/50 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] font-bold text-slate-500">{location} · WIND-UPS: {windupTurns}</p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#FB7185]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-pink-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleWindup}
-            className="px-3.5 py-1.5 rounded-xl bg-[#4ECDC4] text-slate-900 font-bold text-xs hover:bg-[#38b2ac] transition flex items-center gap-1.5 shadow-sm cursor-pointer"
-          >
-            <Zap className="w-3.5 h-3.5" /> WIND UP SPRING ({windupTurns})
-          </button>
-
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playToySound('bell', !isMuted);
-            }}
-            className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition cursor-pointer"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-slate-400" /> : <Volume2 className="w-4 h-4 text-[#FF6B6B]" />}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#3B0764] border border-[#F43F5E]/40 text-[#FB7185] flex items-center justify-center hover:bg-[#F43F5E] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
-      {/* HERO SECTION */}
-      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
-        <section className="text-center space-y-5">
+      {/* MAIN STAGE */}
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
+        <section className="text-center space-y-6 pt-6">
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFE66D] border border-amber-300 text-slate-800 text-xs font-bold shadow-sm"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#F43F5E]/20 border border-[#F43F5E]/50 text-[#FB7185] text-xs font-mono"
           >
-            <Smile className="w-4 h-4 text-amber-600" /> 3D PLAYFUL METAPHOR · HAND-CRAFTED DIORAMAS
+            <Gamepad2 className="w-3.5 h-3.5" /> KINETIC TOY CHEST · HIGGSFIELD AI MCF
           </motion.div>
 
           <motion.h2
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black text-slate-800 tracking-tight"
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-white drop-shadow-[0_2px_30px_rgba(244,63,94,0.4)]"
           >
-            Building Playful, High-Velocity Digital Worlds
+            Playful <span class="text-[#FB7185]">Kinetic 3D</span>
           </motion.h2>
 
           <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed"
+            className="text-sm sm:text-base text-pink-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
           >
             {bio}
           </motion.p>
         </section>
 
-        {/* 3D DIORAMA BOXES */}
-        <section className="space-y-6">
-          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-3">
-            <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
-              <Package className="w-5 h-5 text-[#FF6B6B]" /> Interactive Toy Dioramas
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#F43F5E]/30 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Gamepad2 className="w-5 h-5 text-[#FB7185]" /> Featured Projects & Systems
             </h3>
-            <span className="text-xs font-bold text-slate-500">4 DIORAMAS LOADED</span>
+            <span className="text-xs text-[#FB7185] font-mono">CLICK TO INSPECT</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {toyBoxes.map((toy) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {projects.map((item) => (
               <motion.div
-                key={toy.id}
-                whileHover={{ y: -6, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#F43F5E" }}
                 onClick={() => {
-                  setSelectedToy(toy);
-                  playToySound('bounce', isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-6 rounded-3xl bg-white border-3 border-slate-800 shadow-[6px_6px_0px_#1E293B] cursor-pointer transition-all duration-200 group relative"
+                className="p-6 rounded-2xl bg-[#2E1065]/90 border border-[#F43F5E]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
-                    {toy.tag}
-                  </span>
-                  <div className={`w-4 h-4 rounded-full ${toy.color} border border-slate-800`} />
+                <div className="flex justify-between items-center text-[10px] text-[#FB7185] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#F43F5E]/20 border border-[#F43F5E]/50">{item.badge}</span>
                 </div>
 
-                <h4 className="text-xl font-black text-slate-900 group-hover:text-[#FF6B6B] transition mb-2">
-                  {toy.title}
+                <h4 className="text-xl font-bold text-white group-hover:text-[#FB7185] transition mb-2">
+                  {item.title}
                 </h4>
 
-                <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                  {toy.desc}
+                <p className="text-xs text-pink-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {toy.tech.map((t) => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#1E1B4B] text-[#FB7185] border border-[#F43F5E]/20">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-black text-slate-900 group-hover:text-[#FF6B6B]">
-                  <span>OPEN TOY DIORAMA</span>
-                  <ArrowUpRight className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 text-xs text-[#FB7185] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* TOY CHEST CONTACT FORM */}
-        <section className="p-8 rounded-3xl bg-white border-3 border-slate-800 shadow-[8px_8px_0px_#1E293B] space-y-6">
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#F43F5E]/30 pb-4">
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#FB7185]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#2E1065]/90 border border-[#F43F5E]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#FB7185] font-mono border border-[#F43F5E]/50">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-white">{item.role}</h4>
+                  <p className="text-xs text-pink-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-pink-200/70 font-sans">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#2E1065]/90 border border-[#F43F5E]/40 shadow-[0_0_40px_rgba(244,63,94,0.4)] space-y-6">
           <div className="text-center space-y-2">
-            <h3 className="text-2xl font-black text-slate-900">Drop a Note in the Toy Chest</h3>
-            <p className="text-xs text-slate-600">
-              Send a joyful message to Prajwal DL ({email}).
+            <h3 className="text-2xl font-bold text-white">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-pink-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-6 rounded-2xl bg-[#4ECDC4]/20 border-2 border-[#4ECDC4] text-center space-y-2">
-              <CheckCircle2 className="w-8 h-8 text-[#4ECDC4] mx-auto" />
-              <p className="font-black text-slate-900">Toy Box Message Successfully Delivered!</p>
-              <p className="text-xs text-slate-600">Prajwal DL will open your note soon.</p>
+            <div className="p-6 rounded-2xl bg-[#F43F5E]/20 border border-[#F43F5E]/50 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#FB7185] mx-auto" />
+              <p className="font-bold text-white">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#FB7185] font-mono">Prajwal DL will respond promptly.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playToySound('pop', isMuted);
+                playAudio('chime', isMuted);
               }}
-              className="space-y-4 max-w-xl mx-auto text-xs font-bold"
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 mb-1">YOUR NAME</label>
-                  <input
-                    required
-                    defaultValue="Toy Maker Friend"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-800 focus:outline-none focus:border-[#FF6B6B]"
-                  />
+                  <label className="block text-[#FB7185] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#1E1B4B] border border-[#F43F5E]/30 text-white focus:outline-none focus:border-[#F43F5E]" />
                 </div>
                 <div>
-                  <label className="block text-slate-700 mb-1">YOUR EMAIL</label>
-                  <input
-                    required
-                    type="email"
-                    defaultValue="friend@toychest.io"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-800 focus:outline-none focus:border-[#FF6B6B]"
-                  />
+                  <label className="block text-[#FB7185] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#1E1B4B] border border-[#F43F5E]/30 text-white focus:outline-none focus:border-[#F43F5E]" />
                 </div>
               </div>
               <div>
-                <label className="block text-slate-700 mb-1">YOUR NOTE</label>
-                <textarea
-                  rows={3}
-                  required
-                  defaultValue="Excited to build delightful, high-performance web products together!"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border-2 border-slate-300 text-slate-800 focus:outline-none focus:border-[#FF6B6B]"
-                />
+                <label className="block text-[#FB7185] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#1E1B4B] border border-[#F43F5E]/30 text-white focus:outline-none focus:border-[#F43F5E]" />
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 rounded-2xl bg-[#FF6B6B] text-white font-black text-xs hover:bg-[#ff5252] transition flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_#1E293B]"
-              >
-                <Send className="w-4 h-4" /> SEND TOY CHEST MESSAGE
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#F43F5E] text-white font-mono font-bold text-xs hover:bg-[#FDA4AF] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(244,63,94,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t-2 border-slate-200 flex flex-wrap justify-between items-center text-[11px] font-bold text-slate-500">
-            <span>MANGALORE, KARNATAKA · 575001</span>
+          <div className="pt-4 border-t border-[#F43F5E]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-[#FF6B6B] hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#4ECDC4] hover:underline">LINKEDIN</a>
-              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#FF8E53] hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#FB7185] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* TOY MODAL */}
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedToy && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="bg-white border-3 border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-[10px_10px_0px_#1E293B] relative space-y-5"
-            >
-              <button
-                onClick={() => {
-                  setSelectedToy(null);
-                  playToySound('pop', isMuted);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 flex items-center justify-center transition cursor-pointer"
-              >
+        {selectedNode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#2E1065] border-2 border-[#F43F5E] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(244,63,94,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F43F5E]/20 text-[#FB7185] hover:bg-[#F43F5E] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 border border-slate-300">
-                  {selectedToy.tag}
-                </span>
-                <h3 className="text-2xl font-black text-slate-900">{selectedToy.title}</h3>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#F43F5E]/20 text-[#FB7185] border border-[#F43F5E]/50">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-white font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {selectedToy.desc}
-              </p>
-
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-500">PLAYGROUND TECH</span>
+              <p className="text-sm text-pink-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#1E1B4B] border border-[#F43F5E]/20 text-xs text-[#FB7185] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedToy.tech.map((t: string) => (
-                    <span key={t} className="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
-                      {t}
-                    </span>
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#1E1B4B] text-white border border-[#F43F5E]/20">{t}</span>
                   ))}
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <a
-                  href={selectedToy.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2.5 rounded-xl bg-[#FF6B6B] text-white font-black text-xs text-center hover:bg-[#ff5252] transition flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#1E293B]"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> LAUNCH TOY
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#F43F5E] text-white font-bold font-mono text-xs text-center hover:bg-[#FDA4AF] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
               </div>
             </motion.div>

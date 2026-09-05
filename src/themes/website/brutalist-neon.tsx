@@ -1,22 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Printer,
-  Sparkles,
-  Volume2,
-  VolumeX,
-  X,
-  ArrowUpRight,
-  ExternalLink,
-  Send,
-  CheckCircle2,
-  Stamp,
-  Layers,
-  Zap
+  Printer, Scissors, Sparkles, X, ArrowUpRight, CheckCircle2, Send, Sliders, Layers, Compass, Activity, Radio
 } from "lucide-react";
 import type { ThemeRendererProps } from "../types";
+import {
+  HIGGSFIELD_MCF_HASH,
+  HIGGSFIELD_CLUSTER_UUID,
+  HIGGSFIELD_MOTION_PRESETS,
+  type HiggsfieldMotionPreset
+} from "@/integrations/higgsfield";
 
-function playPrintSound(type: 'press' | 'ink' | 'roller' | 'stamp', isMuted: boolean) {
+function playAudio(type: 'radar' | 'chime' | 'pulse' | 'click' | 'warp', isMuted: boolean) {
   if (isMuted || typeof window === 'undefined') return;
   try {
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
@@ -28,50 +23,62 @@ function playPrintSound(type: 'press' | 'ink' | 'roller' | 'stamp', isMuted: boo
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (type === 'press') {
+    if (type === 'radar') {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(950, now);
+      osc.frequency.exponentialRampToValueAtTime(1900, now + 0.2);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+      osc.start(now);
+      osc.stop(now + 0.5);
+    } else if (type === 'chime') {
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now);
+      osc.frequency.setValueAtTime(659.25, now + 0.08);
+      osc.frequency.setValueAtTime(783.99, now + 0.16);
+      osc.frequency.setValueAtTime(1046.50, now + 0.24);
+      gain.gain.setValueAtTime(0.09, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+      osc.start(now);
+      osc.stop(now + 0.45);
+    } else if (type === 'pulse') {
       osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(80, now);
-      osc.frequency.linearRampToValueAtTime(40, now + 0.3);
-      gain.gain.setValueAtTime(0.18, now);
+      osc.frequency.setValueAtTime(120, now);
+      osc.frequency.linearRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.1, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
       osc.start(now);
       osc.stop(now + 0.3);
-    } else if (type === 'stamp') {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(150, now);
-      gain.gain.setValueAtTime(0.15, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-      osc.start(now);
-      osc.stop(now + 0.15);
     } else {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(300, now);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(900, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
       osc.start(now);
-      osc.stop(now + 0.1);
+      osc.stop(now + 0.06);
     }
   } catch {}
 }
 
-export default function ThePrintShop({ data }: ThemeRendererProps) {
+export default function BrutalistNeonTheme({ data }: ThemeRendererProps) {
   const profile = (data as any)?.profile || (data as any)?.identity || {};
   const candidateName = profile?.name || "Prajwal DL";
-  const bio = profile?.bio || "Full Stack Developer & Master Printer stamping high-impact brutalist digital interfaces, heavy-duty backend architectures, and sub-100ms web systems.";
+  const bio = profile?.bio || "Raw letterpress workshop with acid-yellow ink shimmers, heavy cylinder press mechanics, and bold typography.";
   const email = profile?.email || "pdlkpt@gmail.com";
-  const phone = profile?.phone || "+91 8105561638";
+  const phone = profile?.phone || "+918105561638";
   const location = profile?.location || "Mangalore, Karnataka, India";
-  const github = profile?.github || "https://github.com/smhrimmy";
   const linkedin = profile?.linkedin || "https://linkedin.com/in/prajwal-d-l-118198370/";
+  const website = "https://praxel.space/";
+  const github = profile?.github || "https://github.com/smhrimmy";
 
   const [isMuted, setIsMuted] = useState(true);
-  const [selectedPlate, setSelectedPlate] = useState<any | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
   const [formSent, setFormSent] = useState(false);
-  const [impressionsCount, setImpressionsCount] = useState(1402);
+  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // 3D Letterpress Ink Viscosity & Roller Press Canvas
+  // 3D Procedural Heightfield Canvas Engine for The Print Shop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -88,31 +95,50 @@ export default function ThePrintShop({ data }: ThemeRendererProps) {
     resize();
     window.addEventListener('resize', resize);
 
+    const handlePointerMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    };
+    window.addEventListener('mousemove', handlePointerMove);
+
     const render = () => {
-      time += 0.02;
-      ctx.fillStyle = '#0D0D0D';
+      time += 0.015;
+      ctx.fillStyle = '#0F0F00';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // 3D Cylinder Press Shimmer & Ink Heightmap
-      const cols = 20;
-      const rows = 14;
-      const cw = canvas.width / cols;
-      const ch = canvas.height / rows;
+      const cx = canvas.width / 2;
+      const cy = canvas.height * 0.46;
+      const cols = 32;
+      const rows = 20;
+      const spacingX = Math.min(canvas.width / cols * 1.4, 38);
+      const spacingY = spacingX * 0.55;
 
-      ctx.lineWidth = 1.5;
+      const mouseNormX = (cursorPos.x - cx) / canvas.width;
+      const mouseNormY = (cursorPos.y - cy) / canvas.height;
+
       for (let r = 0; r < rows; r++) {
         ctx.beginPath();
-        for (let c = 0; c <= cols; c++) {
-          const x = c * cw;
-          const y = r * ch;
-          const inkWave = Math.sin(c * 0.4 + time * 2) * 8 + Math.cos(r * 0.3 + time) * 6;
-          const px = x;
-          const py = y + inkWave;
+        for (let c = 0; c < cols; c++) {
+          const offsetX = (c - cols / 2) * spacingX;
+          const offsetY = (r - rows / 2) * spacingY;
+          const distToMouse = Math.sqrt(
+            Math.pow(offsetX - mouseNormX * 280, 2) + Math.pow(offsetY - mouseNormY * 180, 2)
+          );
 
-          if (c === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
+          const wave1 = Math.sin(c * 0.3 + time * 1.5) * 18;
+          const wave2 = Math.cos(r * 0.35 - time * 1.2) * 14;
+          const ripple = Math.sin(Math.sqrt(offsetX * offsetX + offsetY * offsetY) * 0.035 - time * 2) * 10;
+          const mouseWarp = Math.exp(-distToMouse / 95) * 40;
+          const elevation = (wave1 + wave2 + ripple + mouseWarp) * 1.3;
+
+          const isoX = cx + (offsetX - offsetY * 0.75);
+          const isoY = cy + (offsetX * 0.3 + offsetY * 0.6) - elevation;
+
+          if (c === 0) ctx.moveTo(isoX, isoY);
+          else ctx.lineTo(isoX, isoY);
         }
-        ctx.strokeStyle = r % 2 === 0 ? 'rgba(255, 230, 0, 0.08)' : 'rgba(255, 0, 128, 0.06)';
+        ctx.strokeStyle = 'rgba(234, 179, 8, 0.3)';
+        ctx.lineWidth = 1.1;
         ctx.stroke();
       }
 
@@ -120,155 +146,195 @@ export default function ThePrintShop({ data }: ThemeRendererProps) {
     };
 
     render();
-
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handlePointerMove);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [cursorPos]);
 
-  const plates = [
+  // Projects Matrix
+  const projects = [
     {
-      id: "plate-1",
-      edition: "EDITION 01/2026",
-      title: "Portfolio OS Letterpress",
-      ink: "PANTONE NEON YELLOW",
-      desc: "Full-stack personal operating system with 20 real-world physical metaphors, sub-100ms LCP, and real-time audio synthesis.",
+      id: "proj-1",
+      badge: "FLAGSHIP 3D",
+      title: "Portfolio OS Spatial Matrix",
+      desc: "Full-stack personal operating system with 20 real-world physical metaphors, real-time 3D heightfield vertex deformation, and sub-100ms LCP.",
       tech: ["React 19", "Three.js", "TypeScript", "Tailwind CSS"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Higgsfield AI MCF & 4D Tesseract Dimension with zero latency",
     },
     {
-      id: "plate-2",
-      edition: "EDITION 02/2025",
-      title: "Praxel Space Cloud Press",
-      ink: "PANTONE MAGENTA 806",
-      desc: "Cloud infrastructure platform orchestrating automated SSL certificate provisioning, DNS health diagnostics, and server pipelines.",
+      id: "proj-2",
+      badge: "CLOUD PROBES",
+      title: "Praxel Space Cloud Platform",
+      desc: "Automated DNS management platform with real-time SSL provisioning, domain health probes, and cloud infrastructure telemetry.",
       tech: ["DNS Automation", "SSL Certbot", "PHP", "MySQL"],
       liveUrl: "https://praxel.space/",
+      highlight: "Automated zero-downtime certificate renewal and DNS diagnostics",
     },
     {
-      id: "plate-3",
-      edition: "EDITION 03/2024",
-      title: "Vitvara Web Imprint",
-      ink: "PANTONE CYAN 300",
-      desc: "Engineered scalable, user-centric web applications with optimized React state architecture and secure API pipelines.",
+      id: "proj-3",
+      badge: "WEB PLATFORM",
+      title: "Vitvara Application Ridge",
+      desc: "Engineered scalable, user-centric web applications with modern state architecture, robust accessibility, and secure API microservices.",
       tech: ["React.js", "REST APIs", "Modern CSS", "HTML5"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "High-throughput frontend with clean microservice integration",
     },
     {
-      id: "plate-4",
-      edition: "EDITION 04/2023",
-      title: "Bespoke Enterprise Editions",
-      ink: "PANTONE REFLEX BLACK",
+      id: "proj-4",
+      badge: "ENTERPRISE",
+      title: "Bespoke Enterprise Basins",
       desc: "Delivered bespoke client web platforms with custom WordPress architectures, secure contact pipelines, and responsive design.",
       tech: ["WordPress", "Node.js", "UI/UX", "Payment Gateways"],
-      liveUrl: "https://praxel.space/",
+      liveUrl: website,
+      highlight: "Custom client portals tailored for high-conversion performance",
     },
   ];
 
-  const pullLever = () => {
-    setImpressionsCount(c => c + 1);
-    playPrintSound('press', isMuted);
-  };
+  // Career Timeline
+  const careerTimeline = [
+    {
+      period: "2025 — PRESENT",
+      role: "Web Advisor & Technical Operations",
+      company: "Unifycx · Mangalore, Karnataka",
+      desc: "Assisting global clients with website migrations, SSL installations, DNS troubleshooting, and hosting control panel architectures.",
+    },
+    {
+      period: "2024 — 2025",
+      role: "Full Stack Web Developer & Designer",
+      company: "Freelance Practice · Remote / Mangalore",
+      desc: "Designed and developed custom web applications using modern React, TypeScript, and PHP/MySQL pipelines based on client specifications.",
+    },
+    {
+      period: "2024",
+      role: "Junior Support Engineer",
+      company: "GlowTouch Technologies · Mangalore",
+      desc: "Provided live chat support for hosting, domain, and server migrations. Troubleshot WordPress, MySQL, PHP, and DNS infrastructure.",
+    },
+    {
+      period: "2023 — 2024",
+      role: "Web Developer Intern",
+      company: "Vitvara Technologies",
+      desc: "Developed modern responsive React interfaces and integrated RESTful endpoints across diverse client web applications.",
+    },
+    {
+      period: "2021 — 2024",
+      role: "Diploma in Full Stack Development",
+      company: "Karnataka (Govt) Polytechnic, Mangalore",
+      desc: "Comprehensive foundation in computer science, software architecture, data structures, and full-stack engineering.",
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-[#FFE600] font-mono relative selection:bg-[#FFE600] selection:text-black overflow-x-hidden">
-      {/* 3D Letterpress Canvas */}
+    <div className="min-h-screen bg-[#0F0F00] text-[#FEF9C3] font-mono relative overflow-x-hidden selection:bg-[#EAB308] selection:text-black">
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-0" />
+      <div className="fixed inset-0 pointer-events-none z-10 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(15,15,0,0.85)_80%)]" />
 
-      {/* HEADER */}
-      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#141414]/90 border-b-2 border-[#FFE600] backdrop-blur-md">
+      {/* TOP HUD */}
+      <header className="fixed top-0 inset-x-0 z-40 flex justify-between items-center px-6 py-4 bg-[#1C1C03]/90 border-b border-[#EAB308]/40 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#FFE600] text-black font-black flex items-center justify-center text-lg">
-            <Printer className="w-6 h-6" />
+          <div className="w-10 h-10 rounded-xl bg-[#EAB308]/20 border border-[#EAB308] text-[#FACC15] flex items-center justify-center shadow-[0_0_15px_rgba(234,179,8,0.4)]">
+            <Printer className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-widest text-white uppercase flex items-center gap-2">
+            <h1 className="text-xs sm:text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-[#FEF08A]">
               <span>{candidateName}</span>
-              <span className="text-[10px] px-2 py-0.5 bg-[#FFE600] text-black font-bold">PRINT SHOP</span>
+              <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] border border-[#EAB308]/50 font-mono">
+                HIGGSFIELD AI MCF
+              </span>
             </h1>
-            <p className="text-[10px] text-zinc-400">{location} · IMPRESSIONS: {impressionsCount}</p>
+            <p className="text-[10px] text-slate-400 font-mono">
+              HASH: <span className="text-[#FACC15]">{HIGGSFIELD_MCF_HASH.slice(0, 10)}...</span> · CLUSTER: <span className="text-yellow-300">{HIGGSFIELD_CLUSTER_UUID.slice(0, 8)}...</span>
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={pullLever}
-            className="px-3.5 py-1.5 bg-[#FFE600] text-black font-black text-xs hover:bg-white transition flex items-center gap-1.5 cursor-pointer shadow-[3px_3px_0px_#fff]"
-          >
-            <Stamp className="w-3.5 h-3.5" /> PULL PRESS LEVER
-          </button>
-
-          <button
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playPrintSound('stamp', !isMuted);
-            }}
-            className="w-9 h-9 bg-black border border-[#FFE600] text-[#FFE600] flex items-center justify-center hover:bg-[#FFE600] hover:text-black transition cursor-pointer"
-          >
-            {isMuted ? <VolumeX className="w-4 h-4 text-zinc-600" /> : <Volume2 className="w-4 h-4 text-[#FFE600]" />}
-          </button>
-        </div>
+        <button
+          onClick={() => {
+            setIsMuted(!isMuted);
+            playAudio('chime', !isMuted);
+          }}
+          className="w-9 h-9 rounded-xl bg-[#2B2B05] border border-[#EAB308]/40 text-[#FACC15] flex items-center justify-center hover:bg-[#EAB308] hover:text-black transition cursor-pointer"
+        >
+          <Sparkles className="w-4 h-4" />
+        </button>
       </header>
 
       {/* MAIN STAGE */}
-      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-16">
-        <section className="p-8 bg-[#141414] border-3 border-[#FFE600] shadow-[8px_8px_0px_#FFE600] space-y-4">
-          <div className="flex justify-between items-center text-xs text-zinc-400 border-b border-zinc-800 pb-3">
-            <span className="flex items-center gap-1.5"><Layers className="w-4 h-4 text-[#FFE600]" /> HEAVY LETTERPRESS WORKSHOP</span>
-            <span className="text-[#FFE600] font-black">HIGH-PRESSURE INK RELIEF</span>
-          </div>
+      <main className="relative z-20 pt-32 pb-24 px-6 max-w-5xl mx-auto space-y-20">
+        {/* HERO */}
+        <section className="text-center space-y-6 pt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EAB308]/20 border border-[#EAB308]/50 text-[#FACC15] text-xs font-mono"
+          >
+            <Printer className="w-3.5 h-3.5" /> RAW LETTERPRESS · HIGGSFIELD AI MCF
+          </motion.div>
 
-          <h2 className="text-3xl sm:text-6xl font-black text-white tracking-tighter uppercase">
-            STAMPING RAW <span className="text-[#FFE600]">PERFORMANCE</span>
-          </h2>
+          <motion.h2
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-7xl font-bold tracking-tight uppercase text-[#FEF08A] drop-shadow-[0_2px_30px_rgba(234,179,8,0.4)]"
+          >
+            Acid <span class="text-[#FACC15] underline">Print Shop</span>
+          </motion.h2>
 
-          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed max-w-2xl">
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-sm sm:text-base text-yellow-200/80 max-w-2xl mx-auto leading-relaxed font-sans"
+          >
             {bio}
-          </p>
+          </motion.p>
         </section>
 
-        {/* PRINTED PLATES */}
-        <section className="space-y-6">
-          <div className="flex justify-between items-center text-xs font-black text-zinc-400 border-b-2 border-zinc-800 pb-3">
-            <span>EMBOSSED RELIEF PLATES</span>
-            <span>PRESS TO INSPECT PROOF</span>
+        {/* PROJECTS */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between border-b border-[#EAB308]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FEF08A] flex items-center gap-2">
+              <Printer className="w-5 h-5 text-[#FACC15]" /> Featured Projects & Systems
+            </h3>
+            <span className="text-xs text-[#FACC15] font-mono">CLICK TO INSPECT</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {plates.map((p) => (
+            {projects.map((item) => (
               <motion.div
-                key={p.id}
-                whileHover={{ y: -4 }}
+                key={item.id}
+                whileHover={{ y: -4, borderColor: "#EAB308" }}
                 onClick={() => {
-                  setSelectedPlate(p);
-                  playPrintSound('stamp', isMuted);
+                  setSelectedNode(item);
+                  playAudio('radar', isMuted);
                 }}
-                className="p-6 bg-[#141414] border-2 border-[#FFE600] shadow-[5px_5px_0px_#FFE600] cursor-pointer transition group"
+                className="p-6 rounded-2xl bg-[#1C1C03]/90 border border-[#EAB308]/30 backdrop-blur-md cursor-pointer transition-all duration-300 shadow-[0_4px_25px_rgba(0,0,0,0.7)] group relative overflow-hidden"
               >
-                <div className="flex justify-between items-center text-[10px] text-zinc-400 mb-3">
-                  <span className="font-black text-[#FFE600]">{p.edition}</span>
-                  <span className="px-2 py-0.5 bg-black border border-zinc-700 text-white">{p.ink}</span>
+                <div className="flex justify-between items-center text-[10px] text-[#FACC15] font-mono mb-3">
+                  <span className="px-2 py-0.5 rounded bg-[#EAB308]/20 border border-[#EAB308]/50">{item.badge}</span>
                 </div>
 
-                <h4 className="text-xl font-black text-white group-hover:text-[#FFE600] transition mb-2">
-                  {p.title}
+                <h4 className="text-xl font-bold text-[#FEF08A] group-hover:text-[#FACC15] transition mb-2">
+                  {item.title}
                 </h4>
 
-                <p className="text-xs text-zinc-400 leading-relaxed mb-4">
-                  {p.desc}
+                <p className="text-xs text-yellow-200/70 font-sans leading-relaxed mb-4">
+                  {item.desc}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {p.tech.map((t) => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 bg-black text-[#FFE600] border border-zinc-800">
+                <div className="flex flex-wrap gap-2 mb-4 font-mono">
+                  {item.tech.map((t) => (
+                    <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#0F0F00] text-[#FACC15] border border-[#EAB308]/25">
                       {t}
                     </span>
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-black text-[#FFE600] group-hover:underline">
-                  <span>INSPECT PROOF PRINT</span>
+                <div className="flex items-center gap-1.5 text-xs text-[#FACC15] font-mono group-hover:underline">
+                  <span>SURVEY SYSTEM NODE</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </div>
               </motion.div>
@@ -276,128 +342,110 @@ export default function ThePrintShop({ data }: ThemeRendererProps) {
           </div>
         </section>
 
-        {/* PRINT SHOP CONTACT */}
-        <section className="p-8 bg-[#141414] border-3 border-[#FFE600] shadow-[8px_8px_0px_#FFE600] space-y-6">
-          <div className="space-y-1">
-            <h3 className="text-xl font-black text-white uppercase">ORDER BESPOKE PRESS RUN</h3>
-            <p className="text-xs text-zinc-400">
-              Submit proofing request directly to Prajwal DL ({email}).
+        {/* EXPERIENCE */}
+        <section className="space-y-6">
+          <div className="border-b border-[#EAB308]/30 pb-4">
+            <h3 className="text-xl font-bold text-[#FEF08A] flex items-center gap-2">
+              <Layers className="w-5 h-5 text-[#FACC15]" /> Career Journey & Telemetry
+            </h3>
+          </div>
+
+          <div className="space-y-4">
+            {careerTimeline.map((item, i) => (
+              <div key={i} className="p-5 rounded-2xl bg-[#1C1C03]/90 border border-[#EAB308]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                <div className="space-y-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] font-mono border border-[#EAB308]/50">
+                    {item.period}
+                  </span>
+                  <h4 className="text-base font-bold text-[#FEF08A]">{item.role}</h4>
+                  <p className="text-xs text-yellow-300 font-sans">{item.company}</p>
+                  <p className="text-xs text-yellow-200/70 font-sans">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CONTACT DISPATCH */}
+        <section className="p-8 rounded-3xl bg-[#1C1C03]/90 border border-[#EAB308]/45 shadow-[0_0_40px_rgba(234,179,8,0.4)] space-y-6">
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl font-bold text-[#FEF08A]">Transmit Encrypted Dispatch</h3>
+            <p className="text-xs text-yellow-200/70 font-sans">
+              Send dispatch directly to Prajwal DL ({email}).
             </p>
           </div>
 
           {formSent ? (
-            <div className="p-4 bg-black border-2 border-[#FFE600] text-center space-y-1">
-              <CheckCircle2 className="w-6 h-6 mx-auto text-[#FFE600]" />
-              <p className="font-black text-xs text-white">PROOF RUN QUEUED FOR IMPRESSION</p>
-              <p className="text-[10px] text-zinc-400">Prajwal DL will inspect your proof request.</p>
+            <div className="p-6 rounded-2xl bg-[#EAB308]/20 border border-[#EAB308]/50 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-[#FACC15] mx-auto" />
+              <p className="font-bold text-[#FEF08A]">Dispatch Inscribed in System Grid</p>
+              <p className="text-xs text-[#FACC15] font-mono">Prajwal DL will respond promptly.</p>
             </div>
           ) : (
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 setFormSent(true);
-                playPrintSound('press', isMuted);
+                playAudio('chime', isMuted);
               }}
-              className="space-y-4 text-xs font-bold"
+              className="space-y-4 max-w-xl mx-auto text-xs font-sans"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-zinc-400 text-[10px] mb-1">CLIENT NAME</label>
-                  <input
-                    required
-                    defaultValue="Print Collector"
-                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
-                  />
+                  <label className="block text-[#FACC15] font-mono mb-1">OPERATOR CALLSIGN</label>
+                  <input required defaultValue="System Engineer" className="w-full px-4 py-2.5 rounded-xl bg-[#0F0F00] border border-[#EAB308]/35 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
                 </div>
                 <div>
-                  <label className="block text-zinc-400 text-[10px] mb-1">CLIENT EMAIL</label>
-                  <input
-                    required
-                    type="email"
-                    defaultValue="client@printshop.art"
-                    className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
-                  />
+                  <label className="block text-[#FACC15] font-mono mb-1">CORRESPONDENCE EMAIL</label>
+                  <input required type="email" defaultValue="operator@telemetry.space" className="w-full px-4 py-2.5 rounded-xl bg-[#0F0F00] border border-[#EAB308]/35 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
                 </div>
               </div>
               <div>
-                <label className="block text-zinc-400 text-[10px] mb-1">PRINT SPECIFICATIONS</label>
-                <textarea
-                  rows={3}
-                  required
-                  defaultValue="Requesting full-stack architecture design with bold brutalist typography and high-speed delivery."
-                  className="w-full px-3 py-2 bg-black border-2 border-zinc-700 text-white focus:outline-none focus:border-[#FFE600]"
-                />
+                <label className="block text-[#FACC15] font-mono mb-1">DISPATCH INQUIRY</label>
+                <textarea rows={3} required defaultValue="Requesting full-stack architecture design with real-time 3D WebGL interfaces." className="w-full px-4 py-2.5 rounded-xl bg-[#0F0F00] border border-[#EAB308]/35 text-[#FEF08A] focus:outline-none focus:border-[#EAB308]" />
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 bg-[#FFE600] text-black font-black text-xs hover:bg-white transition flex items-center justify-center gap-2 cursor-pointer shadow-[4px_4px_0px_#fff]"
-              >
-                <Send className="w-3.5 h-3.5" /> STAMP PROOF ORDER
+              <button type="submit" className="w-full py-3 rounded-xl bg-[#EAB308] text-black font-mono font-bold text-xs hover:bg-[#FDE047] transition flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(234,179,8,0.4)]">
+                <Send className="w-4 h-4" /> TRANSMIT DISPATCH
               </button>
             </form>
           )}
 
-          <div className="pt-4 border-t border-zinc-800 flex flex-wrap justify-between items-center text-[10px] text-zinc-400">
-            <span>PRESS SHOP: MANGALORE, KARNATAKA</span>
+          <div className="pt-4 border-t border-[#EAB308]/30 flex flex-wrap justify-between items-center text-[11px] text-slate-400 font-mono">
+            <span>LOCATION: MANGALORE, INDIA · 575001</span>
             <div className="flex gap-4">
-              <a href={github} target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">GITHUB</a>
-              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">LINKEDIN</a>
-              <a href="https://praxel.space/" target="_blank" rel="noreferrer" className="text-[#FFE600] hover:underline">PRAXEL.SPACE</a>
+              <a href={github} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">GITHUB</a>
+              <a href={linkedin} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">LINKEDIN</a>
+              <a href={website} target="_blank" rel="noreferrer" className="text-[#FACC15] hover:underline">PRAXEL.SPACE</a>
             </div>
           </div>
         </section>
       </main>
 
-      {/* PLATE MODAL */}
+      {/* NODE MODAL */}
       <AnimatePresence>
-        {selectedPlate && (
+        {selectedNode && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-[#141414] border-3 border-[#FFE600] p-6 sm:p-8 max-w-lg w-full shadow-[10px_10px_0px_#FFE600] relative space-y-6"
-            >
-              <button
-                onClick={() => {
-                  setSelectedPlate(null);
-                  playPrintSound('stamp', isMuted);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 bg-black text-[#FFE600] border border-[#FFE600] hover:bg-[#FFE600] hover:text-black flex items-center justify-center transition cursor-pointer"
-              >
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="bg-[#1C1C03] border-2 border-[#EAB308] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-[0_0_50px_rgba(234,179,8,0.4)] relative space-y-6">
+              <button onClick={() => { setSelectedNode(null); playAudio('click', isMuted); }} className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#EAB308]/20 text-[#FACC15] hover:bg-[#EAB308] hover:text-black flex items-center justify-center transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
-
-              <div className="space-y-1">
-                <span className="text-[10px] font-black px-2 py-0.5 bg-[#FFE600] text-black">
-                  {selectedPlate.edition} · {selectedPlate.ink}
-                </span>
-                <h3 className="text-2xl font-black text-white">{selectedPlate.title}</h3>
+              <div className="space-y-1 font-mono">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-[#EAB308]/20 text-[#FACC15] border border-[#EAB308]/50">{selectedNode.badge}</span>
+                <h3 className="text-2xl font-bold text-[#FEF08A] font-serif">{selectedNode.title}</h3>
               </div>
-
-              <p className="text-xs text-zinc-300 leading-relaxed">
-                {selectedPlate.desc}
-              </p>
-
-              <div className="space-y-2">
-                <span className="text-xs text-[#FFE600]">TYPOGRAPHIC SPECIFICATIONS</span>
+              <p className="text-sm text-yellow-200/70 font-sans leading-relaxed">{selectedNode.desc}</p>
+              <div className="p-3.5 rounded-xl bg-[#0F0F00] border border-[#EAB308]/25 text-xs text-[#FACC15] font-mono">★ HIGHLIGHT: {selectedNode.highlight}</div>
+              <div className="space-y-2 font-mono">
+                <span className="text-xs text-slate-400">TECH TOKENS</span>
                 <div className="flex flex-wrap gap-2">
-                  {selectedPlate.tech.map((t: string) => (
-                    <span key={t} className="text-xs px-2.5 py-1 bg-black text-[#FFE600] border border-zinc-700">
-                      {t}
-                    </span>
+                  {selectedNode.tech.map((t: string) => (
+                    <span key={t} className="text-xs px-2.5 py-1 rounded-lg bg-[#0F0F00] text-[#FEF08A] border border-[#EAB308]/25">{t}</span>
                   ))}
                 </div>
               </div>
-
               <div className="flex gap-3 pt-2">
-                <a
-                  href={selectedPlate.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 py-2.5 bg-[#FFE600] text-black font-black text-xs text-center hover:bg-white transition flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_#fff]"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> VIEW LIVE EDITION
+                <a href={selectedNode.liveUrl} target="_blank" rel="noreferrer" className="flex-1 py-2.5 rounded-xl bg-[#EAB308] text-black font-bold font-mono text-xs text-center hover:bg-[#FDE047] transition flex items-center justify-center gap-1.5">
+                  <ArrowUpRight className="w-3.5 h-3.5" /> LIVE TELEMETRY
                 </a>
               </div>
             </motion.div>
